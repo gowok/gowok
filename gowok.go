@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/ngamux/ngamux"
+	"gorm.io/gorm"
 )
 
 type App struct {
@@ -12,6 +13,7 @@ type App struct {
 	Models      Models
 
 	mux *ngamux.Ngamux
+	db  *gorm.DB
 }
 
 func New() *App {
@@ -50,6 +52,7 @@ func (app *App) buildRoute() {
 }
 
 func (app *App) Start() error {
+	app.dbConnect()
 	app.buildRoute()
 	return http.ListenAndServe(":8080", app.mux)
 }
