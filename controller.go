@@ -8,6 +8,8 @@ import (
 
 type Controller interface {
 	Route(mux *ngamux.Ngamux)
+	SetConfig(config *Config)
+	SetModels(models Models)
 }
 
 type Controllers map[string]Controller

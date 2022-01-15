@@ -27,6 +27,8 @@ func New() *App {
 
 func (app *App) AddControllers(controllers ...Controller) {
 	for _, controller := range controllers {
+		controller.SetConfig(app.Config)
+		controller.SetModels(app.Models)
 		app.Controllers.Add(controller)
 	}
 }
