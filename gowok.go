@@ -23,6 +23,26 @@ func New() *App {
 	}
 }
 
+func (app *App) AddControllers(controllers ...Controller) {
+	for _, controller := range controllers {
+		app.Controllers.Add(controller)
+	}
+}
+
+func (app *App) AddModels(models ...Model) {
+	for _, model := range models {
+		app.Models.Add(model)
+	}
+}
+
+func (app *App) GetController(controller Controller) (Controller, bool) {
+	return app.Controllers.Get(controller)
+}
+
+func (app *App) GetModel(model Model) (Model, bool) {
+	return app.Models.Get(model)
+}
+
 func (app *App) buildRoute() {
 	for _, controller := range app.Controllers {
 		controller.Route(app.mux)
