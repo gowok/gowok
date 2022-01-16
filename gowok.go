@@ -52,11 +52,11 @@ func (app *App) AddModels(models ...base.Model) {
 	Models = app.Models
 }
 
-func (app *App) GetController(controller base.Controller) (base.Controller, bool) {
+func (app *App) GetController(controller base.Controller) (*base.Controller, bool) {
 	return app.Controllers.Get(controller)
 }
 
-func (app *App) GetModel(model base.Model) (base.Model, bool) {
+func (app *App) GetModel(model base.Model) (*base.Model, bool) {
 	return app.Models.Get(model)
 }
 
