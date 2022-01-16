@@ -34,7 +34,7 @@ func (db DBConfig) DSN() string {
 			options = fmt.Sprintf("%s %s=%s", options, key, val)
 		}
 		dsn = fmt.Sprintf(
-			"host=%s port=%d username=%s password=%s database=%s %s",
+			"host=%s port=%d user=%s password=%s dbname=%s sslmode=disable %s",
 			db.Host,
 			db.Port,
 			db.Username,
