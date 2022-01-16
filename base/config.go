@@ -65,3 +65,10 @@ type Config struct {
 	App *AppConfig
 	DB  *DBConfig
 }
+
+func NewConfig() *Config {
+	return &Config{
+		App: &AppConfig{},
+		DB:  &DBConfig{},
+	}
+}

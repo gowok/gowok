@@ -20,12 +20,16 @@ type App struct {
 	db  *gorm.DB
 }
 
-func New() *App {
+func New(opts ...Option) *App {
 	app := &App{
-		Config:      new(base.Config),
+		Config:      base.NewConfig(),
 		Controllers: make(base.Controllers),
 		Models:      make(base.Models),
 		mux:         ngamux.NewNgamux(),
+	}
+
+	for _, opt := range opts {
+		opt(app)
 	}
 
 	Config = app.Config
