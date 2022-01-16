@@ -1,4 +1,4 @@
-package gowok
+package base
 
 import "fmt"
 

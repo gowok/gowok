@@ -1,18 +1,24 @@
 package base
 
 import (
-	"github.com/gowok/gowok"
+	"reflect"
+
+	"github.com/ngamux/ngamux"
 )
 
-type Controller struct {
-	Config gowok.Config
-	Models gowok.Models
+type Controller interface {
+	Route(mux *ngamux.Ngamux)
 }
 
-func (c *Controller) SetConfig(config gowok.Config) {
-	c.Config = config
+type Controllers map[string]Controller
+
+func (cs *Controllers) Add(c Controller) {
+	t := reflect.TypeOf(c)
+	(*cs)[t.Name()] = c
 }
 
-func (c *Controller) SetModels(models gowok.Models) {
-	c.Models = models
+func (cs Controllers) Get(c Controller) (controller Controller, ok bool) {
+	t := reflect.TypeOf(c)
+	controller, ok = cs[t.Name()]
+	return
 }

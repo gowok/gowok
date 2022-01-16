@@ -3,47 +3,56 @@ package gowok
 import (
 	"net/http"
 
+	"github.com/gowok/gowok/base"
 	"github.com/ngamux/ngamux"
 	"gorm.io/gorm"
 )
 
+var Config = &base.Config{}
+var Models = base.Models{}
+
 type App struct {
-	Config      *Config
-	Controllers Controllers
-	Models      Models
+	Config      *base.Config
+	Controllers base.Controllers
+	Models      base.Models
 
 	mux *ngamux.Ngamux
 	db  *gorm.DB
 }
 
 func New() *App {
-	return &App{
-		Config:      new(Config),
-		Controllers: make(Controllers),
-		Models:      make(Models),
+	app := &App{
+		Config:      new(base.Config),
+		Controllers: make(base.Controllers),
+		Models:      make(base.Models),
 		mux:         ngamux.NewNgamux(),
 	}
+
+	Config = app.Config
+
+	return app
 }
 
-func (app *App) AddControllers(controllers ...Controller) {
+func (app *App) AddControllers(controllers ...base.Controller) {
 	for _, controller := range controllers {
-		controller.SetConfig(app.Config)
-		controller.SetModels(app.Models)
 		app.Controllers.Add(controller)
 	}
+
 }
 
-func (app *App) AddModels(models ...Model) {
+func (app *App) AddModels(models ...base.Model) {
 	for _, model := range models {
 		app.Models.Add(model)
 	}
+
+	Models = app.Models
 }
 
-func (app *App) GetController(controller Controller) (Controller, bool) {
+func (app *App) GetController(controller base.Controller) (base.Controller, bool) {
 	return app.Controllers.Get(controller)
 }
 
-func (app *App) GetModel(model Model) (Model, bool) {
+func (app *App) GetModel(model base.Model) (base.Model, bool) {
 	return app.Models.Get(model)
 }
 
