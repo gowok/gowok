@@ -1,6 +1,7 @@
 package gowok
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/gowok/gowok/base"
@@ -19,10 +20,10 @@ type App struct {
 	mux *ngamux.Ngamux
 	db  *gorm.DB
 }
+type OnStart func(appConfig base.AppConfig)
 
 func New(opts ...Option) *App {
 	app := &App{
-		Config:      base.NewConfig(),
 		Controllers: make(base.Controllers),
 		Models:      make(base.Models),
 		mux:         ngamux.NewNgamux(),
@@ -30,6 +31,10 @@ func New(opts ...Option) *App {
 
 	for _, opt := range opts {
 		opt(app)
+	}
+
+	if app.Config == nil {
+		app.Config = base.NewConfig()
 	}
 
 	Config = app.Config
@@ -66,8 +71,17 @@ func (app *App) buildRoute() {
 	}
 }
 
-func (app *App) Start() error {
+func (app *App) Start(onStarts ...OnStart) error {
 	app.dbConnect()
 	app.buildRoute()
+
+	if len(onStarts) > 0 {
+		for _, onStart := range onStarts {
+			onStart(*app.Config.App)
+		}
+	} else {
+		fmt.Printf("%s started at %s:%d\n", app.Config.App.Name, app.Config.App.Host, app.Config.App.Port)
+	}
+
 	return http.ListenAndServe(":8080", app.mux)
 }
