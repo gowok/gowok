@@ -1,9 +1,12 @@
 package driver
 
-import "time"
+import (
+	"context"
+	"time"
+)
 
 type Cache interface {
-	Set(key string, value any, ttl ...time.Duration)
-	Get(key string) (any, error)
-	IsAvailable() bool
+	Set(ctx context.Context, key string, value any, ttl ...time.Duration)
+	Get(ctx context.Context, key string) (any, error)
+	IsAvailable(ctx context.Context) bool
 }
