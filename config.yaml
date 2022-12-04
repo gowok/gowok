@@ -1,17 +1,20 @@
-app:
-  rest:
-    enabled: true
-    host: :8080
+# app:
+#   rest:
+#     enabled: true
+#     host: :8080
+#   grpc:
+#     enabled: true
+#     host: :8081
 
-database:
-  driver: postgresql
-  dsn: 'host=localhost user= password=zfwjfiqDJR6XivS5 database=postgres port=5432 sslmode=disable'
-  # how to writing DSN, see here: https://gorm.io/docs/connecting_to_the_database.html
+# database:
+#   driver: postgresql
+#   dsn: 'host=localhost user= password=zfwjfiqDJR6XivS5 database=postgres port=5432 sslmode=disable'
+#   # how to writing DSN, see here: https://gorm.io/docs/connecting_to_the_database.html
 
-messaging:
-  driver: rabbitmq
-  dsn: amqp://guest:guest@localhost:5672/
+# messaging:
+#   driver: rabbitmq
+#   dsn: amqp://guest:guest@localhost:5672/
 
-cache:
-  driver: redis
-  dsn: 
+# cache:
+#   driver: redis
+#   dsn: 

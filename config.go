@@ -1,7 +1,7 @@
 package gowok
 
 import (
-	"os"
+	"io/ioutil"
 
 	"github.com/gowok/gowok/config"
 	"github.com/gowok/gowok/err"
@@ -23,12 +23,12 @@ func Configure(filename ...string) (Config, error) {
 
 	conf := &Config{}
 
-	confFile, e := os.Open(file)
+	confFile, e := ioutil.ReadFile(file)
 	if e != nil {
 		return *conf, err.ErrConfigNotFound
 	}
 
-	e = yaml.NewDecoder(confFile).Decode(conf)
+	e = yaml.Unmarshal(confFile, conf)
 	if e != nil {
 		return *conf, err.ErrConfigDecoding(e)
 	}
