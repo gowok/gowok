@@ -4,7 +4,7 @@ import (
 	"io/ioutil"
 
 	"github.com/gowok/gowok/config"
-	"github.com/gowok/gowok/err"
+	"github.com/gowok/gowok/exception"
 	"gopkg.in/yaml.v3"
 )
 
@@ -25,12 +25,12 @@ func Configure(filename ...string) (Config, error) {
 
 	confFile, e := ioutil.ReadFile(file)
 	if e != nil {
-		return *conf, err.ErrConfigNotFound
+		return *conf, exception.ConfigNotFound
 	}
 
 	e = yaml.Unmarshal(confFile, conf)
 	if e != nil {
-		return *conf, err.ErrConfigDecoding(e)
+		return *conf, exception.ConfigDecoding(e)
 	}
 
 	return *conf, nil
