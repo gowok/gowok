@@ -13,6 +13,7 @@ type Config struct {
 	Database  config.Database
 	Cache     config.Cache
 	Messaging config.Messaging
+	Security  config.Security
 }
 
 func Configure(filename ...string) (Config, error) {
