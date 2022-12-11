@@ -10,8 +10,7 @@ import (
 
 type Config struct {
 	App       config.App
-	Database  config.Database
-	Cache     config.Cache
+	Databases []config.Database
 	Messaging config.Messaging
 	Security  config.Security
 }
