@@ -50,11 +50,15 @@ type MongoDeleter interface {
 	DeleteOne(ctx context.Context, filter any, opts ...*options.DeleteOptions) (*mongo.DeleteResult, error)
 }
 
-func NewMongo(conf config.Database) (*mongo.Client, error) {
-	client, err := mongo.NewClient(options.Client().ApplyURI(conf.DSN))
+type Mongo struct {
+	*mongo.Client
+}
+
+func NewMongo(conf config.Database) (*Mongo, error) {
+	db, err := mongo.NewClient(options.Client().ApplyURI(conf.DSN))
 	if err != nil {
 		return nil, err
 	}
 
-	return client, err
+	return &Mongo{db}, err
 }
