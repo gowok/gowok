@@ -1,6 +1,7 @@
 package config
 
 type App struct {
+	Key  string
 	Rest Rest
 	Grpc Grpc
 }
