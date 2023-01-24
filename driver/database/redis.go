@@ -4,10 +4,24 @@ import (
 	"context"
 
 	"github.com/go-redis/redis/v8"
+	"github.com/gowok/gowok/config"
 )
 
 type Redis struct {
 	*redis.Client
+}
+
+func NewRedis(conf config.Database) (*Redis, error) {
+	client := redis.NewClient(&redis.Options{
+		Addr: conf.DSN,
+	})
+
+	_, err := client.Ping(context.Background()).Result()
+	if err != nil {
+		return nil, err
+	}
+
+	return &Redis{client}, err
 }
 
 func (kv Redis) PingContext(ctx context.Context) error {
