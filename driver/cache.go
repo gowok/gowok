@@ -2,11 +2,12 @@ package driver
 
 import (
 	"context"
-	"time"
+
+	"github.com/gowok/gowok/driver/database"
 )
 
 type Cache interface {
-	Set(ctx context.Context, key string, value any, ttl ...time.Duration) error
-	Get(ctx context.Context, key string) (any, error)
+	database.KVReader
+	database.KVWriter
 	IsAvailable(ctx context.Context) bool
 }
