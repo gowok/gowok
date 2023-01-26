@@ -1,17 +1,22 @@
 package database
 
 import (
+	"database/sql"
+
+	_ "github.com/go-sql-driver/mysql"
 	"github.com/gowok/gowok/config"
-	"gorm.io/driver/mysql"
-	"gorm.io/gorm"
 )
 
 type MySQL struct {
-	*gorm.DB
+	*sql.DB
 }
 
+var _ SQLExecutor = MySQL{}
+var _ SQLQuerier = MySQL{}
+var _ SQLPreparation = MySQL{}
+
 func NewMysql(conf config.Database) (*MySQL, error) {
-	db, err := gorm.Open(mysql.Open(conf.DSN), &gorm.Config{})
+	db, err := sql.Open("mysql", conf.DSN)
 	if err != nil {
 		return nil, err
 	}

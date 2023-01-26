@@ -11,6 +11,10 @@ type Redis struct {
 	*redis.Client
 }
 
+var _ KVClient = Redis{}
+var _ KVReader = Redis{}
+var _ KVWriter = Redis{}
+
 func NewRedis(conf config.Database) (*Redis, error) {
 	client := redis.NewClient(&redis.Options{
 		Addr: conf.DSN,

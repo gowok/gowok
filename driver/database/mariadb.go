@@ -1,17 +1,21 @@
 package database
 
 import (
+	"database/sql"
+
 	"github.com/gowok/gowok/config"
-	"gorm.io/driver/mysql"
-	"gorm.io/gorm"
 )
 
 type MariaDB struct {
-	*gorm.DB
+	*sql.DB
 }
 
+var _ SQLExecutor = MariaDB{}
+var _ SQLQuerier = MariaDB{}
+var _ SQLPreparation = MariaDB{}
+
 func NewMariaDB(conf config.Database) (*MariaDB, error) {
-	db, err := gorm.Open(mysql.Open(conf.DSN), &gorm.Config{})
+	db, err := sql.Open("mysql", conf.DSN)
 	if err != nil {
 		return nil, err
 	}

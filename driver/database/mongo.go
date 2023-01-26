@@ -54,6 +54,8 @@ type Mongo struct {
 	*mongo.Client
 }
 
+var _ MongoClient = Mongo{}
+
 func NewMongo(conf config.Database) (*Mongo, error) {
 	db, err := mongo.NewClient(options.Client().ApplyURI(conf.DSN))
 	if err != nil {

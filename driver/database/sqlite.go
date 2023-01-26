@@ -1,22 +1,27 @@
 package database
 
 import (
+	"database/sql"
+
 	"github.com/gowok/gowok/config"
-	"gorm.io/driver/sqlite"
-	"gorm.io/gorm"
+	_ "github.com/mattn/go-sqlite3"
 )
 
 type SQLite struct {
-	*gorm.DB
+	*sql.DB
 }
+
+var _ SQLExecutor = SQLite{}
+var _ SQLQuerier = SQLite{}
+var _ SQLPreparation = SQLite{}
 
 func NewSqlite(conf config.Database) (*SQLite, error) {
 	location := conf.DSN
 	if location == "" {
-		location = "db.sqlite3"
+		location = ":memory:"
 	}
 
-	db, err := gorm.Open(sqlite.Open(location), &gorm.Config{})
+	db, err := sql.Open("sqlite3", location)
 	if err != nil {
 		return nil, err
 	}
