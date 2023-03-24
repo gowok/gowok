@@ -33,46 +33,6 @@ func NewValidator() *Validator {
 		trans:    trans,
 	}
 
-	// _validator.validate.RegisterTagNameFunc(func(fld reflect.StructField) string {
-	// 	name := strings.SplitN(fld.Tag.Get("json"), ",", 2)[0]
-	// 	if name == "-" {
-	// 		return ""
-	// 	}
-	// 	return name
-	// })
-
-	// _validator.validate.RegisterTranslation("required", trans, func(ut ut.Translator) error {
-	// 	return ut.Add("required", "{0} is empty", true) // see universal-translator for details
-	// }, func(ut ut.Translator, fe validator.FieldError) string {
-	// 	t, _ := ut.T("required", fe.Field())
-
-	// 	return t
-	// })
-
-	// _validator.validate.RegisterTranslation("iscolor", trans, func(ut ut.Translator) error {
-	// 	return ut.Add("iscolor", "{0} is not color", true) // see universal-translator for details
-	// }, func(ut ut.Translator, fe validator.FieldError) string {
-	// 	t, _ := ut.T("iscolor", fe.Field())
-
-	// 	return t
-	// })
-
-	// _validator.validate.RegisterTranslation("email", trans, func(ut ut.Translator) error {
-	// 	return ut.Add("email", "{0} is not email", true) // see universal-translator for details
-	// }, func(ut ut.Translator, fe validator.FieldError) string {
-	// 	t, _ := ut.T("email", fe.Field())
-
-	// 	return t
-	// })
-
-	// _validator.validate.RegisterTranslation("lte", trans, func(ut ut.Translator) error {
-	// 	return ut.Add("lte", "{0} is larger", true) // see universal-translator for details
-	// }, func(ut ut.Translator, fe validator.FieldError) string {
-	// 	t, _ := ut.T("lte", fe.Field())
-
-	// 	return t
-	// })
-
 	return _validator
 }
 
