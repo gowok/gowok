@@ -2,8 +2,8 @@ package gowok
 
 import (
 	"fmt"
+	"io"
 	"io/ioutil"
-	"os"
 
 	"github.com/gowok/gowok/config"
 	"gopkg.in/yaml.v3"
@@ -16,7 +16,12 @@ type Config struct {
 	Security  config.Security
 }
 
-func Configure(fi *os.File, err error) (*Config, error) {
+type configFile interface {
+	io.Reader
+	io.Closer
+}
+
+func Configure(fi configFile, err error) (*Config, error) {
 	if err != nil {
 		return nil, fmt.Errorf("can't open config file: %w", err)
 	}
