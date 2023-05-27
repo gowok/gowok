@@ -1,10 +1,11 @@
 package gowok
 
 import (
+	"fmt"
 	"io/ioutil"
+	"os"
 
 	"github.com/gowok/gowok/config"
-	"github.com/gowok/gowok/exception"
 	"gopkg.in/yaml.v3"
 )
 
@@ -15,23 +16,23 @@ type Config struct {
 	Security  config.Security
 }
 
-func Configure(filename ...string) (Config, error) {
-	file := "gowok.yaml"
-	if len(filename) > 0 {
-		file = filename[0]
+func Configure(fi *os.File, err error) (*Config, error) {
+	if err != nil {
+		return nil, fmt.Errorf("can't open config file: %w", err)
+	}
+
+	defer fi.Close()
+
+	fiContent, err := ioutil.ReadAll(fi)
+	if err != nil {
+		return nil, fmt.Errorf("can't read config file: %w", err)
 	}
 
 	conf := &Config{}
-
-	confFile, e := ioutil.ReadFile(file)
-	if e != nil {
-		return *conf, exception.ConfigNotFound
+	err = yaml.Unmarshal(fiContent, conf)
+	if err != nil {
+		return conf, fmt.Errorf("can't decode config file: %w", err)
 	}
 
-	e = yaml.Unmarshal(confFile, conf)
-	if e != nil {
-		return *conf, exception.ConfigDecoding(e)
-	}
-
-	return *conf, nil
+	return conf, nil
 }
