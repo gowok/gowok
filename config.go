@@ -14,6 +14,8 @@ type Config struct {
 	Databases []config.Database
 	Messaging config.Messaging
 	Security  config.Security
+
+	IsTesting bool `yaml:"is_testing"`
 }
 
 type configFile interface {
