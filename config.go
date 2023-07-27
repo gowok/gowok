@@ -14,6 +14,8 @@ type Config struct {
 	Databases []config.Database
 	Messaging config.Messaging
 	Security  config.Security
+	Http      map[string]config.Http
+	Smtp      map[string]config.Smtp
 
 	IsTesting bool `yaml:"is_testing"`
 }
