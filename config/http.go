@@ -1,6 +1,6 @@
 package config
 
 type Http struct {
-	BaseURL string `yaml:"base_url"`
-	Key     string
+	URL  string            `yaml:"url"`
+	With map[string]string `yaml:"with"`
 }
