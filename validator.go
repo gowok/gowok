@@ -1,6 +1,9 @@
 package gowok
 
 import (
+	"encoding/json"
+	"fmt"
+
 	"github.com/go-playground/locales/en"
 	ut "github.com/go-playground/universal-translator"
 	"github.com/go-playground/validator/v10"
@@ -15,9 +18,33 @@ type Validator struct {
 
 // ValidationError represent error from validator
 type ValidationError struct {
-	Namespace string `json:"namespace,omitempty"`
-	Field     string `json:"field,omitempty"`
-	Error     string `json:"error,omitempty"`
+	errors       validator.ValidationErrors
+	translations validator.ValidationErrorsTranslations
+
+	errorMessage string
+	errorJSON    map[string]string
+}
+
+func NewValidationError(errs validator.ValidationErrors, translations ut.Translator) ValidationError {
+	validationErrorMessages := errs.Translate(translations)
+	errorMessage := ""
+	errorJSON := map[string]string{}
+	for _, err := range errs {
+		field := err.Field()
+		namespace := err.Namespace()
+		errorMessage += fmt.Sprintf("%s: %s; ", field, validationErrorMessages[namespace])
+		errorJSON[field] = validationErrorMessages[namespace]
+	}
+
+	return ValidationError{errs, validationErrorMessages, errorMessage, errorJSON}
+}
+
+func (err ValidationError) Error() string {
+	return err.errorMessage
+}
+
+func (err ValidationError) MarshalJSON() ([]byte, error) {
+	return json.Marshal(err.errorJSON)
 }
 
 // NewValidator create an instance of Validator Struct
@@ -36,30 +63,15 @@ func NewValidator() *Validator {
 	return _validator
 }
 
-func (v *Validator) formatErrors(errs validator.ValidationErrors) []ValidationError {
-	validationErrorMessages := errs.Translate(v.trans)
-
-	messages := make([]ValidationError, 0)
-	for _, err := range errs {
-		messages = append(messages, ValidationError{
-			Namespace: err.Namespace(),
-			Field:     err.Field(),
-			Error:     validationErrorMessages[err.Namespace()],
-		})
-	}
-
-	return messages
-}
-
 // ValidateStruct func
-func (v *Validator) ValidateStruct(input any) []ValidationError {
+func (v *Validator) ValidateStruct(input any) ValidationError {
 	err := v.validate.Struct(input)
 
 	if err != nil {
 		validationErrors := err.(validator.ValidationErrors)
-		errResp := v.formatErrors(validationErrors)
+		errResp := NewValidationError(validationErrors, v.trans)
 		return errResp
 	}
 
-	return []ValidationError{}
+	return ValidationError{}
 }
