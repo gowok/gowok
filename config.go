@@ -3,7 +3,6 @@ package gowok
 import (
 	"fmt"
 	"io"
-	"io/ioutil"
 
 	"github.com/gowok/gowok/config"
 	"gopkg.in/yaml.v3"
@@ -32,7 +31,7 @@ func Configure(fi configFile, err error) (*Config, error) {
 
 	defer fi.Close()
 
-	fiContent, err := ioutil.ReadAll(fi)
+	fiContent, err := io.ReadAll(fi)
 	if err != nil {
 		return nil, fmt.Errorf("can't read config file: %w", err)
 	}
