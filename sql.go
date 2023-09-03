@@ -28,12 +28,12 @@ func NewSQL(config map[string]config.Database) (SQL, error) {
 	return sqls, nil
 }
 
-func (d SQL) Get(name ...string) optional.Optional[gorm.DB] {
+func (d SQL) Get(name ...string) optional.Optional[*gorm.DB] {
 	n := ""
 	if len(name) > 0 {
 		n = name[0]
 		if db, ok := d[n]; ok {
-			return optional.New(db)
+			return optional.New(&db)
 		}
 	}
 
@@ -42,9 +42,9 @@ func (d SQL) Get(name ...string) optional.Optional[gorm.DB] {
 	}
 
 	if db, ok := d["default"]; ok {
-		return optional.New(db)
+		return optional.New(&db)
 	}
 
 	var db *gorm.DB
-	return optional.New(db)
+	return optional.New(&db)
 }
