@@ -1,6 +1,6 @@
 module github.com/gowok/gowok
 
-go 1.19
+go 1.21
 
 require (
 	github.com/casbin/casbin/v2 v2.66.0
@@ -9,7 +9,6 @@ require (
 	github.com/go-playground/validator/v10 v10.11.1
 	github.com/go-redis/redis/v8 v8.11.5
 	golang.org/x/crypto v0.8.0
-	golang.org/x/exp v0.0.0-20230817173708-d852ddb80c63
 	gopkg.in/yaml.v3 v3.0.1
 	gorm.io/driver/postgres v1.5.2
 	gorm.io/gorm v1.25.4
