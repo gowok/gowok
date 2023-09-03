@@ -1,0 +1,43 @@
+app:
+  rest:
+    enabled: true
+    host: :8080
+  grpc:
+    enabled: true
+    host: :8081
+
+is_testing: true
+
+# how to writing DSN, see here: https://gorm.io/docs/connecting_to_the_database.html
+databases:
+  default:
+    driver: postgresql
+    dsn: 'host=localhost user= password=zfwjfiqDJR6XivS5 database=postgres port=5432 sslmode=disable'
+  cache:
+    driver: redis
+
+message_brokers:
+  default:
+    driver: rabbitmq
+    dsn: amqp://guest:guest@localhost:5672/
+
+security:
+  secret: mantep
+
+http:
+  wa:
+    url: "https://api.dripsender.com/send"
+    with:
+      key: 95027b0d-7b98-42d4-b095-e4147a770a59
+      secret: josjos
+  good:
+    url: https://facebook.com/api
+
+smtp:
+  email:
+    host: smtp.gowok.com
+    port: 2525
+    user: admin
+    password: iqueo3u8ur83uqe89u3q89eu
+    from: no-reply@gowok.com
+
