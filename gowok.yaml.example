@@ -12,9 +12,13 @@ is_testing: true
 databases:
   default:
     driver: postgresql
-    dsn: 'host=localhost user= password=zfwjfiqDJR6XivS5 database=postgres port=5432 sslmode=disable'
-  cache:
-    driver: redis
+    dsn: 'host=localhost user=root password=123123 database=postgres port=5432 sslmode=disable'
+  jos:
+    driver: postgresql
+    dsn: 'host=localhost user=root password=123123 database=postgres port=5432 sslmode=disable'
+  log:
+    driver: mongodb
+    dsn: 'mongodb://localhost'
 
 message_brokers:
   default:

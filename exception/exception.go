@@ -19,4 +19,5 @@ var (
 
 	ErrNilPointerDeref = errors.New("nil pointer dereference")
 	ErrGetOfNoValue    = errors.New("get of no value")
+	ErrNoDatabaseFound = errors.New("no database found")
 )
