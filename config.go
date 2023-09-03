@@ -24,7 +24,7 @@ type configFile interface {
 	io.Closer
 }
 
-func Configure(fi configFile, err error) (*Config, error) {
+func NewConfig(fi configFile, err error) (*Config, error) {
 	if err != nil {
 		return nil, fmt.Errorf("can't open config file: %w", err)
 	}
