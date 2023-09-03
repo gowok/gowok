@@ -16,4 +16,7 @@ var (
 	TokenGenerationFail = errors.New("token generation fail")
 	InvalidPolicyData   = errors.New("invalid policy data")
 	DeleteRoleWithUsers = errors.New("can't delete role with some users")
+
+	ErrNilPointerDeref = errors.New("nil pointer dereference")
+	ErrGetOfNoValue    = errors.New("get of no value")
 )
