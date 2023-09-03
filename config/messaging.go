@@ -1,6 +1,6 @@
 package config
 
-type Messaging struct {
+type MessageBroker struct {
 	Driver string
 	DSN    string
 }
