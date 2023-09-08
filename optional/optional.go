@@ -1,6 +1,8 @@
 package optional
 
 import (
+	"reflect"
+
 	"github.com/gowok/gowok/exception"
 )
 
@@ -32,7 +34,14 @@ func (o Optional[T]) Get() (T, error) {
 }
 
 func (o Optional[T]) IsPresent() bool {
-	return o.value != nil
+	if o.value != nil {
+		vOf := reflect.ValueOf(*o.value)
+		if vOf.Kind() == reflect.Ptr && vOf.IsNil() {
+			return false
+		}
+		return true
+	}
+	return false
 }
 
 func (o Optional[T]) OrElse(val T) T {
