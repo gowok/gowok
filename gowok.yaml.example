@@ -2,6 +2,10 @@ app:
   rest:
     enabled: true
     host: :8080
+    log:
+      format: "${time} | ${method} | ${path} | ${status} | ${ip} | ${latency}\n"
+    cors:
+      allow_origins: '*'
   grpc:
     enabled: true
     host: :8081
