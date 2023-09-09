@@ -25,6 +25,9 @@ databases:
   log:
     driver: mongodb
     dsn: 'mongodb://localhost'
+  cache:
+    driver: redis
+    dsn: 'redis://localhost'
 
 message_brokers:
   default:
