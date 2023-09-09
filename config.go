@@ -15,8 +15,10 @@ type Config struct {
 	Databases      map[string]config.Database      `yaml:"databases"`
 	Http           map[string]config.Http          `yaml:"http"`
 	Smtp           map[string]config.Smtp          `yaml:"smtp"`
+	Others         map[string]string               `yaml:"others"`
 
-	IsTesting bool `yaml:"is_testing"`
+	IsTesting bool   `yaml:"is_testing"`
+	Env       string `yaml:"env"`
 }
 
 type configFile interface {
