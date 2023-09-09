@@ -3,6 +3,7 @@ package config
 import (
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/logger"
+	"github.com/gofiber/fiber/v2/middleware/pprof"
 )
 
 type App struct {
@@ -14,12 +15,14 @@ type App struct {
 type Rest struct {
 	Enabled bool
 	Host    string
-	Log     *struct {
+
+	Log *struct {
 		Format        string `yaml:"format"`
 		TimeZone      string `yaml:"time_zone"`
 		TimeFormat    string `yaml:"time_format"`
 		DisableColors bool   `yaml:"disable_colors"`
 	} `yaml:"log"`
+
 	Cors *struct {
 		AllowOrigins     string `yaml:"allow_origins"`
 		AllowCredentials bool   `yaml:"allow_credentials"`
@@ -28,6 +31,11 @@ type Rest struct {
 		MaxAge           int    `yaml:"max_age"`
 		ExposeHeaders    string `yaml:"expose_headers"`
 	} `yaml:"cors"`
+
+	Pprof *struct {
+		Enable bool   `yaml:"enable"`
+		Prefix string `yaml:"prefix"`
+	} `yaml:"pprof"`
 }
 
 func (r Rest) GetLog() logger.Config {
@@ -70,6 +78,18 @@ func (r Rest) GetCors() cors.Config {
 	}
 	if r.Cors.MaxAge != 0 {
 		c.MaxAge = r.Cors.MaxAge
+	}
+	return c
+}
+
+func (r Rest) GetPprof() pprof.Config {
+	c := pprof.ConfigDefault
+	if r.Pprof == nil {
+		return c
+	}
+
+	if r.Pprof.Prefix != "" {
+		c.Prefix = r.Pprof.Prefix
 	}
 	return c
 }

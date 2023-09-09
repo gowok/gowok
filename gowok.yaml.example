@@ -6,6 +6,8 @@ app:
       format: "${time} | ${method} | ${path} | ${status} | ${ip} | ${latency}\n"
     cors:
       allow_origins: '*'
+    pprof:
+      enable: true
   grpc:
     enabled: true
     host: :8081
