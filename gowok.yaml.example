@@ -10,6 +10,8 @@ app:
       enabled: true
     views:
       enabled: true
+    static:
+      enabled: true
   grpc:
     enabled: true
     host: :8081

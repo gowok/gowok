@@ -37,13 +37,20 @@ type Web struct {
 		Prefix  string `yaml:"prefix"`
 	} `yaml:"pprof"`
 
-	Views WebViews `yaml:"views"`
+	Views  WebViews  `yaml:"views"`
+	Static WebStatic `yaml:"static"`
 }
 
 type WebViews struct {
 	Enabled bool   `yaml:"enabled"`
 	Dir     string `yaml:"dir"`
 	Layout  string `yaml:"layout"`
+}
+
+type WebStatic struct {
+	Enabled bool   `yaml:"enabled"`
+	Prefix  string `yaml:"prefix"`
+	Dir     string `yaml:"dir"`
 }
 
 func (r Web) GetLog() logger.Config {
@@ -111,6 +118,22 @@ func (r Web) GetViews() WebViews {
 	}
 	if r.Views.Dir == "" {
 		v.Dir = "./views"
+	}
+	return v
+}
+
+func (r Web) GetStatic() WebStatic {
+	v := WebStatic{
+		Enabled: r.Static.Enabled,
+	}
+	if !v.Enabled {
+		return v
+	}
+	if r.Static.Dir == "" {
+		v.Dir = "./public"
+	}
+	if r.Static.Prefix == "" {
+		v.Prefix = "/public"
 	}
 	return v
 }
