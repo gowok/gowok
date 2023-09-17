@@ -112,6 +112,7 @@ func (r Web) GetPprof() pprof.Config {
 func (r Web) GetViews() WebViews {
 	v := WebViews{
 		Enabled: r.Views.Enabled,
+		Layout:  r.Views.Layout,
 	}
 	if !v.Enabled {
 		return v

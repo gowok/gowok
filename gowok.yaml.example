@@ -10,6 +10,7 @@ app:
       enabled: true
     views:
       enabled: true
+      layout: layout
     static:
       enabled: true
       prefix: /static
