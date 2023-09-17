@@ -7,7 +7,9 @@ app:
     cors:
       allow_origins: '*'
     pprof:
-      enable: true
+      enabled: true
+    views:
+      enabled: true
   grpc:
     enabled: true
     host: :8081

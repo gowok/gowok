@@ -33,9 +33,17 @@ type Web struct {
 	} `yaml:"cors"`
 
 	Pprof *struct {
-		Enable bool   `yaml:"enable"`
-		Prefix string `yaml:"prefix"`
+		Enabled bool   `yaml:"enabled"`
+		Prefix  string `yaml:"prefix"`
 	} `yaml:"pprof"`
+
+	Views WebViews `yaml:"views"`
+}
+
+type WebViews struct {
+	Enabled bool   `yaml:"enabled"`
+	Dir     string `yaml:"dir"`
+	Layout  string `yaml:"layout"`
 }
 
 func (r Web) GetLog() logger.Config {
@@ -92,6 +100,19 @@ func (r Web) GetPprof() pprof.Config {
 		c.Prefix = r.Pprof.Prefix
 	}
 	return c
+}
+
+func (r Web) GetViews() WebViews {
+	v := WebViews{
+		Enabled: r.Views.Enabled,
+	}
+	if !v.Enabled {
+		return v
+	}
+	if r.Views.Dir == "" {
+		v.Dir = "./views"
+	}
+	return v
 }
 
 type Grpc struct {
