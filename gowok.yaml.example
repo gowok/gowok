@@ -1,5 +1,5 @@
 app:
-  rest:
+  web:
     enabled: true
     host: :8080
     log:

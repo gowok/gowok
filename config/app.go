@@ -8,11 +8,11 @@ import (
 
 type App struct {
 	Key  string
-	Rest Rest
+	Web  Web
 	Grpc Grpc
 }
 
-type Rest struct {
+type Web struct {
 	Enabled bool
 	Host    string
 
@@ -38,7 +38,7 @@ type Rest struct {
 	} `yaml:"pprof"`
 }
 
-func (r Rest) GetLog() logger.Config {
+func (r Web) GetLog() logger.Config {
 	c := logger.ConfigDefault
 	if r.Log == nil {
 		return c
@@ -56,7 +56,7 @@ func (r Rest) GetLog() logger.Config {
 	return c
 }
 
-func (r Rest) GetCors() cors.Config {
+func (r Web) GetCors() cors.Config {
 	c := cors.ConfigDefault
 	if r.Cors == nil {
 		return c
@@ -82,7 +82,7 @@ func (r Rest) GetCors() cors.Config {
 	return c
 }
 
-func (r Rest) GetPprof() pprof.Config {
+func (r Web) GetPprof() pprof.Config {
 	c := pprof.ConfigDefault
 	if r.Pprof == nil {
 		return c

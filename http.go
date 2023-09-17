@@ -8,7 +8,7 @@ import (
 	"github.com/gowok/gowok/config"
 )
 
-func NewHTTP(c *config.Rest) *fiber.App {
+func NewHTTP(c *config.Web) *fiber.App {
 	h := fiber.New(fiber.Config{
 		DisableStartupMessage: true,
 	})
