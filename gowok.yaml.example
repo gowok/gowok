@@ -13,7 +13,6 @@ app:
       layout: layout
     static:
       enabled: true
-      prefix: /static
   grpc:
     enabled: true
     host: :8081

@@ -14,7 +14,9 @@ func NewHTTP(c *config.Web) *fiber.App {
 		DisableStartupMessage: true,
 	}
 	conf = configureHttpViews(*c, conf)
+
 	h := fiber.New(conf)
+	h = configureHttpStatic(h, *c)
 
 	h.Use(logger.New(c.GetLog()))
 	h.Use(cors.New(c.GetCors()))
@@ -24,6 +26,15 @@ func NewHTTP(c *config.Web) *fiber.App {
 	}
 
 	return h
+}
+
+func configureHttpStatic(app *fiber.App, c config.Web) *fiber.App {
+	sc := c.GetStatic()
+	if !sc.Enabled {
+		return app
+	}
+	app.Static(sc.Prefix, sc.Dir)
+	return app
 }
 
 func configureHttpViews(c config.Web, fc fiber.Config) fiber.Config {
