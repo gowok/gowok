@@ -13,12 +13,7 @@ func NewHTTP(c *config.Web) *fiber.App {
 	conf := fiber.Config{
 		DisableStartupMessage: true,
 	}
-	vc := c.GetViews()
-	if vc.Enabled {
-		v := html.New(vc.Dir, ".html")
-		conf.Views = v
-		conf.ViewsLayout = vc.Layout
-	}
+	conf = configureHttpViews(*c, conf)
 	h := fiber.New(conf)
 
 	h.Use(logger.New(c.GetLog()))
@@ -29,4 +24,28 @@ func NewHTTP(c *config.Web) *fiber.App {
 	}
 
 	return h
+}
+
+func configureHttpViews(c config.Web, fc fiber.Config) fiber.Config {
+	vc := c.GetViews()
+	if !vc.Enabled {
+		return fc
+	}
+
+	v := html.New(vc.Dir, ".html")
+	fc.Views = v
+	if vc.Layout != "" {
+		fc.ViewsLayout = vc.Layout
+	}
+
+	sc := c.GetStatic()
+	root := "/public"
+	v.AddFunc("public", func(path string) string {
+		if sc.Enabled {
+			root = sc.Prefix
+		}
+		return root + "/" + path
+	})
+
+	return fc
 }

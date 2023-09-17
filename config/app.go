@@ -125,6 +125,7 @@ func (r Web) GetViews() WebViews {
 func (r Web) GetStatic() WebStatic {
 	v := WebStatic{
 		Enabled: r.Static.Enabled,
+		Prefix:  "/public",
 	}
 	if !v.Enabled {
 		return v
@@ -132,8 +133,8 @@ func (r Web) GetStatic() WebStatic {
 	if r.Static.Dir == "" {
 		v.Dir = "./public"
 	}
-	if r.Static.Prefix == "" {
-		v.Prefix = "/public"
+	if r.Static.Prefix != "" {
+		v.Prefix = r.Static.Prefix
 	}
 	return v
 }
