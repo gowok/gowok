@@ -3,6 +3,7 @@ package gowok
 import (
 	"fmt"
 	"io"
+	"os"
 
 	"github.com/gowok/gowok/config"
 	"gopkg.in/yaml.v3"
@@ -21,19 +22,13 @@ type Config struct {
 	Env       string `yaml:"env"`
 }
 
-type configFile interface {
-	io.Reader
-	io.Closer
-}
-
-func NewConfig(fi configFile, err error) (*Config, error) {
+func NewConfig(pathConfig string) (*Config, error) {
+	fiConfig, err := os.OpenFile(pathConfig, os.O_RDONLY, 600)
 	if err != nil {
-		return nil, fmt.Errorf("can't open config file: %w", err)
+		return nil, err
 	}
 
-	defer fi.Close()
-
-	fiContent, err := io.ReadAll(fi)
+	fiContent, err := io.ReadAll(fiConfig)
 	if err != nil {
 		return nil, fmt.Errorf("can't read config file: %w", err)
 	}
