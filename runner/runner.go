@@ -7,16 +7,16 @@ import (
 )
 
 type Runner struct {
-	NumCPU           int
-	RLimitEnable     bool
-	RunFunc          func()
-	GracefulStopFunc func()
+	numCPU           int
+	rLimitEnable     bool
+	runFns          []func()
+	gracefulStopFunc func()
 }
 
 func New(opts ...Option) *Runner {
 	runner := &Runner{
-		RunFunc:          func() {},
-		GracefulStopFunc: func() {},
+		runFns:          []func(){func() {}},
+		gracefulStopFunc: func() {},
 	}
 
 	for _, opt := range opts {
@@ -25,18 +25,23 @@ func New(opts ...Option) *Runner {
 	return runner
 }
 
+func (r *Runner) AddRunFunc(runFunc func()) {
+	r.runFns = append(r.runFns, runFunc)
+}
+
 func (r Runner) Run() {
-	if r.RunFunc == nil {
+	if r.runFns == nil {
 		return
 	}
 
-	go r.RunFunc()
-	if r.GracefulStopFunc != nil {
-		r.gracefulStopRun(r.GracefulStopFunc)
+	for _, runFunc := range r.runFns {
+		go runFunc()
 	}
+
+	r.gracefulStopRun()
 }
 
-func (r Runner) gracefulStopRun(callback func()) {
+func (r Runner) gracefulStopRun() {
 	var gracefulStop = make(chan os.Signal)
 	signal.Notify(gracefulStop, syscall.SIGTERM)
 	signal.Notify(gracefulStop, syscall.SIGINT)
@@ -44,8 +49,9 @@ func (r Runner) gracefulStopRun(callback func()) {
 	func() {
 		<-gracefulStop
 
-		callback()
-
+		if r.gracefulStopFunc != nil {
+			r.gracefulStopFunc()
+		}
 		os.Exit(0)
 	}()
 }
