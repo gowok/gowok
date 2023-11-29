@@ -34,7 +34,7 @@ func (r Runner) Run() {
 		return
 	}
 
-	for i := len(r.runFns) - 1; i > 0; i-- {
+	for i := len(r.runFns) - 1; i >= 0; i-- {
 		go r.runFns[i]()
 	}
 
