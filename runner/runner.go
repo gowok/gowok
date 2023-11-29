@@ -9,13 +9,13 @@ import (
 type Runner struct {
 	numCPU           int
 	rLimitEnable     bool
-	runFns          []func()
+	runFns           []func()
 	gracefulStopFunc func()
 }
 
 func New(opts ...Option) *Runner {
 	runner := &Runner{
-		runFns:          []func(){func() {}},
+		runFns:           []func(){func() {}},
 		gracefulStopFunc: func() {},
 	}
 
@@ -34,8 +34,8 @@ func (r Runner) Run() {
 		return
 	}
 
-	for _, runFunc := range r.runFns {
-		go runFunc()
+	for i := len(r.runFns) - 1; i > 0; i-- {
+		go r.runFns[i]()
 	}
 
 	r.gracefulStopRun()
