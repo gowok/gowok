@@ -63,7 +63,7 @@ func Ignite() (*Project, error) {
 	GRPC := grpc.NewServer()
 
 	hooks := &Hooks{}
-	run := runner.New(
+	running := runner.New(
 		runner.WithRLimitEnable(true),
 		runner.WithGracefulStopFunc(func() {
 			println()
@@ -83,7 +83,7 @@ func Ignite() (*Project, error) {
 	)
 	project = &Project{
 		Config:    conf,
-		Runner:    run,
+		Runner:    running,
 		Hooks:     hooks,
 		SQL:       dbSQL.Get,
 		MongoDB:   dbMongo.Get,
@@ -149,6 +149,10 @@ func run() {
 	if project.Hooks.onStarted != nil {
 		project.Hooks.onStarted()
 	}
+}
+
+func (p *Project) Run() {
+	Get().Runner.Run()
 }
 
 func (p *Project) Configures(configures ...ConfigureFunc) {
