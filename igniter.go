@@ -16,17 +16,19 @@ import (
 )
 
 type getterByName[T any] func(name ...string) optional.Optional[T]
+type ConfigureFunc func(*Project)
 
 type Project struct {
-	Config    *Config
-	Runner    *runner.Runner
-	Hooks     *Hooks
-	SQL       getterByName[*gorm.DB]
-	MongoDB   getterByName[*mongo.Client]
-	Redis     getterByName[*redis.Client]
-	Validator *Validator
-	Web       *fiber.App
-	GRPC      *grpc.Server
+	Config     *Config
+	Runner     *runner.Runner
+	Hooks      *Hooks
+	SQL        getterByName[*gorm.DB]
+	MongoDB    getterByName[*mongo.Client]
+	Redis      getterByName[*redis.Client]
+	Validator  *Validator
+	Web        *fiber.App
+	GRPC       *grpc.Server
+	configures []ConfigureFunc
 }
 
 var project *Project
@@ -89,6 +91,8 @@ func Ignite() (*Project, error) {
 		Validator: validator,
 		Web:       web,
 		GRPC:      GRPC,
+
+		configures: make([]ConfigureFunc, 0),
 	}
 	return project, nil
 }
@@ -104,6 +108,10 @@ func Get() *Project {
 
 func run() {
 	project := Get()
+
+	for _, configure := range project.configures {
+		configure(project)
+	}
 
 	if project.Hooks.onStarting != nil {
 		project.Hooks.onStarting()
@@ -141,4 +149,9 @@ func run() {
 	if project.Hooks.onStarted != nil {
 		project.Hooks.onStarted()
 	}
+}
+
+func (p *Project) Configures(configures ...ConfigureFunc) {
+	p.configures = make([]ConfigureFunc, len(configures))
+	copy(p.configures, configures)
 }
