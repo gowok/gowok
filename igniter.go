@@ -20,6 +20,7 @@ type getterByName[T any] func(name ...string) optional.Optional[T]
 type Project struct {
 	Config    *Config
 	Runner    *runner.Runner
+	Hooks     *Hooks
 	SQL       getterByName[*gorm.DB]
 	MongoDB   getterByName[*mongo.Client]
 	Redis     getterByName[*redis.Client]
@@ -59,6 +60,7 @@ func Ignite() (*Project, error) {
 	web := NewHTTP(&conf.App.Web)
 	GRPC := grpc.NewServer()
 
+	hooks := &Hooks{}
 	run := runner.New(
 		runner.WithRLimitEnable(true),
 		runner.WithGracefulStopFunc(func() {
@@ -71,12 +73,16 @@ func Ignite() (*Project, error) {
 				println("project: stopping web")
 				web.ShutdownWithTimeout(10 * time.Second)
 			}
+			if hooks.onStopped != nil {
+				hooks.onStopped()
+			}
 		}),
 		runner.WithRunFunc(run),
 	)
 	project = &Project{
 		Config:    conf,
 		Runner:    run,
+		Hooks:     hooks,
 		SQL:       dbSQL.Get,
 		MongoDB:   dbMongo.Get,
 		Redis:     dbRedis.Get,
@@ -98,6 +104,10 @@ func Get() *Project {
 
 func run() {
 	project := Get()
+
+	if project.Hooks.onStarting != nil {
+		project.Hooks.onStarting()
+	}
 
 	go func() {
 		if !project.Config.App.Web.Enabled {
@@ -128,4 +138,7 @@ func run() {
 		}
 	}()
 
+	if project.Hooks.onStarted != nil {
+		project.Hooks.onStarted()
+	}
 }
