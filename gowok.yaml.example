@@ -24,20 +24,14 @@ sql:
     driver: postgresql
     dsn: 'host=localhost user=root password=123123 database=postgres port=5432 sslmode=disable'
 
-# how to writing DSN, see here: https://gorm.io/docs/connecting_to_the_database.html
-# databases:
-#   default:
-#     driver: postgresql
-#     dsn: 'host=localhost user=root password=123123 database=postgres port=5432 sslmode=disable'
-#   jos:
-#     driver: postgresql
-#     dsn: 'host=localhost user=root password=123123 database=postgres port=5432 sslmode=disable'
-#   log:
-#     driver: mongodb
-#     dsn: 'mongodb://localhost'
-#   cache:
-#     driver: redis
-#     dsn: 'redis://localhost'
+cache:
+  default:
+    driver: redis
+    dsn: 'redis://localhost'
+
+mongodb:
+  default:
+    dsn: 'mongodb://localhost'
 
 message_brokers:
   default:

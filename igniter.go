@@ -6,7 +6,7 @@ import (
 	"net"
 	"time"
 
-	"github.com/go-redis/redis/v8"
+	"github.com/eko/gocache/lib/v4/cache"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gowok/gowok/optional"
 	"github.com/gowok/gowok/runner"
@@ -24,7 +24,7 @@ type Project struct {
 	Hooks      *Hooks
 	SQL        getterByName[*gorm.DB]
 	MongoDB    getterByName[*mongo.Client]
-	Redis      getterByName[*redis.Client]
+	Cache      getterByName[*cache.Cache[any]]
 	Validator  *Validator
 	Web        *fiber.App
 	GRPC       *grpc.Server
@@ -52,7 +52,7 @@ func Ignite() (*Project, error) {
 		return nil, err
 	}
 
-	dbRedis, err := NewRedis(conf.Caches)
+	dbCache, err := NewCache(conf.Caches)
 	if err != nil {
 		return nil, err
 	}
@@ -87,7 +87,7 @@ func Ignite() (*Project, error) {
 		Hooks:     hooks,
 		SQL:       dbSQL.Get,
 		MongoDB:   dbMongo.Get,
-		Redis:     dbRedis.Get,
+		Cache:     dbCache.Get,
 		Validator: validator,
 		Web:       web,
 		GRPC:      GRPC,
