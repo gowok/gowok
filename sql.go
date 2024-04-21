@@ -11,7 +11,7 @@ import (
 
 type SQL map[string]*gorm.DB
 
-func NewSQL(config map[string]config.Database) (SQL, error) {
+func NewSQL(config map[string]config.SQL) (SQL, error) {
 	sqls := SQL{}
 
 	for name, dbC := range config {

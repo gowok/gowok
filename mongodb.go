@@ -12,20 +12,18 @@ import (
 
 type MongoDB map[string]*mongo.Client
 
-func NewMongoDB(config map[string]config.Database) (MongoDB, error) {
+func NewMongoDB(config map[string]config.MongoDB) (MongoDB, error) {
 	mongos := MongoDB{}
 	c := context.Background()
 
 	for name, dbC := range config {
-		if dbC.Driver == "mongodb" {
-			opts := options.Client().ApplyURI(dbC.DSN)
-			client, err := mongo.Connect(c, opts)
-			if err != nil {
-				return nil, err
-			}
-
-			mongos[name] = client
+		opts := options.Client().ApplyURI(dbC.DSN)
+		client, err := mongo.Connect(c, opts)
+		if err != nil {
+			return nil, err
 		}
+
+		mongos[name] = client
 	}
 
 	return mongos, nil

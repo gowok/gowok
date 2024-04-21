@@ -10,7 +10,7 @@ import (
 
 type Redis map[string]*redis.Client
 
-func NewRedis(config map[string]config.Database) (Redis, error) {
+func NewRedis(config map[string]config.Cache) (Redis, error) {
 	redises := Redis{}
 
 	for name, dbC := range config {

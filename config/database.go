@@ -1,6 +1,17 @@
 package config
 
-type Database struct {
+type SQL struct {
+	Driver string
+	DSN    string
+	With   map[string]string
+}
+
+type MongoDB struct {
+	DSN  string
+	With map[string]string
+}
+
+type Cache struct {
 	Driver string
 	DSN    string
 	With   map[string]string

@@ -42,17 +42,17 @@ func Ignite() (*Project, error) {
 	if err != nil {
 		return nil, err
 	}
-	dbSQL, err := NewSQL(conf.Databases)
+	dbSQL, err := NewSQL(conf.SQLs)
 	if err != nil {
 		return nil, err
 	}
 
-	dbMongo, err := NewMongoDB(conf.Databases)
+	dbMongo, err := NewMongoDB(conf.MongoDBs)
 	if err != nil {
 		return nil, err
 	}
 
-	dbRedis, err := NewRedis(conf.Databases)
+	dbRedis, err := NewRedis(conf.Caches)
 	if err != nil {
 		return nil, err
 	}
