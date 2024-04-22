@@ -23,15 +23,18 @@ sql:
   default:
     driver: postgresql
     dsn: 'host=localhost user=root password=123123 database=postgres port=5432 sslmode=disable'
+    enabled: true
 
 cache:
   default:
     driver: redis
     dsn: 'redis://localhost'
+    enabled: true
 
 mongodb:
   default:
     dsn: 'mongodb://localhost'
+    enabled: true
 
 message_brokers:
   default:
