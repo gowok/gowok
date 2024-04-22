@@ -3,9 +3,11 @@ package gowok
 import (
 	"log/slog"
 
+	"github.com/dgraph-io/ristretto"
 	"github.com/eko/gocache/lib/v4/cache"
 	"github.com/eko/gocache/lib/v4/store"
 	store_redis "github.com/eko/gocache/store/redis/v4"
+	store_memory "github.com/eko/gocache/store/ristretto/v4"
 	"github.com/gowok/gowok/config"
 	"github.com/gowok/gowok/optional"
 	"github.com/redis/go-redis/v9"
@@ -14,21 +16,25 @@ import (
 type Cache map[string]store.StoreInterface
 
 func NewCache(config map[string]config.Cache) (Cache, error) {
-	redises := Cache{}
+	caches := Cache{}
 
 	for name, dbC := range config {
 		if !dbC.Enabled {
 			continue
 		}
 
-		if dbC.Driver == "redis" {
+		var client store.StoreInterface
+		if dbC.Driver == "memory" {
+			clientOpt := Must(ristretto.NewCache(&ristretto.Config{}))
+			client = store_memory.NewRistretto(clientOpt)
+		} else if dbC.Driver == "redis" {
 			clientOpt := Must(redis.ParseURL(dbC.DSN))
-			client := store_redis.NewRedis(redis.NewClient(clientOpt))
-			redises[name] = client
+			client = store_redis.NewRedis(redis.NewClient(clientOpt))
 		}
+		caches[name] = client
 	}
 
-	return redises, nil
+	return caches, nil
 }
 
 func (d Cache) Get(name ...string) optional.Optional[*cache.Cache[any]] {
