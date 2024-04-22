@@ -17,6 +17,10 @@ func NewCache(config map[string]config.Cache) (Cache, error) {
 	redises := Cache{}
 
 	for name, dbC := range config {
+		if !dbC.Enabled {
+			continue
+		}
+
 		if dbC.Driver == "redis" {
 			clientOpt := Must(redis.ParseURL(dbC.DSN))
 			client := store_redis.NewRedis(redis.NewClient(clientOpt))

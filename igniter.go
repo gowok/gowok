@@ -42,6 +42,7 @@ func Ignite() (*Project, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	dbSQL, err := NewSQL(conf.SQLs)
 	if err != nil {
 		return nil, err

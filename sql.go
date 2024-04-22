@@ -15,6 +15,9 @@ func NewSQL(config map[string]config.SQL) (SQL, error) {
 	sqls := SQL{}
 
 	for name, dbC := range config {
+		if !dbC.Enabled {
+			continue
+		}
 		if dbC.Driver == "postgresql" {
 			db, err := gorm.Open(postgres.Open(dbC.DSN))
 			if err != nil {

@@ -17,6 +17,10 @@ func NewMongoDB(config map[string]config.MongoDB) (MongoDB, error) {
 	c := context.Background()
 
 	for name, dbC := range config {
+		if !dbC.Enabled {
+			continue
+		}
+
 		opts := options.Client().ApplyURI(dbC.DSN)
 		client, err := mongo.Connect(c, opts)
 		if err != nil {
