@@ -14,6 +14,7 @@ require (
 	github.com/gofiber/fiber/v2 v2.49.1
 	github.com/gofiber/template/html/v2 v2.0.5
 	github.com/redis/go-redis/v9 v9.0.2
+	github.com/wagslane/go-rabbitmq v0.13.0
 	go.mongodb.org/mongo-driver v1.12.1
 	golang.org/x/crypto v0.12.0
 	google.golang.org/grpc v1.59.0
@@ -53,6 +54,7 @@ require (
 	github.com/prometheus/client_model v0.3.0 // indirect
 	github.com/prometheus/common v0.37.0 // indirect
 	github.com/prometheus/procfs v0.8.0 // indirect
+	github.com/rabbitmq/amqp091-go v1.7.0 // indirect
 	github.com/rivo/uniseg v0.2.0 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasthttp v1.49.0 // indirect

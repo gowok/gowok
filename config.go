@@ -10,15 +10,14 @@ import (
 )
 
 type Config struct {
-	App            config.App
-	Security       config.Security
-	MessageBrokers map[string]config.MessageBroker `yaml:"message_brokers"`
-	SQLs           map[string]config.SQL           `yaml:"sql"`
-	MongoDBs       map[string]config.MongoDB       `yaml:"mongodb"`
-	Caches         map[string]config.Cache         `yaml:"cache"`
-	Http           map[string]config.Http          `yaml:"http"`
-	Smtp           map[string]config.Smtp          `yaml:"smtp"`
-	Others         map[string]string               `yaml:"others"`
+	App      config.App
+	Security config.Security
+	SQLs     map[string]config.SQL     `yaml:"sql"`
+	MongoDBs map[string]config.MongoDB `yaml:"mongodb"`
+	Caches   map[string]config.Cache   `yaml:"cache"`
+	Http     map[string]config.Http    `yaml:"http"`
+	Smtp     map[string]config.Smtp    `yaml:"smtp"`
+	Others   map[string]string         `yaml:"others"`
 
 	IsTesting bool   `yaml:"is_testing"`
 	Env       string `yaml:"env"`
