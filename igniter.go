@@ -8,6 +8,8 @@ import (
 
 	"github.com/eko/gocache/lib/v4/cache"
 	"github.com/gofiber/fiber/v2"
+	"github.com/gowok/gowok/driver"
+	"github.com/gowok/gowok/must"
 	"github.com/gowok/gowok/optional"
 	"github.com/gowok/gowok/runner"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -43,17 +45,17 @@ func Ignite() (*Project, error) {
 		return nil, err
 	}
 
-	dbSQL, err := NewSQL(conf.SQLs)
+	dbSQL, err := driver.NewSQL(conf.SQLs)
 	if err != nil {
 		return nil, err
 	}
 
-	dbMongo, err := NewMongoDB(conf.MongoDBs)
+	dbMongo, err := driver.NewMongoDB(conf.MongoDBs)
 	if err != nil {
 		return nil, err
 	}
 
-	dbCache, err := NewCache(conf.Caches)
+	dbCache, err := driver.NewCache(conf.Caches)
 	if err != nil {
 		return nil, err
 	}
@@ -103,7 +105,7 @@ func Get() *Project {
 		return project
 	}
 
-	Must(Ignite())
+	must.Must(Ignite())
 	return project
 }
 
