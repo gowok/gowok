@@ -26,8 +26,11 @@ func NewRabbitMQConsumer(
 	queue string,
 	routingKey string,
 	exchangeName string,
+	opts ...func(*rabbitmq.ConsumerOptions),
 ) (*rabbitmq.Consumer, error) {
-	opts := make([]func(*rabbitmq.ConsumerOptions), 0)
+	if opts == nil {
+		opts = make([]func(*rabbitmq.ConsumerOptions), 0)
+	}
 	if routingKey != "" {
 		opts = append(opts, rabbitmq.WithConsumerOptionsRoutingKey(routingKey))
 	}
@@ -50,8 +53,11 @@ func NewRabbitMQConsumer(
 func NewRabbitMQPublisher(
 	conn *rabbitmq.Conn,
 	exchangeName string,
+	opts ...func(*rabbitmq.PublisherOptions),
 ) (*rabbitmq.Publisher, error) {
-	opts := make([]func(*rabbitmq.PublisherOptions), 0)
+	if opts == nil {
+		opts = make([]func(*rabbitmq.PublisherOptions), 0)
+	}
 	opts = append(
 		opts,
 		rabbitmq.WithPublisherOptionsLogging,
