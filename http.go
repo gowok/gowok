@@ -12,6 +12,7 @@ import (
 func NewHTTP(c *config.Web) *fiber.App {
 	conf := fiber.Config{
 		DisableStartupMessage: true,
+		ProxyHeader:           fiber.HeaderXForwardedFor,
 	}
 	conf = configureHttpViews(*c, conf)
 
