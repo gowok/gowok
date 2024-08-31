@@ -1,6 +1,7 @@
 package gowok
 
 import (
+	"database/sql"
 	"flag"
 	"log"
 	"net"
@@ -14,7 +15,6 @@ import (
 	"github.com/gowok/gowok/runner"
 	"go.mongodb.org/mongo-driver/mongo"
 	"google.golang.org/grpc"
-	"gorm.io/gorm"
 )
 
 type getterByName[T any] func(name ...string) optional.Optional[T]
@@ -24,7 +24,7 @@ type Project struct {
 	Config     *Config
 	Runner     *runner.Runner
 	Hooks      *Hooks
-	SQL        getterByName[*gorm.DB]
+	SQL        getterByName[*sql.DB]
 	MongoDB    getterByName[*mongo.Client]
 	Cache      getterByName[*cache.Cache[any]]
 	Validator  *Validator

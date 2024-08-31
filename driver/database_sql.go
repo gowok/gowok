@@ -1,15 +1,15 @@
 package driver
 
 import (
+	"database/sql"
 	"log/slog"
 
 	"github.com/gowok/gowok/config"
 	"github.com/gowok/gowok/optional"
-	"gorm.io/driver/postgres"
-	"gorm.io/gorm"
+	_ "github.com/lib/pq"
 )
 
-type SQL map[string]*gorm.DB
+type SQL map[string]*sql.DB
 
 func NewSQL(config map[string]config.SQL) (SQL, error) {
 	sqls := SQL{}
@@ -18,20 +18,23 @@ func NewSQL(config map[string]config.SQL) (SQL, error) {
 		if !dbC.Enabled {
 			continue
 		}
-		if dbC.Driver == "postgresql" {
-			db, err := gorm.Open(postgres.Open(dbC.DSN))
-			if err != nil {
-				return nil, err
-			}
 
-			sqls[name] = db
+		if dbC.Driver == "postgresql" {
+			dbC.Driver = "postgres"
 		}
+
+		db, err := sql.Open(dbC.Driver, dbC.DSN)
+		if err != nil {
+			return nil, err
+		}
+
+		sqls[name] = db
 	}
 
 	return sqls, nil
 }
 
-func (d SQL) Get(name ...string) optional.Optional[*gorm.DB] {
+func (d SQL) Get(name ...string) optional.Optional[*sql.DB] {
 	n := ""
 	if len(name) > 0 {
 		n = name[0]
@@ -48,6 +51,6 @@ func (d SQL) Get(name ...string) optional.Optional[*gorm.DB] {
 		return optional.New(&db)
 	}
 
-	var db *gorm.DB
+	var db *sql.DB
 	return optional.New(&db)
 }
