@@ -1,6 +1,7 @@
 package driver
 
 import (
+	"context"
 	"log/slog"
 
 	"github.com/dgraph-io/ristretto"
@@ -13,12 +14,6 @@ import (
 	"github.com/gowok/gowok/optional"
 	"github.com/redis/go-redis/v9"
 )
-
-// type Cache interface {
-// 	database.KVReader
-// 	database.KVWriter
-// 	IsAvailable(ctx context.Context) bool
-// }
 
 type Cache map[string]store.StoreInterface
 
@@ -64,4 +59,17 @@ func (d Cache) Get(name ...string) optional.Optional[*cache.Cache[any]] {
 	}
 
 	return optional.Empty[*cache.Cache[any]]()
+}
+
+type KVClient interface {
+	PingContext(ctx context.Context) error
+	Close() error
+}
+
+type KVReader interface {
+	GetContext(ctx context.Context, key string) (any, error)
+}
+
+type KVWriter interface {
+	SetContext(ctx context.Context, key string, value any) error
 }

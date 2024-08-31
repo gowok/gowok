@@ -1,14 +1,13 @@
 package driver
 
 import (
-	"github.com/gowok/gowok/driver/messaging"
 	"github.com/wagslane/go-rabbitmq"
 )
 
 type Messaging interface {
-	Publish(topic string, channel string, message messaging.Message) error
-	Consume(channel string) (<-chan messaging.Message, error)
-	Ack(message messaging.Message) error
+	Publish(topic string, channel string, message Message) error
+	Consume(channel string) (<-chan Message, error)
+	Ack(message Message) error
 	IsAvailable() bool
 }
 
@@ -75,4 +74,16 @@ func NewRabbitMQPublisher(
 	)
 
 	return publisher, err
+}
+
+type Message struct {
+	Headers Table
+	Tag     uint64
+	Message []byte
+}
+
+type Table map[string]any
+
+func (t Table) Validate() error {
+	return nil
 }
