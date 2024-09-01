@@ -7,7 +7,7 @@ import (
 
 	"github.com/gowok/gowok/config"
 	"github.com/gowok/gowok/optional"
-	_ "github.com/lib/pq"
+	_ "github.com/jackc/pgx/v5/stdlib"
 )
 
 type SQL map[string]*sql.DB
@@ -21,7 +21,7 @@ func NewSQL(config map[string]config.SQL) (SQL, error) {
 		}
 
 		if dbC.Driver == "postgresql" {
-			dbC.Driver = "postgres"
+			dbC.Driver = "pgx"
 		}
 
 		db, err := sql.Open(dbC.Driver, dbC.DSN)
