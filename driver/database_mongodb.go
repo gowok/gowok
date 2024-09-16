@@ -38,8 +38,7 @@ func (d MongoDB) Get(name ...string) optional.Optional[*mongo.Client] {
 	if len(name) > 0 {
 		n = name[0]
 		if db, ok := d[n]; ok {
-			odb, _ := optional.Of(&db)
-			return odb
+			return optional.Of(&db)
 		}
 	}
 
@@ -48,11 +47,8 @@ func (d MongoDB) Get(name ...string) optional.Optional[*mongo.Client] {
 	}
 
 	if db, ok := d["default"]; ok {
-		odb, _ := optional.Of(&db)
-		return odb
+		return optional.Of(&db)
 	}
 
-	var db *mongo.Client
-	odb, _ := optional.Of(&db)
-	return odb
+	return optional.Empty[*mongo.Client]()
 }

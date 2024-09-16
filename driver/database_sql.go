@@ -40,8 +40,7 @@ func (d SQL) Get(name ...string) optional.Optional[*sql.DB] {
 	if len(name) > 0 {
 		n = name[0]
 		if db, ok := d[n]; ok {
-			odb, _ := optional.Of(&db)
-			return odb
+			return optional.Of(&db)
 		}
 	}
 
@@ -50,13 +49,10 @@ func (d SQL) Get(name ...string) optional.Optional[*sql.DB] {
 	}
 
 	if db, ok := d["default"]; ok {
-		odb, _ := optional.Of(&db)
-		return odb
+		return optional.Of(&db)
 	}
 
-	var db *sql.DB
-	odb, _ := optional.Of(&db)
-	return odb
+	return optional.Empty[*sql.DB]()
 }
 
 type SQLPreparation interface {

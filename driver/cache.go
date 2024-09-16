@@ -45,8 +45,7 @@ func (d Cache) Get(name ...string) optional.Optional[*cache.Cache[any]] {
 		n = name[0]
 		if db, ok := d[n]; ok {
 			c := cache.New[any](db)
-			odb, _ := optional.Of(&c)
-			return odb
+			return optional.Of(&c)
 		}
 	}
 
@@ -56,8 +55,7 @@ func (d Cache) Get(name ...string) optional.Optional[*cache.Cache[any]] {
 
 	if db, ok := d["default"]; ok {
 		c := cache.New[any](db)
-		odb, _ := optional.Of(&c)
-		return odb
+		return optional.Of(&c)
 	}
 
 	return optional.Empty[*cache.Cache[any]]()
