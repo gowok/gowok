@@ -1,6 +1,8 @@
 module github.com/gowok/gowok
 
-go 1.21
+go 1.22
+
+toolchain go1.22.5
 
 require (
 	github.com/casbin/casbin/v2 v2.66.0
@@ -13,6 +15,7 @@ require (
 	github.com/go-playground/validator/v10 v10.11.1
 	github.com/gofiber/fiber/v2 v2.49.1
 	github.com/gofiber/template/html/v2 v2.0.5
+	github.com/gowok/should v0.0.0-20240831060519-d8ab7c7891fb
 	github.com/jackc/pgx/v5 v5.6.0
 	github.com/redis/go-redis/v9 v9.0.2
 	github.com/wagslane/go-rabbitmq v0.13.0
