@@ -37,7 +37,11 @@ var project *Project
 
 func ignite() (*Project, error) {
 	var pathConfig string
-	flag.StringVar(&pathConfig, "config", "config.yaml", "configuration file location (yaml)")
+	if flag.Lookup("config") == nil {
+		flag.StringVar(&pathConfig, "config", "config.yaml", "configuration file location (yaml)")
+	} else {
+		pathConfig = flag.Lookup("config").Value.String()
+	}
 	flag.Parse()
 
 	conf, err := NewConfig(pathConfig)
@@ -161,4 +165,8 @@ func (p *Project) Run() {
 func (p *Project) Configures(configures ...ConfigureFunc) {
 	p.configures = make([]ConfigureFunc, len(configures))
 	copy(p.configures, configures)
+}
+
+func (p *Project) Reload() {
+	must.Must(ignite())
 }
