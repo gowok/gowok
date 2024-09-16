@@ -1,47 +1,39 @@
 package optional
 
-import (
-	"reflect"
-
-	"github.com/gowok/gowok/exception"
-)
-
 type Optional[T any] struct {
-	value *T
+	value     *T
+	isPresent bool
 }
 
-func New[T any](val *T) Optional[T] {
-	return Optional[T]{val}
+func newOptional[T any](val *T) Optional[T] {
+	isPresent := false
+	if val != nil {
+		isPresent = true
+	}
+	return Optional[T]{val, isPresent}
 }
 
 func Empty[T any]() Optional[T] {
-	var val T
-	return New(&val)
+	return newOptional[T](nil)
 }
 
-func Of[T any](val *T) (Optional[T], error) {
+func Of[T any](val *T) Optional[T] {
 	if val == nil {
-		return Empty[T](), exception.ErrNilPointerDeref
+		return Empty[T]()
 	}
-	return New(val), nil
+	return newOptional(val)
 }
 
-func (o Optional[T]) Get() (T, error) {
+func (o Optional[T]) Get() (T, bool) {
 	if !o.IsPresent() {
-		return *Empty[T]().value, exception.ErrGetOfNoValue
+		var value T
+		return value, false
 	}
-	return *o.value, nil
+	return *o.value, true
 }
 
 func (o Optional[T]) IsPresent() bool {
-	if o.value != nil {
-		vOf := reflect.ValueOf(*o.value)
-		if vOf.Kind() == reflect.Ptr && vOf.IsNil() {
-			return false
-		}
-		return true
-	}
-	return false
+	return o.isPresent
 }
 
 func (o Optional[T]) OrElse(val T) T {
