@@ -35,7 +35,7 @@ type Project struct {
 
 var project *Project
 
-func Ignite() (*Project, error) {
+func ignite() (*Project, error) {
 	var pathConfig string
 	flag.StringVar(&pathConfig, "config", "config.yaml", "configuration file location (yaml)")
 	flag.Parse()
@@ -105,7 +105,7 @@ func Get() *Project {
 		return project
 	}
 
-	must.Must(Ignite())
+	must.Must(ignite())
 	return project
 }
 
