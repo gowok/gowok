@@ -1,6 +1,8 @@
 package gowok
 
 import (
+	"net/http"
+
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/logger"
@@ -60,4 +62,32 @@ func configureHttpViews(c config.Web, fc fiber.Config) fiber.Config {
 	})
 
 	return fc
+}
+
+func HttpBadRequest(c *fiber.Ctx, body any) error {
+	res := c.Status(http.StatusBadRequest)
+	switch body.(type) {
+	case string:
+		return res.SendString(body.(string))
+	case error:
+		return res.SendString(body.(error).Error())
+	default:
+		return res.JSON(body)
+	}
+}
+func HttpUnauthorized(c *fiber.Ctx) error {
+	return c.Status(http.StatusUnauthorized).SendString("unauthorized")
+}
+func HttpNotFound(c *fiber.Ctx) error {
+	return c.Status(http.StatusNotFound).SendString("not found")
+}
+
+func HttpOk(c *fiber.Ctx, body any) error {
+	res := c.Status(http.StatusOK)
+	switch body.(type) {
+	case string:
+		return res.SendString(body.(string))
+	default:
+		return res.JSON(body)
+	}
 }
