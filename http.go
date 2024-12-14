@@ -3,91 +3,88 @@ package gowok
 import (
 	"net/http"
 
-	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/fiber/v2/middleware/cors"
-	"github.com/gofiber/fiber/v2/middleware/logger"
-	"github.com/gofiber/fiber/v2/middleware/pprof"
-	"github.com/gofiber/template/html/v2"
 	"github.com/gowok/gowok/config"
+	"github.com/ngamux/middleware/cors"
+	"github.com/ngamux/middleware/log"
+	"github.com/ngamux/ngamux"
 )
 
-func NewHTTP(c *config.Web) *fiber.App {
-	conf := fiber.Config{
-		DisableStartupMessage: true,
-		ProxyHeader:           fiber.HeaderXForwardedFor,
-	}
-	conf = configureHttpViews(*c, conf)
-
-	h := fiber.New(conf)
-	h = configureHttpStatic(h, *c)
-
-	h.Use(logger.New(c.GetLog()))
-	h.Use(cors.New(c.GetCors()))
-
-	if c.Pprof != nil && c.Pprof.Enabled {
-		h.Use(pprof.New(c.GetPprof()))
-	}
-
-	return h
+type HttpMux struct {
+	Mux    *ngamux.HttpServeMux
+	Server *http.Server
 }
 
-func configureHttpStatic(app *fiber.App, c config.Web) *fiber.App {
+func NewHTTP(c *config.Web) *HttpMux {
+	// conf := ngamux.Config{
+	// 	ProxyHeader:           fiber.HeaderXForwardedFor,
+	// }
+
+	mux := ngamux.NewHttpServeMux()
+	server := &HttpMux{
+		Server: &http.Server{
+			Addr:    c.Host,
+			Handler: mux,
+		},
+		Mux: mux,
+	}
+	// configureHttpViews(server, c)
+	configureHttpStatic(server, c)
+
+	server.Mux.Use(log.New(c.GetLog()))
+	server.Mux.Use(cors.New(c.GetCors()))
+
+	// if c.Pprof != nil && c.Pprof.Enabled {
+	// 	h.Use(pprof.New(c.GetPprof()))
+	// }
+
+	return server
+}
+
+func configureHttpStatic(server *HttpMux, c *config.Web) {
 	sc := c.GetStatic()
 	if !sc.Enabled {
-		return app
+		return
 	}
-	app.Static(sc.Prefix, sc.Dir)
-	return app
+
+	fs := http.FileServer(http.Dir(sc.Dir))
+	server.Mux.HandlerFunc(http.MethodGet, sc.Prefix, func(rw http.ResponseWriter, r *http.Request) error {
+		http.StripPrefix(sc.Prefix, fs).ServeHTTP(rw, r)
+		return nil
+	})
 }
 
-func configureHttpViews(c config.Web, fc fiber.Config) fiber.Config {
+func configureHttpViews(server *HttpMux, c *config.Web) {
 	vc := c.GetViews()
 	if !vc.Enabled {
-		return fc
+		return
 	}
 
-	v := html.New(vc.Dir, ".html")
-	fc.Views = v
-	if vc.Layout != "" {
-		fc.ViewsLayout = vc.Layout
-	}
-
-	sc := c.GetStatic()
-	root := "/public"
-	v.AddFunc("public", func(path string) string {
-		if sc.Enabled {
-			root = sc.Prefix
-		}
-		return root + "/" + path
-	})
-
-	return fc
+	// TODO: make support global view and rendering function
 }
 
-func HttpBadRequest(c *fiber.Ctx, body any) error {
-	res := c.Status(http.StatusBadRequest)
+func HttpBadRequest(rw http.ResponseWriter, body any) {
+	res := ngamux.Res(rw).Status(http.StatusBadRequest)
 	switch body.(type) {
 	case string:
-		return res.SendString(body.(string))
+		res.Text(body.(string))
 	case error:
-		return res.SendString(body.(error).Error())
+		res.Text(body.(error).Error())
 	default:
-		return res.JSON(body)
+		res.JSON(body)
 	}
 }
-func HttpUnauthorized(c *fiber.Ctx) error {
-	return c.Status(http.StatusUnauthorized).SendString("unauthorized")
+func HttpUnauthorized(rw http.ResponseWriter) {
+	ngamux.Res(rw).Status(http.StatusUnauthorized).Text("unauthorized")
 }
-func HttpNotFound(c *fiber.Ctx) error {
-	return c.Status(http.StatusNotFound).SendString("not found")
+func HttpNotFound(rw http.ResponseWriter) {
+	ngamux.Res(rw).Status(http.StatusUnauthorized).Text("not found")
 }
-
-func HttpOk(c *fiber.Ctx, body any) error {
-	res := c.Status(http.StatusOK)
+func HttpOk(rw http.ResponseWriter, body any) {
+	res := ngamux.Res(rw).Status(http.StatusOK)
 	switch body.(type) {
 	case string:
-		return res.SendString(body.(string))
+		res.Text(body.(string))
 	default:
-		return res.JSON(body)
+		res.JSON(body)
 	}
 }

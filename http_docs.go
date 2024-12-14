@@ -1,12 +1,11 @@
 package gowok
 
 import (
-	"bytes"
 	"net/http"
 	"strings"
 
 	"github.com/go-openapi/spec"
-	"github.com/gofiber/fiber/v2"
+	"github.com/ngamux/ngamux"
 )
 
 type HttpDocs struct {
@@ -77,18 +76,8 @@ func (docs *HttpDocs) NewItem(method, path string, operation *spec.Operation) *H
 	return &HttpDocsItem{&item, method, path}
 }
 
-func (docs HttpDocs) Handler(c *fiber.Ctx) error {
-	output, err := docs.swagger.MarshalJSON()
-	if err != nil {
-		return c.Status(http.StatusInternalServerError).SendString(err.Error())
-	}
-	_, err = bytes.NewBuffer(output).WriteTo(c)
-	if err != nil {
-		return c.Status(http.StatusInternalServerError).SendString(err.Error())
-	}
-
-	c.Response().Header.Add("content-type", "application/json")
-	return nil
+func (docs HttpDocs) ServeHTTP(rw http.ResponseWriter, r *http.Request) error {
+	return ngamux.Res(rw).JSON(docs.swagger)
 }
 
 func (docs *HttpDocs) Get(path string, operation *spec.Operation) *HttpDocsItem {
@@ -113,10 +102,10 @@ func (docs *HttpDocs) Options(path string, operation *spec.Operation) *HttpDocsI
 	return docs.NewItem(http.MethodOptions, path, operation)
 }
 
-func (item *HttpDocsItem) Handle(app *fiber.App, handlers ...fiber.Handler) fiber.Router {
-	return app.Add(
+func (item *HttpDocsItem) Handle(mux *ngamux.HttpServeMux, handlers ngamux.Handler) {
+	mux.HandlerFunc(
 		item.method,
 		item.path,
-		handlers...,
+		handlers,
 	)
 }

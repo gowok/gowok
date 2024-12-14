@@ -1,6 +1,7 @@
 package gowok
 
 import (
+	"context"
 	"database/sql"
 	"flag"
 	"log"
@@ -8,11 +9,11 @@ import (
 	"time"
 
 	"github.com/eko/gocache/lib/v4/cache"
-	"github.com/gofiber/fiber/v2"
 	"github.com/gowok/gowok/driver"
 	"github.com/gowok/gowok/must"
 	"github.com/gowok/gowok/optional"
 	"github.com/gowok/gowok/runner"
+	"github.com/ngamux/ngamux"
 	"go.mongodb.org/mongo-driver/mongo"
 	"google.golang.org/grpc"
 )
@@ -28,7 +29,8 @@ type Project struct {
 	MongoDB    getterByName[*mongo.Client]
 	Cache      getterByName[*cache.Cache[any]]
 	Validator  *Validator
-	Web        *fiber.App
+	Web        *ngamux.HttpServeMux
+	webServer  *HttpMux
 	GRPC       *grpc.Server
 	configures []ConfigureFunc
 }
@@ -80,7 +82,10 @@ func ignite() (*Project, error) {
 			}
 			if conf.App.Web.Enabled {
 				println("project: stopping web")
-				web.ShutdownWithTimeout(10 * time.Second)
+				ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+				defer cancel()
+
+				web.Server.Shutdown(ctx)
 			}
 			if hooks.onStopped != nil {
 				hooks.onStopped()
@@ -96,7 +101,8 @@ func ignite() (*Project, error) {
 		MongoDB:   dbMongo.Get,
 		Cache:     dbCache.Get,
 		Validator: validator,
-		Web:       web,
+		Web:       web.Mux,
+		webServer: web,
 		GRPC:      GRPC,
 
 		configures: make([]ConfigureFunc, 0),
@@ -130,7 +136,7 @@ func run() {
 		}
 
 		println("project: starting web")
-		err := project.Web.Listen(project.Config.App.Web.Host)
+		err := project.webServer.Server.ListenAndServe()
 		if err != nil {
 			log.Fatalf("web can't start, because: %v", err)
 		}

@@ -3,8 +3,9 @@ package gowok
 import (
 	"encoding/json"
 	"math"
+	"net/http"
 
-	"github.com/gofiber/fiber/v2"
+	"github.com/ngamux/ngamux"
 )
 
 type Pagination[T any] struct {
@@ -19,21 +20,22 @@ type Pagination[T any] struct {
 	Data []T `json:"data"`
 }
 
-func PaginationFromC[T any](c *fiber.Ctx) Pagination[T] {
+func PaginationFromReq[T any](r *http.Request) Pagination[T] {
+	req := ngamux.Req(r)
 	pagination := Pagination[T]{
 		Page:    1,
 		PerPage: 10,
 		Filter:  map[string]any{},
 		Sort:    map[string]string{},
 	}
-	err := c.QueryParser(&pagination)
+	err := req.QueriesParser(&pagination)
 	_ = err
 
-	sortQ := c.Query("sort", "{}")
+	sortQ := req.Query("sort", "{}")
 	err = json.Unmarshal([]byte(sortQ), &pagination.Sort)
 	_ = err
 
-	filterQ := c.Query("filter", "{}")
+	filterQ := req.Query("filter", "{}")
 	err = json.Unmarshal([]byte(filterQ), &pagination.Filter)
 	_ = err
 

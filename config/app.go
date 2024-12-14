@@ -1,9 +1,13 @@
 package config
 
 import (
-	"github.com/gofiber/fiber/v2/middleware/cors"
-	"github.com/gofiber/fiber/v2/middleware/logger"
-	"github.com/gofiber/fiber/v2/middleware/pprof"
+	"io"
+	"log/slog"
+	"os"
+
+	"github.com/ngamux/middleware/cors"
+	"github.com/ngamux/middleware/log"
+	"github.com/ngamux/middleware/pprof"
 )
 
 type App struct {
@@ -17,10 +21,7 @@ type Web struct {
 	Host    string
 
 	Log *struct {
-		Format        string `yaml:"format"`
-		TimeZone      string `yaml:"time_zone"`
-		TimeFormat    string `yaml:"time_format"`
-		DisableColors bool   `yaml:"disable_colors"`
+		Enabled bool `yaml:"enabled"`
 	} `yaml:"log"`
 
 	Cors *struct {
@@ -53,26 +54,22 @@ type WebStatic struct {
 	Dir     string `yaml:"dir"`
 }
 
-func (r Web) GetLog() logger.Config {
-	c := logger.ConfigDefault
+func (r Web) GetLog() log.Config {
+	c := log.Config{
+		Handler: slog.NewTextHandler(io.Discard, nil),
+	}
 	if r.Log == nil {
 		return c
 	}
-	if r.Log.Format != "" {
-		c.Format = r.Log.Format
+
+	if r.Log.Enabled {
+		c.Handler = slog.NewJSONHandler(os.Stdout, nil)
 	}
-	if r.Log.TimeZone != "" {
-		c.TimeZone = r.Log.TimeZone
-	}
-	if r.Log.TimeFormat != "" {
-		c.TimeFormat = r.Log.TimeFormat
-	}
-	c.DisableColors = r.Log.DisableColors
 	return c
 }
 
 func (r Web) GetCors() cors.Config {
-	c := cors.ConfigDefault
+	c := cors.Config{}
 	if r.Cors == nil {
 		return c
 	}
@@ -85,20 +82,20 @@ func (r Web) GetCors() cors.Config {
 	if r.Cors.AllowHeaders != "" {
 		c.AllowHeaders = r.Cors.AllowHeaders
 	}
-	if r.Cors.ExposeHeaders != "" {
-		c.ExposeHeaders = r.Cors.ExposeHeaders
-	}
-	if r.Cors.AllowCredentials != false {
-		c.AllowCredentials = r.Cors.AllowCredentials
-	}
-	if r.Cors.MaxAge != 0 {
-		c.MaxAge = r.Cors.MaxAge
-	}
+	// if r.Cors.ExposeHeaders != "" {
+	// 	c.ExposeHeaders = r.Cors.ExposeHeaders
+	// }
+	// if r.Cors.AllowCredentials != false {
+	// 	c.AllowCredentials = r.Cors.AllowCredentials
+	// }
+	// if r.Cors.MaxAge != 0 {
+	// 	c.MaxAge = r.Cors.MaxAge
+	// }
 	return c
 }
 
 func (r Web) GetPprof() pprof.Config {
-	c := pprof.ConfigDefault
+	c := pprof.Config{}
 	if r.Pprof == nil {
 		return c
 	}
@@ -126,6 +123,7 @@ func (r Web) GetViews() WebViews {
 func (r Web) GetStatic() WebStatic {
 	v := WebStatic{
 		Enabled: r.Static.Enabled,
+		Dir:     r.Static.Dir,
 		Prefix:  "/public",
 	}
 	if !v.Enabled {
