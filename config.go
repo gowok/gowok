@@ -24,7 +24,7 @@ type Config struct {
 }
 
 func NewConfig(pathConfig string) (*Config, error) {
-	fiConfig, err := os.OpenFile(pathConfig, os.O_RDONLY, 600)
+	fiConfig, err := os.OpenFile(pathConfig, os.O_RDONLY, 0600)
 	if err != nil {
 		return nil, err
 	}

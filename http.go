@@ -53,38 +53,38 @@ func configureHttpStatic(server *HttpMux, c *config.Web) {
 	})
 }
 
-func configureHttpViews(server *HttpMux, c *config.Web) {
-	vc := c.GetViews()
-	if !vc.Enabled {
-		return
-	}
-
-	// TODO: make support global view and rendering function
-}
+// func configureHttpViews(server *HttpMux, c *config.Web) {
+// 	vc := c.GetViews()
+// 	if !vc.Enabled {
+// 		return
+// 	}
+//
+// 	// TODO: make support global view and rendering function
+// }
 
 func HttpBadRequest(rw http.ResponseWriter, body any) {
 	res := ngamux.Res(rw).Status(http.StatusBadRequest)
-	switch body.(type) {
+	switch b := body.(type) {
 	case string:
-		res.Text(body.(string))
+		_ = res.Text(b)
 	case error:
-		res.Text(body.(error).Error())
+		_ = res.Text(b.Error())
 	default:
-		res.JSON(body)
+		_ = res.JSON(b)
 	}
 }
 func HttpUnauthorized(rw http.ResponseWriter) {
-	ngamux.Res(rw).Status(http.StatusUnauthorized).Text("unauthorized")
+	_ = ngamux.Res(rw).Status(http.StatusUnauthorized).Text("unauthorized")
 }
 func HttpNotFound(rw http.ResponseWriter) {
-	ngamux.Res(rw).Status(http.StatusUnauthorized).Text("not found")
+	_ = ngamux.Res(rw).Status(http.StatusUnauthorized).Text("not found")
 }
 func HttpOk(rw http.ResponseWriter, body any) {
 	res := ngamux.Res(rw).Status(http.StatusOK)
-	switch body.(type) {
+	switch b := body.(type) {
 	case string:
-		res.Text(body.(string))
+		_ = res.Text(b)
 	default:
-		res.JSON(body)
+		_ = res.JSON(b)
 	}
 }

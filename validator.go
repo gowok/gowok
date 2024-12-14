@@ -53,7 +53,7 @@ func NewValidator() *Validator {
 	uni := ut.New(en, en)
 	trans, _ := uni.GetTranslator("en")
 	validate := validator.New()
-	en_translations.RegisterDefaultTranslations(validate, trans)
+	_ = en_translations.RegisterDefaultTranslations(validate, trans)
 
 	_validator := &Validator{
 		validate: validate,

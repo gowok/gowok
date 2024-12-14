@@ -36,7 +36,10 @@ func GetMimeFromBase64(base64encoded string) string {
 func SaveBase64StringToFile(path string, fileNameWithoutType string, encodedBase64 string) (string, error) {
 	_, err := os.Stat(path)
 	if os.IsNotExist(err) {
-		os.MkdirAll(path, 0755)
+		err = os.MkdirAll(path, 0755)
+		if err != nil {
+			return "", err
+		}
 	}
 
 	fileType := GetTypeFromBase64(encodedBase64)

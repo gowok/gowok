@@ -85,7 +85,7 @@ func ignite() (*Project, error) {
 				ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 				defer cancel()
 
-				web.Server.Shutdown(ctx)
+				_ = web.Server.Shutdown(ctx)
 			}
 			if hooks.onStopped != nil {
 				hooks.onStopped()
