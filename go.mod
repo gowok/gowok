@@ -17,7 +17,7 @@ require (
 	github.com/gowok/should v0.0.0-20240831060519-d8ab7c7891fb
 	github.com/jackc/pgx/v5 v5.6.0
 	github.com/ngamux/middleware v0.0.4
-	github.com/ngamux/ngamux v1.6.3
+	github.com/ngamux/ngamux v1.6.4
 	github.com/redis/go-redis/v9 v9.0.2
 	github.com/wagslane/go-rabbitmq v0.13.0
 	go.mongodb.org/mongo-driver v1.14.0

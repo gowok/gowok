@@ -2,7 +2,6 @@ package gowok
 
 import (
 	"net/http"
-	"strings"
 
 	"github.com/go-openapi/spec"
 	"github.com/ngamux/ngamux"
@@ -40,72 +39,41 @@ func NewHttpDocs(title, version string) *HttpDocs {
 	return &HttpDocs{&swagger}
 }
 
-func (docs *HttpDocs) NewItem(method, path string, operation *spec.Operation) *HttpDocsItem {
+func (docs *HttpDocs) New(description string, callback func(*spec.Operation)) func(ngamux.Route) {
+	operation := spec.NewOperation(description)
+	operation.Description = description
 	item := spec.PathItemProps{}
-	if itemFound, ok := docs.swagger.Paths.Paths[path]; ok {
-		item = itemFound.PathItemProps
-	}
+	return func(route ngamux.Route) {
+		if callback != nil {
+			callback(operation)
+		}
 
-	if operation == nil {
-		operation = spec.NewOperation(strings.Join([]string{method, path}, "-"))
-	}
-	if operation.Description == "" {
-		operation.Description = operation.ID
-	}
+		if itemFound, ok := docs.swagger.Paths.Paths[route.Path]; ok {
+			item = itemFound.PathItemProps
+		}
 
-	switch method {
-	case http.MethodGet:
-		item.Get = operation
-	case http.MethodPost:
-		item.Post = operation
-	case http.MethodPut:
-		item.Put = operation
-	case http.MethodHead:
-		item.Head = operation
-	case http.MethodPatch:
-		item.Patch = operation
-	case http.MethodDelete:
-		item.Delete = operation
-	case http.MethodOptions:
-		item.Options = operation
+		switch route.Method {
+		case http.MethodGet:
+			item.Get = operation
+		case http.MethodPost:
+			item.Post = operation
+		case http.MethodPut:
+			item.Put = operation
+		case http.MethodHead:
+			item.Head = operation
+		case http.MethodPatch:
+			item.Patch = operation
+		case http.MethodDelete:
+			item.Delete = operation
+		case http.MethodOptions:
+			item.Options = operation
+		}
+		docs.swagger.Paths.Paths[route.Path] = spec.PathItem{
+			PathItemProps: item,
+		}
 	}
-	docs.swagger.Paths.Paths[path] = spec.PathItem{
-		PathItemProps: item,
-	}
-
-	return &HttpDocsItem{&item, method, path}
 }
 
 func (docs HttpDocs) ServeHTTP(rw http.ResponseWriter, r *http.Request) error {
 	return ngamux.Res(rw).JSON(docs.swagger)
-}
-
-func (docs *HttpDocs) Get(path string, operation *spec.Operation) *HttpDocsItem {
-	return docs.NewItem(http.MethodGet, path, operation)
-}
-func (docs *HttpDocs) Post(path string, operation *spec.Operation) *HttpDocsItem {
-	return docs.NewItem(http.MethodPost, path, operation)
-}
-func (docs *HttpDocs) Put(path string, operation *spec.Operation) *HttpDocsItem {
-	return docs.NewItem(http.MethodPut, path, operation)
-}
-func (docs *HttpDocs) Head(path string, operation *spec.Operation) *HttpDocsItem {
-	return docs.NewItem(http.MethodHead, path, operation)
-}
-func (docs *HttpDocs) Patch(path string, operation *spec.Operation) *HttpDocsItem {
-	return docs.NewItem(http.MethodPatch, path, operation)
-}
-func (docs *HttpDocs) Delete(path string, operation *spec.Operation) *HttpDocsItem {
-	return docs.NewItem(http.MethodDelete, path, operation)
-}
-func (docs *HttpDocs) Options(path string, operation *spec.Operation) *HttpDocsItem {
-	return docs.NewItem(http.MethodOptions, path, operation)
-}
-
-func (item *HttpDocsItem) Handle(mux *ngamux.HttpServeMux, handlers ngamux.Handler) {
-	mux.HandlerFunc(
-		item.method,
-		item.path,
-		handlers,
-	)
 }
