@@ -29,9 +29,9 @@ type Project struct {
 	MongoDB    getterByName[*mongo.Client]
 	Cache      getterByName[*cache.Cache[any]]
 	Validator  *Validator
-	Web        *ngamux.HttpServeMux
 	webServer  *HttpMux
-	GRPC       *grpc.Server
+	web        func(...ngamux.HttpServeMux) *ngamux.HttpServeMux
+	grpc       func(...*grpc.Server) **grpc.Server
 	configures []ConfigureFunc
 }
 
@@ -101,9 +101,13 @@ func ignite() (*Project, error) {
 		MongoDB:   dbMongo.Get,
 		Cache:     dbCache.Get,
 		Validator: validator,
-		Web:       web.Mux,
+		web: Singleton(func() ngamux.HttpServeMux {
+			return *web.Mux
+		}),
 		webServer: web,
-		GRPC:      GRPC,
+		grpc: Singleton(func() *grpc.Server {
+			return GRPC
+		}),
 
 		configures: make([]ConfigureFunc, 0),
 	}
@@ -153,7 +157,7 @@ func run() {
 			log.Fatalf("GRPC can't start, because: %v", err)
 		}
 
-		err = project.GRPC.Serve(listen)
+		err = project.GRPC().Serve(listen)
 		if err != nil {
 			log.Fatalf("GRPC can't start, because: %v", err)
 		}
@@ -162,6 +166,14 @@ func run() {
 	if project.Hooks.onStarted != nil {
 		project.Hooks.onStarted()
 	}
+}
+
+func (p *Project) Web() *ngamux.HttpServeMux {
+	return p.web()
+}
+func (p *Project) GRPC() *grpc.Server {
+	g := p.grpc()
+	return *g
 }
 
 func (p *Project) Run() {
