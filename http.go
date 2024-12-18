@@ -47,7 +47,7 @@ func configureHttpStatic(server *HttpMux, c *config.Web) {
 	}
 
 	fs := http.FileServer(http.Dir(sc.Dir))
-	server.Mux.HandlerFunc(http.MethodGet, sc.Prefix, func(rw http.ResponseWriter, r *http.Request) {
+	server.Mux.HandleFunc(http.MethodGet, sc.Prefix, func(rw http.ResponseWriter, r *http.Request) {
 		http.StripPrefix(sc.Prefix, fs).ServeHTTP(rw, r)
 	})
 }
