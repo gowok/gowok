@@ -74,6 +74,6 @@ func (docs *HttpDocs) New(description string, callback func(*spec.Operation)) fu
 	}
 }
 
-func (docs HttpDocs) ServeHTTP(rw http.ResponseWriter, r *http.Request) error {
-	return ngamux.Res(rw).JSON(docs.swagger)
+func (docs HttpDocs) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
+	ngamux.Res(rw).JSON(docs.swagger)
 }

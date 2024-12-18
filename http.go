@@ -47,9 +47,8 @@ func configureHttpStatic(server *HttpMux, c *config.Web) {
 	}
 
 	fs := http.FileServer(http.Dir(sc.Dir))
-	server.Mux.HandlerFunc(http.MethodGet, sc.Prefix, func(rw http.ResponseWriter, r *http.Request) error {
+	server.Mux.HandlerFunc(http.MethodGet, sc.Prefix, func(rw http.ResponseWriter, r *http.Request) {
 		http.StripPrefix(sc.Prefix, fs).ServeHTTP(rw, r)
-		return nil
 	})
 }
 
@@ -66,25 +65,25 @@ func HttpBadRequest(rw http.ResponseWriter, body any) {
 	res := ngamux.Res(rw).Status(http.StatusBadRequest)
 	switch b := body.(type) {
 	case string:
-		_ = res.Text(b)
+		res.Text(b)
 	case error:
-		_ = res.Text(b.Error())
+		res.Text(b.Error())
 	default:
-		_ = res.JSON(b)
+		res.JSON(b)
 	}
 }
 func HttpUnauthorized(rw http.ResponseWriter) {
-	_ = ngamux.Res(rw).Status(http.StatusUnauthorized).Text("unauthorized")
+	ngamux.Res(rw).Status(http.StatusUnauthorized).Text("unauthorized")
 }
 func HttpNotFound(rw http.ResponseWriter) {
-	_ = ngamux.Res(rw).Status(http.StatusUnauthorized).Text("not found")
+	ngamux.Res(rw).Status(http.StatusUnauthorized).Text("not found")
 }
 func HttpOk(rw http.ResponseWriter, body any) {
 	res := ngamux.Res(rw).Status(http.StatusOK)
 	switch b := body.(type) {
 	case string:
-		_ = res.Text(b)
+		res.Text(b)
 	default:
-		_ = res.JSON(b)
+		res.JSON(b)
 	}
 }

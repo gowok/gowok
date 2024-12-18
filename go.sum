@@ -228,10 +228,10 @@ github.com/montanaflynn/stats v0.0.0-20171201202039-1bf9dbcd8cbe h1:iruDEfMl2E6f
 github.com/montanaflynn/stats v0.0.0-20171201202039-1bf9dbcd8cbe/go.mod h1:wL8QJuTMNUDYhXwkmfOly8iTdp5TEcJFWZD2D7SIkUc=
 github.com/mwitkow/go-conntrack v0.0.0-20161129095857-cc309e4a2223/go.mod h1:qRWi+5nqEBWmkhHvq77mSJWrCKwh8bxhgT7d/eI7P4U=
 github.com/mwitkow/go-conntrack v0.0.0-20190716064945-2f068394615f/go.mod h1:qRWi+5nqEBWmkhHvq77mSJWrCKwh8bxhgT7d/eI7P4U=
-github.com/ngamux/middleware v0.0.4 h1:y34y7PWPJPGkhNEo99TmwHa95v8JQIFKiU5ln5wVT1o=
-github.com/ngamux/middleware v0.0.4/go.mod h1:nSCWYTmriwsuqjYU5zwyysz+A3VIxjZRKK1PVj3lCBY=
-github.com/ngamux/ngamux v1.6.4 h1:Nw4QdBpIjfKREPlA9hGHwVIpRzpU3JPKG7R0zsxQtD4=
-github.com/ngamux/ngamux v1.6.4/go.mod h1:2/T7faPhQWkw0M49KdXfWP+ZRmD0OfA/e/AoKtoZpWA=
+github.com/ngamux/middleware v0.0.5 h1:HDscXg4HWrxuOKAV8robNPfQ1izsiBIGY7Km4L+nawA=
+github.com/ngamux/middleware v0.0.5/go.mod h1:qa1yK/jnoaHdWAa1VICRf4c0EjWqR5ewWzR7/55SWBQ=
+github.com/ngamux/ngamux v1.7.1 h1:xlf6JJWRwSL0JMPL1Ep6bXbr0+PYtCd+hHi6s/6cK84=
+github.com/ngamux/ngamux v1.7.1/go.mod h1:2/T7faPhQWkw0M49KdXfWP+ZRmD0OfA/e/AoKtoZpWA=
 github.com/pkg/diff v0.0.0-20210226163009-20ebb0f2a09e/go.mod h1:pJLUxLENpZxwdsKMEsNbx1VGcRFpLqf3715MtcvvzbA=
 github.com/pkg/errors v0.8.0/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINEl0=
 github.com/pkg/errors v0.8.1/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINEl0=
