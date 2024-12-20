@@ -89,7 +89,15 @@ func HttpOk(rw http.ResponseWriter, body any) {
 }
 
 func HttpInternalServerError(rw http.ResponseWriter, body any) {
-	ngamux.Res(rw).Status(http.StatusInternalServerError).Text("internal server error")
+	res := ngamux.Res(rw).Status(http.StatusInternalServerError)
+	switch b := body.(type) {
+	case string:
+		res.Text(b)
+	case error:
+		res.Text(b.Error())
+	default:
+		res.JSON(b)
+	}
 }
 
 func HttpCreated(rw http.ResponseWriter, body any) {
