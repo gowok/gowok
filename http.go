@@ -87,3 +87,45 @@ func HttpOk(rw http.ResponseWriter, body any) {
 		res.JSON(b)
 	}
 }
+
+func HttpInternalServerError(rw http.ResponseWriter, body any) {
+	ngamux.Res(rw).Status(http.StatusInternalServerError).Text("internal server error")
+}
+
+func HttpCreated(rw http.ResponseWriter, body any) {
+	res := ngamux.Res(rw).Status(http.StatusCreated)
+	switch b := body.(type) {
+	case string:
+		res.Text(b)
+	default:
+		res.JSON(b)
+	}
+}
+
+func HttpForbidden(rw http.ResponseWriter) {
+	ngamux.Res(rw).Status(http.StatusForbidden).Text("forbidden")
+}
+
+func HttpConflict(rw http.ResponseWriter, body any) {
+	res := ngamux.Res(rw).Status(http.StatusConflict)
+	switch b := body.(type) {
+	case string:
+		res.Text(b)
+	default:
+		res.JSON(b)
+	}
+}
+
+func HttpNoContent(rw http.ResponseWriter) {
+	ngamux.Res(rw).Status(http.StatusNoContent).Text("")
+}
+
+func HttpAccepted(rw http.ResponseWriter, body any) {
+	res := ngamux.Res(rw).Status(http.StatusAccepted)
+	switch b := body.(type) {
+	case string:
+		res.Text(b)
+	default:
+		res.JSON(b)
+	}
+}
