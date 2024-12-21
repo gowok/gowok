@@ -13,8 +13,6 @@ type HttpDocs struct {
 
 type HttpDocsItem struct {
 	*spec.PathItemProps
-	method string
-	path   string
 }
 
 func NewHttpDocs(title, version string) *HttpDocs {
