@@ -6,6 +6,7 @@ import (
 	"github.com/gowok/gowok/config"
 	"github.com/ngamux/middleware/cors"
 	"github.com/ngamux/middleware/log"
+	"github.com/ngamux/middleware/pprof"
 	"github.com/ngamux/ngamux"
 )
 
@@ -30,8 +31,15 @@ func NewHTTP(c *config.Web) *HttpMux {
 	// configureHttpViews(server, c)
 	configureHttpStatic(server, c)
 
-	server.Mux.Use(log.New(c.GetLog()))
-	server.Mux.Use(cors.New(c.GetCors()))
+	if c.Log.Enabled {
+		server.Mux.Use(log.New(c.GetLog()))
+	}
+	if c.Cors.Enabled {
+		server.Mux.Use(cors.New(c.GetCors()))
+	}
+	if c.Pprof.Enabled {
+		server.Mux.Use(pprof.New(c.GetPprof()))
+	}
 
 	// if c.Pprof != nil && c.Pprof.Enabled {
 	// 	h.Use(pprof.New(c.GetPprof()))

@@ -25,6 +25,7 @@ type Web struct {
 	} `yaml:"log"`
 
 	Cors *struct {
+		Enabled          bool   `yaml:"enabled"`
 		AllowOrigins     string `yaml:"allow_origins"`
 		AllowCredentials bool   `yaml:"allow_credentials"`
 		AllowMethods     string `yaml:"allow_methods"`
