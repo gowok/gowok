@@ -41,10 +41,6 @@ func NewHTTP(c *config.Web) *HttpMux {
 		server.Mux.Use(pprof.New(c.GetPprof()))
 	}
 
-	// if c.Pprof != nil && c.Pprof.Enabled {
-	// 	h.Use(pprof.New(c.GetPprof()))
-	// }
-
 	return server
 }
 

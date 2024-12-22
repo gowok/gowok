@@ -30,7 +30,7 @@ type Project struct {
 	Cache      getterByName[*cache.Cache[any]]
 	Validator  *Validator
 	webServer  *HttpMux
-	web        func(...ngamux.HttpServeMux) *ngamux.HttpServeMux
+	web        func(...*ngamux.HttpServeMux) **ngamux.HttpServeMux
 	grpc       func(...*grpc.Server) **grpc.Server
 	configures []ConfigureFunc
 }
@@ -101,8 +101,8 @@ func ignite() (*Project, error) {
 		MongoDB:   dbMongo.Get,
 		Cache:     dbCache.Get,
 		Validator: validator,
-		web: Singleton(func() ngamux.HttpServeMux {
-			return *web.Mux
+		web: Singleton(func() *ngamux.HttpServeMux {
+			return web.Mux
 		}),
 		webServer: web,
 		grpc: Singleton(func() *grpc.Server {
@@ -169,7 +169,7 @@ func run() {
 }
 
 func (p *Project) Web() *ngamux.HttpServeMux {
-	return p.web()
+	return *p.web()
 }
 func (p *Project) GRPC() *grpc.Server {
 	g := p.grpc()
