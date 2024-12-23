@@ -4,11 +4,15 @@ import (
 	"context"
 	"database/sql"
 	"flag"
+	"fmt"
 	"log"
 	"net"
 	"time"
 
 	"github.com/eko/gocache/lib/v4/cache"
+	"github.com/go-playground/locales/en"
+	ut "github.com/go-playground/universal-translator"
+	en_translations "github.com/go-playground/validator/v10/translations/en"
 	"github.com/gowok/gowok/driver"
 	"github.com/gowok/gowok/must"
 	"github.com/gowok/gowok/optional"
@@ -67,6 +71,18 @@ func ignite() (*Project, error) {
 	}
 
 	validator := NewValidator()
+	en := en.New()
+	uni := ut.New(en, en)
+	trans, ok := uni.GetTranslator("en")
+	if !ok {
+		return nil, fmt.Errorf("validator: %w", ut.ErrUnknowTranslation)
+	}
+
+	err = en_translations.RegisterDefaultTranslations(validator.validate, trans)
+	if err != nil {
+		return nil, err
+	}
+	validator.trans = trans
 
 	web := NewHTTP(&conf.App.Web)
 	GRPC := grpc.NewServer()

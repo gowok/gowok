@@ -2,12 +2,10 @@ package gowok
 
 import (
 	"encoding/json"
-	"fmt"
+	"strings"
 
-	"github.com/go-playground/locales/en"
 	ut "github.com/go-playground/universal-translator"
 	"github.com/go-playground/validator/v10"
-	en_translations "github.com/go-playground/validator/v10/translations/en"
 )
 
 // Validator struct
@@ -25,15 +23,31 @@ type ValidationError struct {
 	errorJSON    map[string]string
 }
 
-func NewValidationError(errs validator.ValidationErrors, translations ut.Translator) ValidationError {
+func NewValidationError(errs validator.ValidationErrors, translations ut.Translator, trans map[string]string) ValidationError {
 	validationErrorMessages := errs.Translate(translations)
 	errorMessage := ""
 	errorJSON := map[string]string{}
 	for _, err := range errs {
-		field := err.Field()
 		namespace := err.Namespace()
-		errorMessage += fmt.Sprintf("%s: %s; ", field, validationErrorMessages[namespace])
-		errorJSON[field] = validationErrorMessages[namespace]
+		errorMessage += namespace + ": " + validationErrorMessages[namespace] + "; "
+		errorJSON[namespace] = validationErrorMessages[namespace]
+
+		customTag := namespace + "." + err.Tag()
+		if _, ok := trans[customTag]; ok {
+			t, e := translations.T(customTag, err.Field())
+			if e == nil {
+				errorJSON[namespace] = t
+			}
+			continue
+		}
+
+		customTag = "*." + err.Tag()
+		if _, ok := trans[err.Tag()]; ok {
+			t, e := translations.T(customTag, err.Field())
+			if e == nil {
+				errorJSON[namespace] = t
+			}
+		}
 	}
 
 	return ValidationError{errs, validationErrorMessages, errorMessage, errorJSON}
@@ -49,29 +63,48 @@ func (err ValidationError) MarshalJSON() ([]byte, error) {
 
 // NewValidator create an instance of Validator Struct
 func NewValidator() *Validator {
-	en := en.New()
-	uni := ut.New(en, en)
-	trans, _ := uni.GetTranslator("en")
 	validate := validator.New()
-	_ = en_translations.RegisterDefaultTranslations(validate, trans)
 
 	_validator := &Validator{
 		validate: validate,
-		trans:    trans,
+		trans:    nil,
 	}
 
 	return _validator
 }
 
-// ValidateStruct func
-func (v *Validator) ValidateStruct(input any) ValidationError {
-	err := v.validate.Struct(input)
+func (v *Validator) SetTranslator(trans ut.Translator, localeFunc func(*validator.Validate, ut.Translator) error) error {
+	v.trans = trans
+	return localeFunc(v.validate, trans)
+}
 
+// ValidateStruct func
+func (v *Validator) ValidateStruct(input any, trans map[string]string) ValidationError {
+	if trans != nil {
+		for tag, message := range trans {
+			if !strings.Contains(tag, ".") {
+				tag = "*." + tag
+			}
+			v.registerTranslationTag(tag, message, false)
+		}
+	}
+
+	err := v.validate.Struct(input)
 	if err != nil {
 		validationErrors := err.(validator.ValidationErrors)
-		errResp := NewValidationError(validationErrors, v.trans)
+		errResp := NewValidationError(validationErrors, v.trans, trans)
 		return errResp
 	}
 
 	return ValidationError{}
+}
+
+func (v *Validator) registerTranslationTag(tag, message string, override bool) error {
+	err := v.validate.RegisterTranslation(tag, v.trans, func(ut ut.Translator) error {
+		return ut.Add(tag, message, override)
+	}, func(ut ut.Translator, fe validator.FieldError) string {
+		t, _ := ut.T(tag, fe.Field())
+		return t
+	})
+	return err
 }
