@@ -31,7 +31,6 @@ func NewValidationError(errs validator.ValidationErrors, translations ut.Transla
 	errorJSON := map[string]string{}
 	for _, err := range errs {
 		namespace := err.Namespace()
-		errorMessage += namespace + ": " + validationErrorMessages[namespace] + "; "
 		errorJSON[namespace] = validationErrorMessages[namespace]
 
 		customTag := namespace + "." + err.Tag()
@@ -56,7 +55,11 @@ func NewValidationError(errs validator.ValidationErrors, translations ut.Transla
 }
 
 func (err ValidationError) Error() string {
-	return err.errorMessage
+	errorMessage := ""
+	for field, msg := range err.errorJSON {
+		errorMessage += field + ": " + msg + "; "
+	}
+	return errorMessage
 }
 
 func (err ValidationError) MarshalJSON() ([]byte, error) {
