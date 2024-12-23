@@ -2,10 +2,12 @@ package gowok
 
 import (
 	"encoding/json"
+	"net/http"
 	"strings"
 
 	ut "github.com/go-playground/universal-translator"
 	"github.com/go-playground/validator/v10"
+	"github.com/ngamux/ngamux"
 )
 
 // Validator struct
@@ -91,9 +93,11 @@ func (v *Validator) ValidateStruct(input any, trans map[string]string) Validatio
 
 	err := v.validate.Struct(input)
 	if err != nil {
-		validationErrors := err.(validator.ValidationErrors)
-		errResp := NewValidationError(validationErrors, v.trans, trans)
-		return errResp
+		switch e := err.(type) {
+		case validator.ValidationErrors:
+			errResp := NewValidationError(e, v.trans, trans)
+			return errResp
+		}
 	}
 
 	return ValidationError{}
@@ -107,4 +111,24 @@ func (v *Validator) registerTranslationTag(tag, message string, override bool) e
 		return t
 	})
 	return err
+}
+
+func ValidateJSON[T any](r *http.Request, schema T, trans map[string]string) (*T, *ValidationError) {
+	project := Get()
+	err := ngamux.Req(r).JSON(&schema)
+	if err != nil {
+		return new(T), &ValidationError{
+			errorMessage: err.Error(),
+			errorJSON: map[string]string{
+				"*": err.Error(),
+			},
+		}
+	}
+
+	errs := project.Validator.ValidateStruct(schema, trans)
+	if len(errs.Error()) > 0 {
+		return new(T), &errs
+	}
+
+	return &schema, nil
 }

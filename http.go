@@ -70,6 +70,8 @@ func HttpBadRequest(rw http.ResponseWriter, body any) {
 	switch b := body.(type) {
 	case string:
 		res.Text(b)
+	case *ValidationError, ValidationError:
+		res.JSON(b)
 	case error:
 		res.Text(b.Error())
 	default:
