@@ -85,12 +85,15 @@ func (v *Validator) SetTranslator(trans ut.Translator, localeFunc func(*validato
 
 // ValidateStruct func
 func (v *Validator) ValidateStruct(input any, trans map[string]string) ValidationError {
-	if trans != nil {
-		for tag, message := range trans {
-			if !strings.Contains(tag, ".") {
-				tag = "*." + tag
+	for tag, message := range trans {
+		if !strings.Contains(tag, ".") {
+			tag = "*." + tag
+		}
+		err := v.registerTranslationTag(tag, message, false)
+		if err != nil {
+			return ValidationError{
+				errorJSON: map[string]string{"*": err.Error()},
 			}
-			v.registerTranslationTag(tag, message, false)
 		}
 	}
 
