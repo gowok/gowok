@@ -10,6 +10,7 @@ require (
 	github.com/eko/gocache/lib/v4 v4.1.6
 	github.com/eko/gocache/store/redis/v4 v4.2.1
 	github.com/eko/gocache/store/ristretto/v4 v4.2.1
+	github.com/go-openapi/jsonreference v0.21.0
 	github.com/go-openapi/spec v0.21.0
 	github.com/go-playground/locales v0.14.1
 	github.com/go-playground/universal-translator v0.18.1
@@ -17,7 +18,7 @@ require (
 	github.com/gowok/should v0.0.0-20240831060519-d8ab7c7891fb
 	github.com/jackc/pgx/v5 v5.6.0
 	github.com/ngamux/middleware v0.0.8
-	github.com/ngamux/ngamux v1.7.43
+	github.com/ngamux/ngamux v1.7.44
 	github.com/redis/go-redis/v9 v9.0.2
 	github.com/wagslane/go-rabbitmq v0.13.0
 	go.mongodb.org/mongo-driver v1.14.0
@@ -34,7 +35,6 @@ require (
 	github.com/dustin/go-humanize v1.0.0 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.3 // indirect
 	github.com/go-openapi/jsonpointer v0.21.0 // indirect
-	github.com/go-openapi/jsonreference v0.21.0 // indirect
 	github.com/go-openapi/swag v0.23.0 // indirect
 	github.com/golang/glog v1.1.2 // indirect
 	github.com/golang/mock v1.6.0 // indirect
