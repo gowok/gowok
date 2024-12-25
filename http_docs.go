@@ -104,32 +104,15 @@ func (docs *HttpDocs) New(description string, callback func(*HttpDocsOperation))
 	}
 }
 
-type HttpDocsDefinition struct {
-	Name       string
-	Type       string
-	Properties map[string]spec.Schema
-	Example    any
-}
-
-func (docs *HttpDocs) AddDefinition(definput HttpDocsDefinition) spec.Ref {
+func (docs *HttpDocs) AddDefinition(name string, schema spec.Schema) spec.Ref {
 	definitions := make(map[string]spec.Schema)
 	for key, def := range docs.swagger.SwaggerProps.Definitions {
 		definitions[key] = def
 	}
-	definition := spec.Schema{
-		SchemaProps: spec.SchemaProps{
-			Type:       []string{definput.Type},
-			Properties: definput.Properties,
-		},
-		SwaggerSchemaProps: spec.SwaggerSchemaProps{},
-	}
-	if definput.Example != nil {
-		definition.SwaggerSchemaProps.Example = definput.Example
-	}
-	definitions[definput.Name] = definition
+	definitions[name] = schema
 	docs.swagger.SwaggerProps.Definitions = spec.Definitions(definitions)
 
-	return spec.Ref{Ref: jsonreference.MustCreateRef("#/definitions/" + definput.Name)}
+	return spec.Ref{Ref: jsonreference.MustCreateRef("#/definitions/" + name)}
 }
 
 func (docs HttpDocs) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
