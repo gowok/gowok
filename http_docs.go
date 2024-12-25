@@ -9,34 +9,64 @@ import (
 )
 
 type HttpDocs struct {
-	swagger *spec.Swagger
+	swagger                                                     *spec.Swagger
+	Title, Version, Host, Description, TermsOfService, BasePath string
+	ContactName, ContactURL, ContactEmail                       string
+	LicenseName, LicenseURL                                     string
+	Schemes, Consumes, Produces                                 []string
+	Tags                                                        []spec.Tag
+	SecurityDefinitions                                         map[string]*spec.SecurityScheme
 }
 
 type HttpDocsItem struct {
 	*spec.PathItemProps
 }
 
-func NewHttpDocs(title, version string) *HttpDocs {
+func NewHttpDocs(docs HttpDocs) *HttpDocs {
 	swagger := spec.Swagger{
 		VendorExtensible: spec.VendorExtensible{},
 		SwaggerProps: spec.SwaggerProps{
-			Swagger: "2.0",
-			Schemes: []string{"http", "ws"},
-			Host:    "localhost:8080",
+			Swagger:  "2.0",
+			Consumes: docs.Consumes,
+			Produces: docs.Produces,
+			Schemes:  docs.Schemes,
+			Host:     docs.Host,
 			Info: &spec.Info{
 				InfoProps: spec.InfoProps{
-					Version: version,
-					Title:   title,
+					Version:        docs.Version,
+					Title:          docs.Title,
+					Description:    docs.Description,
+					TermsOfService: docs.TermsOfService,
+					Contact: &spec.ContactInfo{
+						ContactInfoProps: spec.ContactInfoProps{
+							Name:  docs.ContactName,
+							URL:   docs.ContactURL,
+							Email: docs.ContactEmail,
+						},
+					},
+					License: &spec.License{
+						LicenseProps: spec.LicenseProps{
+							Name: docs.LicenseName,
+							URL:  docs.LicenseURL,
+						},
+					},
 				},
 			},
+			SecurityDefinitions: docs.SecurityDefinitions,
 			Paths: &spec.Paths{
 				Paths: map[string]spec.PathItem{},
 			},
 			Definitions: spec.Definitions{},
+			Tags:        make([]spec.Tag, len(docs.Tags)),
 		},
 	}
 
-	return &HttpDocs{&swagger}
+	for i, t := range docs.Tags {
+		swagger.Tags[i] = t
+	}
+
+	docs.swagger = &swagger
+	return &docs
 }
 
 func (docs *HttpDocs) New(description string, callback func(*HttpDocsOperation)) func(ngamux.Route) {
