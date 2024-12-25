@@ -168,17 +168,3 @@ func (o HttpDocsOperation) AddParam(param HttpDocsParam) {
 	}
 	o.Operation.AddParam(_param)
 }
-
-type HttpDocsRespond struct {
-	Produces  []string
-	Responses map[int]spec.ResponseProps
-}
-
-func (o HttpDocsOperation) AddResponds(respond HttpDocsRespond) {
-	o.WithProduces(respond.Produces...)
-	for key, res := range respond.Responses {
-		o.RespondsWith(key, &spec.Response{
-			ResponseProps: res,
-		})
-	}
-}
