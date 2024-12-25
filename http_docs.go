@@ -61,11 +61,9 @@ func NewHttpDocs(docs HttpDocs) *HttpDocs {
 		},
 	}
 
-	for i, t := range docs.Tags {
-		swagger.Tags[i] = t
-	}
-
+	copy(swagger.Tags, docs.Tags)
 	docs.swagger = &swagger
+
 	return &docs
 }
 
@@ -105,13 +103,7 @@ func (docs *HttpDocs) New(description string, callback func(*HttpDocsOperation))
 }
 
 func (docs *HttpDocs) AddDefinition(name string, schema spec.Schema) spec.Ref {
-	definitions := make(map[string]spec.Schema)
-	for key, def := range docs.swagger.SwaggerProps.Definitions {
-		definitions[key] = def
-	}
-	definitions[name] = schema
-	docs.swagger.SwaggerProps.Definitions = spec.Definitions(definitions)
-
+	docs.swagger.SwaggerProps.Definitions[name] = schema
 	return spec.Ref{Ref: jsonreference.MustCreateRef("#/definitions/" + name)}
 }
 
