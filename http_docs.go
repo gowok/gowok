@@ -69,8 +69,8 @@ func NewHttpDocs(docs HttpDocs) *HttpDocs {
 	return &docs
 }
 
-func (docs *HttpDocs) New(description string, callback func(*HttpDocsOperation)) func(ngamux.Route) {
-	operation := &HttpDocsOperation{spec.NewOperation(description)}
+func (docs *HttpDocs) New(description string, callback func(*spec.Operation)) func(ngamux.Route) {
+	operation := spec.NewOperation(description)
 	operation.Description = description
 	item := spec.PathItemProps{}
 	return func(route ngamux.Route) {
@@ -84,19 +84,19 @@ func (docs *HttpDocs) New(description string, callback func(*HttpDocsOperation))
 
 		switch route.Method {
 		case http.MethodGet:
-			item.Get = operation.Operation
+			item.Get = operation
 		case http.MethodPost:
-			item.Post = operation.Operation
+			item.Post = operation
 		case http.MethodPut:
-			item.Put = operation.Operation
+			item.Put = operation
 		case http.MethodHead:
-			item.Head = operation.Operation
+			item.Head = operation
 		case http.MethodPatch:
-			item.Patch = operation.Operation
+			item.Patch = operation
 		case http.MethodDelete:
-			item.Delete = operation.Operation
+			item.Delete = operation
 		case http.MethodOptions:
-			item.Options = operation.Operation
+			item.Options = operation
 		}
 		docs.swagger.Paths.Paths[route.Path] = spec.PathItem{
 			PathItemProps: item,
@@ -186,37 +186,4 @@ func (docs *HttpDocs) AddDefinition(schema any) spec.Ref {
 
 func (docs HttpDocs) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	ngamux.Res(rw).JSON(docs.swagger)
-}
-
-type HttpDocsOperation struct {
-	*spec.Operation
-}
-
-type HttpDocsParam struct {
-	Name      string
-	In        string
-	Type      []string
-	Required  bool
-	SchemaRef spec.Ref
-}
-
-func (o HttpDocsOperation) AddParam(param HttpDocsParam) {
-	schemaProps := spec.SchemaProps{
-		Nullable: !param.Required,
-		Type:     spec.StringOrArray(param.Type),
-		Ref:      param.SchemaRef,
-	}
-	swaggerSchemaProps := spec.SwaggerSchemaProps{}
-
-	var _param *spec.Parameter
-	switch param.In {
-	case "body":
-		_param = spec.BodyParam(param.Name, &spec.Schema{
-			SchemaProps:        schemaProps,
-			SwaggerSchemaProps: swaggerSchemaProps,
-		})
-	case "path":
-		_param = spec.PathParam(param.Name)
-	}
-	o.Operation.AddParam(_param)
 }
