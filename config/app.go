@@ -103,12 +103,13 @@ func (r Web) GetCors() cors.Config {
 
 func (r Web) GetPprof() pprof.Config {
 	c := pprof.Config{}
-	if r.Pprof == nil {
+	cc, ok := r.Pprof.Get()
+	if !ok {
 		return c
 	}
 
-	if r.Pprof.Prefix != "" {
-		c.Prefix = r.Pprof.Prefix
+	if cc.Prefix != "" {
+		c.Prefix = cc.Prefix
 	}
 	return c
 }
