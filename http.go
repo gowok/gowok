@@ -31,9 +31,12 @@ func NewHTTP(c *config.Web) *HttpMux {
 	// configureHttpViews(server, c)
 	configureHttpStatic(server, c)
 
-	if c.Log != nil && c.Log.Enabled {
-		server.Mux.Use(log.New(c.GetLog()))
-	}
+	c.Log.IfPresent(func(ll config.WebLog) {
+		if ll.Enabled {
+			server.Mux.Use(log.New())
+		}
+	})
+
 	if c.Cors != nil && c.Cors.Enabled {
 		server.Mux.Use(cors.New(c.GetCors()))
 	}

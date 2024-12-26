@@ -5,6 +5,7 @@ import (
 	"log/slog"
 	"os"
 
+	"github.com/gowok/gowok/some"
 	"github.com/ngamux/middleware/cors"
 	"github.com/ngamux/middleware/log"
 	"github.com/ngamux/middleware/pprof"
@@ -20,9 +21,7 @@ type Web struct {
 	Enabled bool
 	Host    string
 
-	Log *struct {
-		Enabled bool `yaml:"enabled"`
-	} `yaml:"log"`
+	Log some.Some[WebLog] `yaml:"log"`
 
 	Cors *struct {
 		Enabled          bool   `yaml:"enabled"`
@@ -43,6 +42,10 @@ type Web struct {
 	Static WebStatic `yaml:"static"`
 }
 
+type WebLog struct {
+	Enabled bool `yaml:"enabled"`
+}
+
 type WebViews struct {
 	Enabled bool   `yaml:"enabled"`
 	Dir     string `yaml:"dir"`
@@ -59,11 +62,11 @@ func (r Web) GetLog() log.Config {
 	c := log.Config{
 		Handler: slog.NewTextHandler(io.Discard, nil),
 	}
-	if r.Log == nil {
+	if r.Log.IsPresent() {
 		return c
 	}
 
-	if r.Log.Enabled {
+	if cc, ok := r.Log.Get(); ok && cc.Enabled {
 		c.Handler = slog.NewJSONHandler(os.Stdout, nil)
 	}
 	return c
