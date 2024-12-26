@@ -21,17 +21,11 @@ type Web struct {
 	Enabled bool
 	Host    string
 
-	Log some.Some[WebLog] `yaml:"log"`
-
-	Cors some.Some[WebCors] `yaml:"cors"`
-
-	Pprof *struct {
-		Enabled bool   `yaml:"enabled"`
-		Prefix  string `yaml:"prefix"`
-	} `yaml:"pprof"`
-
-	Views  WebViews  `yaml:"views"`
-	Static WebStatic `yaml:"static"`
+	Log    some.Some[WebLog]   `yaml:"log"`
+	Cors   some.Some[WebCors]  `yaml:"cors"`
+	Pprof  some.Some[WebPprof] `yaml:"pprof"`
+	Views  WebViews            `yaml:"views"`
+	Static WebStatic           `yaml:"static"`
 }
 
 type WebLog struct {
@@ -46,6 +40,11 @@ type WebCors struct {
 	AllowHeaders     string `yaml:"allow_headers"`
 	MaxAge           int    `yaml:"max_age"`
 	ExposeHeaders    string `yaml:"expose_headers"`
+}
+
+type WebPprof struct {
+	Enabled bool   `yaml:"enabled"`
+	Prefix  string `yaml:"prefix"`
 }
 
 type WebViews struct {

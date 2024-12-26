@@ -36,15 +36,16 @@ func NewHTTP(c *config.Web) *HttpMux {
 			server.Mux.Use(log.New())
 		}
 	})
-
 	c.Cors.IfPresent(func(ll config.WebCors) {
 		if ll.Enabled {
 			server.Mux.Use(cors.New(c.GetCors()))
 		}
 	})
-	if c.Pprof != nil && c.Pprof.Enabled {
-		server.Mux.Use(pprof.New(c.GetPprof()))
-	}
+	c.Pprof.IfPresent(func(ll config.WebPprof) {
+		if ll.Enabled {
+			server.Mux.Use(pprof.New(c.GetPprof()))
+		}
+	})
 
 	return server
 }
