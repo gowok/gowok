@@ -37,9 +37,11 @@ func NewHTTP(c *config.Web) *HttpMux {
 		}
 	})
 
-	if c.Cors != nil && c.Cors.Enabled {
-		server.Mux.Use(cors.New(c.GetCors()))
-	}
+	c.Cors.IfPresent(func(ll config.WebCors) {
+		if ll.Enabled {
+			server.Mux.Use(cors.New(c.GetCors()))
+		}
+	})
 	if c.Pprof != nil && c.Pprof.Enabled {
 		server.Mux.Use(pprof.New(c.GetPprof()))
 	}

@@ -23,15 +23,7 @@ type Web struct {
 
 	Log some.Some[WebLog] `yaml:"log"`
 
-	Cors *struct {
-		Enabled          bool   `yaml:"enabled"`
-		AllowOrigins     string `yaml:"allow_origins"`
-		AllowCredentials bool   `yaml:"allow_credentials"`
-		AllowMethods     string `yaml:"allow_methods"`
-		AllowHeaders     string `yaml:"allow_headers"`
-		MaxAge           int    `yaml:"max_age"`
-		ExposeHeaders    string `yaml:"expose_headers"`
-	} `yaml:"cors"`
+	Cors some.Some[WebCors] `yaml:"cors"`
 
 	Pprof *struct {
 		Enabled bool   `yaml:"enabled"`
@@ -44,6 +36,16 @@ type Web struct {
 
 type WebLog struct {
 	Enabled bool `yaml:"enabled"`
+}
+
+type WebCors struct {
+	Enabled          bool   `yaml:"enabled"`
+	AllowOrigins     string `yaml:"allow_origins"`
+	AllowCredentials bool   `yaml:"allow_credentials"`
+	AllowMethods     string `yaml:"allow_methods"`
+	AllowHeaders     string `yaml:"allow_headers"`
+	MaxAge           int    `yaml:"max_age"`
+	ExposeHeaders    string `yaml:"expose_headers"`
 }
 
 type WebViews struct {
@@ -74,17 +76,19 @@ func (r Web) GetLog() log.Config {
 
 func (r Web) GetCors() cors.Config {
 	c := cors.Config{}
-	if r.Cors == nil {
+	cc, ok := r.Cors.Get()
+	if !ok {
 		return c
 	}
-	if r.Cors.AllowOrigins != "" {
-		c.AllowOrigins = r.Cors.AllowOrigins
+
+	if cc.AllowOrigins != "" {
+		c.AllowOrigins = cc.AllowOrigins
 	}
-	if r.Cors.AllowMethods != "" {
-		c.AllowMethods = r.Cors.AllowMethods
+	if cc.AllowMethods != "" {
+		c.AllowMethods = cc.AllowMethods
 	}
-	if r.Cors.AllowHeaders != "" {
-		c.AllowHeaders = r.Cors.AllowHeaders
+	if cc.AllowHeaders != "" {
+		c.AllowHeaders = cc.AllowHeaders
 	}
 	// if r.Cors.ExposeHeaders != "" {
 	// 	c.ExposeHeaders = r.Cors.ExposeHeaders
