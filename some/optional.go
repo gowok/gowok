@@ -1,5 +1,9 @@
 package some
 
+import (
+	"reflect"
+)
+
 type Some[T any] struct {
 	value     *T
 	isPresent bool
@@ -21,6 +25,11 @@ func Of[T any](val *T) Some[T] {
 	if val == nil {
 		return Empty[T]()
 	}
+
+	if reflect.ValueOf(*val).IsNil() {
+		return Empty[T]()
+	}
+
 	return newOptional(val)
 }
 

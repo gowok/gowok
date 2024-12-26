@@ -7,6 +7,7 @@ import (
 
 	"github.com/go-openapi/jsonreference"
 	"github.com/go-openapi/spec"
+	"github.com/gowok/gowok/some"
 	"github.com/ngamux/ngamux"
 )
 
@@ -74,9 +75,7 @@ func (docs *HttpDocs) New(description string, callback func(*spec.Operation)) fu
 	operation.Description = description
 	item := spec.PathItemProps{}
 	return func(route ngamux.Route) {
-		if callback != nil {
-			callback(operation)
-		}
+		some.Of(&callback).OrElse(func(*spec.Operation) {})(operation)
 
 		if itemFound, ok := docs.swagger.Paths.Paths[route.Path]; ok {
 			item = itemFound.PathItemProps
