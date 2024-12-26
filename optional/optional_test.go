@@ -110,6 +110,24 @@ func TestOrElse(t *testing.T) {
 	})
 }
 
+func TestOrElseFunc(t *testing.T) {
+	t.Run("positive", func(t *testing.T) {
+		input := "limo"
+		car := Of(&input).OrElseFunc(func() string {
+			return ""
+		})
+		should.Equal(t, car, input)
+	})
+
+	t.Run("input nil", func(t *testing.T) {
+		input := "limo"
+		car := Empty[string]().OrElseFunc(func() string {
+			return input
+		})
+		should.Equal(t, car, input)
+	})
+}
+
 func TestOrPanic(t *testing.T) {
 	t.Run("positive", func(t *testing.T) {
 		defer func() {

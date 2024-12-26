@@ -44,6 +44,14 @@ func (o Optional[T]) OrElse(val T) T {
 	return *o.value
 }
 
+func (o Optional[T]) OrElseFunc(gen func() T) T {
+	if !o.IsPresent() && gen != nil {
+		return gen()
+	}
+
+	return *o.value
+}
+
 func (o Optional[T]) OrPanic(err error) T {
 	if !o.IsPresent() {
 		panic(err)
