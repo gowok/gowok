@@ -83,7 +83,9 @@ func ignite() (*Project, error) {
 	}
 	validator.trans = trans
 
-	GRPC := grpc.NewServer()
+	GRPC := Singleton(func() *grpc.Server {
+		return grpc.NewServer()
+	})
 	web := Singleton(func() *HttpMux {
 		return NewHTTP(&conf.App.Web)
 	})
@@ -95,7 +97,7 @@ func ignite() (*Project, error) {
 			println()
 			if conf.App.Grpc.Enabled {
 				println("project: stopping GRPC")
-				GRPC.GracefulStop()
+				(*GRPC()).GracefulStop()
 			}
 			if conf.App.Web.Enabled {
 				println("project: stopping web")
@@ -111,18 +113,15 @@ func ignite() (*Project, error) {
 		runner.WithRunFunc(run),
 	)
 	project = &Project{
-		Config:    conf,
-		Runner:    running,
-		Hooks:     hooks,
-		SQL:       dbSQL.Get,
-		MongoDB:   dbMongo.Get,
-		Cache:     dbCache.Get,
-		Validator: validator,
-		web:       web,
-		grpc: Singleton(func() *grpc.Server {
-			return GRPC
-		}),
-
+		Config:     conf,
+		Runner:     running,
+		Hooks:      hooks,
+		SQL:        dbSQL.Get,
+		MongoDB:    dbMongo.Get,
+		Cache:      dbCache.Get,
+		Validator:  validator,
+		web:        web,
+		grpc:       GRPC,
 		configures: make([]ConfigureFunc, 0),
 	}
 	return project, nil
