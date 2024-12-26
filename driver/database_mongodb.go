@@ -5,7 +5,7 @@ import (
 	"log/slog"
 
 	"github.com/gowok/gowok/config"
-	"github.com/gowok/gowok/optional"
+	"github.com/gowok/gowok/some"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -33,12 +33,12 @@ func NewMongoDB(config map[string]config.MongoDB) (MongoDB, error) {
 	return mongos, nil
 }
 
-func (d MongoDB) Get(name ...string) optional.Optional[*mongo.Client] {
+func (d MongoDB) Get(name ...string) some.Some[*mongo.Client] {
 	n := ""
 	if len(name) > 0 {
 		n = name[0]
 		if db, ok := d[n]; ok {
-			return optional.Of(&db)
+			return some.Of(&db)
 		}
 	}
 
@@ -47,8 +47,8 @@ func (d MongoDB) Get(name ...string) optional.Optional[*mongo.Client] {
 	}
 
 	if db, ok := d["default"]; ok {
-		return optional.Of(&db)
+		return some.Of(&db)
 	}
 
-	return optional.Empty[*mongo.Client]()
+	return some.Empty[*mongo.Client]()
 }

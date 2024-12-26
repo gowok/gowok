@@ -1,30 +1,30 @@
-package optional
+package some
 
-type Optional[T any] struct {
+type Some[T any] struct {
 	value     *T
 	isPresent bool
 }
 
-func newOptional[T any](val *T) Optional[T] {
+func newOptional[T any](val *T) Some[T] {
 	isPresent := false
 	if val != nil {
 		isPresent = true
 	}
-	return Optional[T]{val, isPresent}
+	return Some[T]{val, isPresent}
 }
 
-func Empty[T any]() Optional[T] {
+func Empty[T any]() Some[T] {
 	return newOptional[T](nil)
 }
 
-func Of[T any](val *T) Optional[T] {
+func Of[T any](val *T) Some[T] {
 	if val == nil {
 		return Empty[T]()
 	}
 	return newOptional(val)
 }
 
-func (o Optional[T]) Get() (T, bool) {
+func (o Some[T]) Get() (T, bool) {
 	if !o.IsPresent() {
 		var value T
 		return value, false
@@ -32,11 +32,11 @@ func (o Optional[T]) Get() (T, bool) {
 	return *o.value, true
 }
 
-func (o Optional[T]) IsPresent() bool {
+func (o Some[T]) IsPresent() bool {
 	return o.isPresent
 }
 
-func (o Optional[T]) OrElse(val T) T {
+func (o Some[T]) OrElse(val T) T {
 	if !o.IsPresent() {
 		return val
 	}
@@ -44,7 +44,7 @@ func (o Optional[T]) OrElse(val T) T {
 	return *o.value
 }
 
-func (o Optional[T]) OrElseFunc(gen func() T) T {
+func (o Some[T]) OrElseFunc(gen func() T) T {
 	if !o.IsPresent() && gen != nil {
 		return gen()
 	}
@@ -52,7 +52,7 @@ func (o Optional[T]) OrElseFunc(gen func() T) T {
 	return *o.value
 }
 
-func (o Optional[T]) OrPanic(err error) T {
+func (o Some[T]) OrPanic(err error) T {
 	if !o.IsPresent() {
 		panic(err)
 	}

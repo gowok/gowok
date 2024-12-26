@@ -1,4 +1,4 @@
-package optional
+package some
 
 import (
 	"errors"

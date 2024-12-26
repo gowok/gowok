@@ -11,7 +11,7 @@ import (
 	store_memory "github.com/eko/gocache/store/ristretto/v4"
 	"github.com/gowok/gowok/config"
 	"github.com/gowok/gowok/must"
-	"github.com/gowok/gowok/optional"
+	"github.com/gowok/gowok/some"
 	"github.com/redis/go-redis/v9"
 )
 
@@ -39,13 +39,13 @@ func NewCache(config map[string]config.Cache) (Cache, error) {
 	return caches, nil
 }
 
-func (d Cache) Get(name ...string) optional.Optional[*cache.Cache[any]] {
+func (d Cache) Get(name ...string) some.Some[*cache.Cache[any]] {
 	n := ""
 	if len(name) > 0 {
 		n = name[0]
 		if db, ok := d[n]; ok {
 			c := cache.New[any](db)
-			return optional.Of(&c)
+			return some.Of(&c)
 		}
 	}
 
@@ -55,10 +55,10 @@ func (d Cache) Get(name ...string) optional.Optional[*cache.Cache[any]] {
 
 	if db, ok := d["default"]; ok {
 		c := cache.New[any](db)
-		return optional.Of(&c)
+		return some.Of(&c)
 	}
 
-	return optional.Empty[*cache.Cache[any]]()
+	return some.Empty[*cache.Cache[any]]()
 }
 
 type KVClient interface {

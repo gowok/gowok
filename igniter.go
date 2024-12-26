@@ -15,14 +15,14 @@ import (
 	en_translations "github.com/go-playground/validator/v10/translations/en"
 	"github.com/gowok/gowok/driver"
 	"github.com/gowok/gowok/must"
-	"github.com/gowok/gowok/optional"
 	"github.com/gowok/gowok/runner"
+	"github.com/gowok/gowok/some"
 	"github.com/ngamux/ngamux"
 	"go.mongodb.org/mongo-driver/mongo"
 	"google.golang.org/grpc"
 )
 
-type getterByName[T any] func(name ...string) optional.Optional[T]
+type getterByName[T any] func(name ...string) some.Some[T]
 type ConfigureFunc func(*Project)
 
 type Project struct {

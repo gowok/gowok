@@ -6,7 +6,7 @@ import (
 	"log/slog"
 
 	"github.com/gowok/gowok/config"
-	"github.com/gowok/gowok/optional"
+	"github.com/gowok/gowok/some"
 	_ "github.com/jackc/pgx/v5/stdlib"
 )
 
@@ -35,12 +35,12 @@ func NewSQL(config map[string]config.SQL) (SQL, error) {
 	return sqls, nil
 }
 
-func (d SQL) Get(name ...string) optional.Optional[*sql.DB] {
+func (d SQL) Get(name ...string) some.Some[*sql.DB] {
 	n := ""
 	if len(name) > 0 {
 		n = name[0]
 		if db, ok := d[n]; ok {
-			return optional.Of(&db)
+			return some.Of(&db)
 		}
 	}
 
@@ -49,10 +49,10 @@ func (d SQL) Get(name ...string) optional.Optional[*sql.DB] {
 	}
 
 	if db, ok := d["default"]; ok {
-		return optional.Of(&db)
+		return some.Of(&db)
 	}
 
-	return optional.Empty[*sql.DB]()
+	return some.Empty[*sql.DB]()
 }
 
 type SQLPreparation interface {
