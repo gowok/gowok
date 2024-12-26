@@ -33,8 +33,7 @@ type Project struct {
 	MongoDB    getterByName[*mongo.Client]
 	Cache      getterByName[*cache.Cache[any]]
 	Validator  *Validator
-	webServer  *HttpMux
-	web        func(...*ngamux.HttpServeMux) **ngamux.HttpServeMux
+	web        func(...*HttpMux) **HttpMux
 	grpc       func(...*grpc.Server) **grpc.Server
 	configures []ConfigureFunc
 }
@@ -84,8 +83,10 @@ func ignite() (*Project, error) {
 	}
 	validator.trans = trans
 
-	web := NewHTTP(&conf.App.Web)
 	GRPC := grpc.NewServer()
+	web := Singleton(func() *HttpMux {
+		return NewHTTP(&conf.App.Web)
+	})
 
 	hooks := &Hooks{}
 	running := runner.New(
@@ -101,7 +102,7 @@ func ignite() (*Project, error) {
 				ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 				defer cancel()
 
-				_ = web.Server.Shutdown(ctx)
+				_ = (*web()).Server.Shutdown(ctx)
 			}
 			if hooks.onStopped != nil {
 				hooks.onStopped()
@@ -117,10 +118,7 @@ func ignite() (*Project, error) {
 		MongoDB:   dbMongo.Get,
 		Cache:     dbCache.Get,
 		Validator: validator,
-		web: Singleton(func() *ngamux.HttpServeMux {
-			return web.Mux
-		}),
-		webServer: web,
+		web:       web,
 		grpc: Singleton(func() *grpc.Server {
 			return GRPC
 		}),
@@ -156,7 +154,7 @@ func run() {
 		}
 
 		println("project: starting web")
-		err := project.webServer.Server.ListenAndServe()
+		err := (*project.web()).Server.ListenAndServe()
 		if err != nil {
 			log.Fatalf("web can't start, because: %v", err)
 		}
@@ -185,7 +183,8 @@ func run() {
 }
 
 func (p *Project) Web() *ngamux.HttpServeMux {
-	return *p.web()
+	w := *p.web()
+	return w.Mux
 }
 func (p *Project) GRPC() *grpc.Server {
 	g := p.grpc()
