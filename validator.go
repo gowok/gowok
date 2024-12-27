@@ -7,6 +7,7 @@ import (
 
 	ut "github.com/go-playground/universal-translator"
 	"github.com/go-playground/validator/v10"
+	"github.com/gowok/gowok/some"
 	"github.com/ngamux/ngamux"
 )
 
@@ -98,15 +99,16 @@ func (v *Validator) ValidateStruct(input any, trans map[string]string) Validatio
 	}
 
 	err := v.validate.Struct(input)
-	if err != nil {
+
+	result := ValidationError{}
+	some.Of(&err).IfPresent(func(err error) {
 		switch e := err.(type) {
 		case validator.ValidationErrors:
-			errResp := NewValidationError(e, v.trans, trans)
-			return errResp
+			result = NewValidationError(e, v.trans, trans)
 		}
-	}
+	})
 
-	return ValidationError{}
+	return result
 }
 
 func (v *Validator) registerTranslationTag(tag, message string, override bool) error {
