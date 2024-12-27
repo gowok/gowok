@@ -5,17 +5,17 @@ import "github.com/gowok/gowok/some"
 type Hook func()
 
 type Hooks struct {
-	onStarting Hook
-	onStarted  Hook
+	onStarting some.Some[Hook]
+	onStarted  some.Some[Hook]
 	onStopped  some.Some[Hook]
 }
 
 func (h *Hooks) OnStarting(hook Hook) {
-	h.onStarting = hook
+	h.onStarting = some.Of(&hook)
 }
 
 func (h *Hooks) OnStarted(hook Hook) {
-	h.onStarted = hook
+	h.onStarted = some.Of(&hook)
 }
 
 func (h *Hooks) OnStopped(hook Hook) {

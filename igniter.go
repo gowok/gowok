@@ -110,7 +110,6 @@ func ignite() (*Project, error) {
 				f()
 			})
 		}),
-		runner.WithRunFunc(run),
 	)
 	project = &Project{
 		Config:     conf,
@@ -127,25 +126,23 @@ func ignite() (*Project, error) {
 	return project, nil
 }
 
-func Get() *Project {
-	if project != nil {
-		return project
-	}
+var projectSingleton = Singleton(func() *Project {
+	return must.Must(ignite())
+})
 
-	must.Must(ignite())
-	return project
+func Get() *Project {
+	pp := projectSingleton()
+	return *pp
 }
 
-func run() {
-	project := Get()
-
+func run(project *Project) {
 	for _, configure := range project.configures {
 		configure(project)
 	}
 
-	if project.Hooks.onStarting != nil {
-		project.Hooks.onStarting()
-	}
+	project.Hooks.onStarting.IfPresent(func(f Hook) {
+		f()
+	})
 
 	go func() {
 		if !project.Config.App.Web.Enabled {
@@ -176,9 +173,9 @@ func run() {
 		}
 	}()
 
-	if project.Hooks.onStarted != nil {
-		project.Hooks.onStarted()
-	}
+	project.Hooks.onStarted.IfPresent(func(f Hook) {
+		f()
+	})
 }
 
 func (p *Project) Web() *ngamux.HttpServeMux {
@@ -191,7 +188,10 @@ func (p *Project) GRPC() *grpc.Server {
 }
 
 func (p *Project) Run() {
-	Get().Runner.Run()
+	p.Runner.AddRunFunc(func() {
+		run(p)
+	})
+	p.Runner.Run()
 }
 
 func (p *Project) Configures(configures ...ConfigureFunc) {
