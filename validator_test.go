@@ -19,10 +19,11 @@ func validatorInitialize(t *testing.T) *Validator {
 	trans, ok := uni.GetTranslator("en")
 	should.True(t, ok)
 	should.NotNil(t, trans)
-	val.SetTranslator(trans, func(v *validator.Validate, trans ut.Translator) error {
+	err := val.SetTranslator(trans, func(v *validator.Validate, trans ut.Translator) error {
 		return en_translations.RegisterDefaultTranslations(val.validate, trans)
 	})
 
+	should.Nil(t, err)
 	should.NotNil(t, val.trans)
 
 	return val
