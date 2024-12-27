@@ -28,7 +28,14 @@ func Of[T any](val *T) Some[T] {
 		return Empty[T]()
 	}
 
-	if reflect.ValueOf(*val).IsNil() {
+	v := reflect.ValueOf(*val)
+	k := v.Kind()
+
+	if k == reflect.Invalid {
+		return Empty[T]()
+	}
+
+	if (k == reflect.Func) && (v.IsZero() || v.IsNil()) {
 		return Empty[T]()
 	}
 
@@ -77,7 +84,7 @@ func (o Some[T]) OrPanic(err error) T {
 	return *o.value
 }
 
-func (o *Some[T]) UnmarshalYAML(value *yaml.Node) error {
+func (o Some[T]) UnmarshalYAML(value *yaml.Node) error {
 	var v T
 	if err := value.Decode(&v); err != nil {
 		return err

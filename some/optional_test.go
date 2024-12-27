@@ -21,7 +21,7 @@ type Test struct {
 }
 
 func TestOf(t *testing.T) {
-	t.Run("positive", func(t *testing.T) {
+	t.Run("positive string", func(t *testing.T) {
 		input := "limo"
 		car := Of(&input)
 
@@ -31,12 +31,51 @@ func TestOf(t *testing.T) {
 		should.Equal(t, *car.value, input)
 	})
 
-	t.Run("input nil", func(t *testing.T) {
+	t.Run("positive func", func(t *testing.T) {
+		input := func() {}
+		result := Of(&input)
+
+		should.NotNil(t, result)
+		should.NotNil(t, result.value)
+		should.True(t, result.isPresent)
+		should.Equal(t, *result.value, input)
+	})
+
+	t.Run("positive error", func(t *testing.T) {
+		input := errors.New("")
+		result := Of(&input)
+
+		should.NotNil(t, result)
+		should.NotNil(t, result.value)
+		should.True(t, result.isPresent)
+		should.Equal(t, *result.value, input)
+	})
+
+	t.Run("negative nil string", func(t *testing.T) {
 		car := Of[string](nil)
 
 		should.NotNil(t, car)
 		should.Nil(t, car.value)
 		should.False(t, car.isPresent)
+	})
+
+	t.Run("negative nil func", func(t *testing.T) {
+		var input func() = nil
+		result := Of[func()](&input)
+
+		should.NotNil(t, result)
+		should.Nil(t, result.value)
+		should.False(t, result.isPresent)
+	})
+
+	t.Run("negative nil error", func(t *testing.T) {
+		var input error = nil
+		result := Of[error](&input)
+		t.Log(result.value)
+
+		should.NotNil(t, result)
+		should.Nil(t, result.value)
+		should.False(t, result.isPresent)
 	})
 }
 
@@ -152,5 +191,14 @@ func TestOrPanic(t *testing.T) {
 			should.NotNil(t, err)
 		}()
 		Empty[string]().OrPanic(errors.New("not found"))
+	})
+}
+
+func TestIfPresent(t *testing.T) {
+	t.Run("positive", func(t *testing.T) {
+		input := "limo"
+		Of(&input).IfPresent(func(s string) {
+			should.Equal(t, input, s)
+		})
 	})
 }
