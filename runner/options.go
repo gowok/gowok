@@ -1,5 +1,7 @@
 package runner
 
+import "github.com/gowok/gowok/some"
+
 type Option func(*Runner)
 
 func WithRunFunc(runFunc func()) Option {
@@ -10,7 +12,7 @@ func WithRunFunc(runFunc func()) Option {
 
 func WithGracefulStopFunc(gracefulStopFunc func()) Option {
 	return func(runner *Runner) {
-		runner.gracefulStopFunc = gracefulStopFunc
+		runner.gracefulStopFunc = some.Of(&gracefulStopFunc)
 	}
 }
 
