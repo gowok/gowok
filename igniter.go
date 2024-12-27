@@ -106,9 +106,9 @@ func ignite() (*Project, error) {
 
 				_ = (*web()).Server.Shutdown(ctx)
 			}
-			if hooks.onStopped != nil {
-				hooks.onStopped()
-			}
+			hooks.onStopped.IfPresent(func(f Hook) {
+				f()
+			})
 		}),
 		runner.WithRunFunc(run),
 	)
