@@ -3,14 +3,19 @@ package driver
 import (
 	"context"
 	"database/sql"
+	"log"
 	"log/slog"
+	"strings"
 
 	"github.com/gowok/gowok/config"
 	"github.com/gowok/gowok/some"
-	_ "github.com/jackc/pgx/v5/stdlib"
 )
 
 type SQL map[string]*sql.DB
+
+var drivers = map[string][]string{
+	"postgres": []string{"pgx", "postgres"},
+}
 
 func NewSQL(config map[string]config.SQL) (SQL, error) {
 	sqls := SQL{}
@@ -20,16 +25,27 @@ func NewSQL(config map[string]config.SQL) (SQL, error) {
 			continue
 		}
 
-		if dbC.Driver == "postgresql" {
-			dbC.Driver = "pgx"
+		drivers, ok := drivers[dbC.Driver]
+		if !ok {
+			log.Println("unknown SQL driver", dbC.Driver)
+			continue
 		}
 
-		db, err := sql.Open(dbC.Driver, dbC.DSN)
-		if err != nil {
-			return nil, err
+		for _, driver := range drivers {
+			ddb, err := sql.Open(driver, dbC.DSN)
+			if err != nil {
+				if strings.Contains(err.Error(), "unknown driver") {
+					continue
+				}
+				return nil, err
+			}
+
+			sqls[name] = ddb
 		}
 
-		sqls[name] = db
+		if _, ok := sqls[name]; !ok {
+			log.Printf("not installed %s driver\n", dbC.Driver)
+		}
 	}
 
 	return sqls, nil
