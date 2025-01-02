@@ -23,22 +23,28 @@ type Config struct {
 	Env       string `yaml:"env"`
 }
 
-func NewConfig(pathConfig string) (*Config, error) {
+func NewConfig(pathConfig string) (*Config, map[string]any, error) {
 	fiConfig, err := os.OpenFile(pathConfig, os.O_RDONLY, 0600)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	fiContent, err := io.ReadAll(fiConfig)
 	if err != nil {
-		return nil, fmt.Errorf("can't read config file: %w", err)
+		return nil, nil, fmt.Errorf("can't read config file: %w", err)
 	}
 
 	conf := &Config{}
 	err = yaml.Unmarshal(fiContent, conf)
 	if err != nil {
-		return conf, fmt.Errorf("can't decode config file: %w", err)
+		return conf, nil, fmt.Errorf("can't decode config file: %w", err)
 	}
 
-	return conf, nil
+	confRaw := map[string]any{}
+	err = yaml.Unmarshal(fiContent, confRaw)
+	if err != nil {
+		return conf, nil, fmt.Errorf("can't decode config file: %w", err)
+	}
+
+	return conf, confRaw, nil
 }

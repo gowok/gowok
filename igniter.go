@@ -27,6 +27,7 @@ type ConfigureFunc func(*Project)
 
 type Project struct {
 	Config     *Config
+	ConfigMap  map[string]any
 	Runner     *runner.Runner
 	Hooks      *Hooks
 	SQL        getterByName[*sql.DB]
@@ -49,7 +50,7 @@ func ignite() (*Project, error) {
 	}
 	flag.Parse()
 
-	conf, err := NewConfig(pathConfig)
+	conf, confRaw, err := NewConfig(pathConfig)
 	if err != nil {
 		return nil, err
 	}
@@ -113,6 +114,7 @@ func ignite() (*Project, error) {
 	)
 	project = &Project{
 		Config:     conf,
+		ConfigMap:  confRaw,
 		Runner:     running,
 		Hooks:      hooks,
 		SQL:        dbSQL.Get,
