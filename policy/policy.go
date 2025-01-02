@@ -21,24 +21,36 @@ var Actions = []string{
 
 type Policy struct {
 	*casbin.Enforcer
+	adapter any
 }
 
-func NewPolicy(model string) (*Policy, error) {
+func NewPolicy(model string, opts ...Option) (*Policy, error) {
 	m, err := cModel.NewModelFromString(model)
 	if err != nil {
 		return nil, err
 	}
 
-	e, err := casbin.NewEnforcer(m)
+	ee := &Policy{}
+	for _, opt := range opts {
+		opt(ee)
+	}
+
+	params := make([]any, 0)
+	params = append(params, m)
+	if ee.adapter != nil {
+		params = append(params, ee.adapter)
+	}
+
+	e, err := casbin.NewEnforcer(params...)
 	if err != nil {
 		return nil, err
 	}
+	ee.Enforcer = e
 
-	ee := &Policy{e}
 	return ee, nil
 }
 
-func NewPolicyRBAC() (*Policy, error) {
+func NewPolicyRBAC(opts ...Option) (*Policy, error) {
 	model := `
 	[request_definition]
 	r = sub, obj, act
@@ -56,10 +68,10 @@ func NewPolicyRBAC() (*Policy, error) {
   m = (g(r.sub, p.sub) || r.sub == p.sub) && r.obj == p.obj && r.act == p.act
 	`
 
-	return NewPolicy(model)
+	return NewPolicy(model, opts...)
 }
 
-func NewPolicyABAC() (*Policy, error) {
+func NewPolicyABAC(opts ...Option) (*Policy, error) {
 	model := `
   [request_definition]
   r = sub, obj, act
@@ -77,5 +89,5 @@ func NewPolicyABAC() (*Policy, error) {
   m = r.sub == p.sub && r.obj == p.obj && r.act == p.act
 	`
 
-	return NewPolicy(model)
+	return NewPolicy(model, opts...)
 }
