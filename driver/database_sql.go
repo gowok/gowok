@@ -3,7 +3,6 @@ package driver
 import (
 	"context"
 	"database/sql"
-	"log"
 	"log/slog"
 	"strings"
 
@@ -15,6 +14,9 @@ type SQL map[string]*sql.DB
 
 var drivers = map[string][]string{
 	"postgres": []string{"pgx", "postgres"},
+	"mysql":    []string{"mysql"},
+	"mariadb":  []string{"mysql"},
+	"sqlite3":  []string{"sqlite3"},
 }
 
 func NewSQL(config map[string]config.SQL) (SQL, error) {
@@ -27,7 +29,7 @@ func NewSQL(config map[string]config.SQL) (SQL, error) {
 
 		drivers, ok := drivers[dbC.Driver]
 		if !ok {
-			log.Println("unknown SQL driver", dbC.Driver)
+			slog.Warn("unknown SQL", "driver", dbC.Driver)
 			continue
 		}
 
@@ -44,7 +46,7 @@ func NewSQL(config map[string]config.SQL) (SQL, error) {
 		}
 
 		if _, ok := sqls[name]; !ok {
-			log.Printf("not installed %s driver\n", dbC.Driver)
+			slog.Warn("not installed", "driver", dbC.Driver)
 		}
 	}
 
