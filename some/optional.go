@@ -1,6 +1,7 @@
 package some
 
 import (
+	"errors"
 	"reflect"
 
 	"gopkg.in/yaml.v3"
@@ -76,7 +77,14 @@ func (o Some[T]) OrElseFunc(gen func() T) T {
 	return *o.value
 }
 
-func (o Some[T]) OrPanic(err error) T {
+var orPanicErr = errors.New("some: no value present")
+
+func (o Some[T]) OrPanic(errs ...error) T {
+	err := orPanicErr
+	if len(errs) > 0 {
+		err = errs[0]
+	}
+
 	if !o.IsPresent() {
 		panic(err)
 	}
