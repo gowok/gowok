@@ -175,7 +175,7 @@ func TestOrPanic(t *testing.T) {
 			err := recover()
 			should.NotNil(t, err)
 		}()
-		Of[error](nil).OrPanic()
+		_ = Of[error](nil).OrPanic()
 	})
 
 	t.Run("empty", func(t *testing.T) {
