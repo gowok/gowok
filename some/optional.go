@@ -24,12 +24,8 @@ func Empty[T any]() Some[T] {
 	return newOptional[T](nil)
 }
 
-func Of[T any](val *T) Some[T] {
-	if val == nil {
-		return Empty[T]()
-	}
-
-	v := reflect.ValueOf(*val)
+func Of[T any](val T) Some[T] {
+	v := reflect.ValueOf(val)
 	k := v.Kind()
 
 	if k == reflect.Invalid {
@@ -40,7 +36,7 @@ func Of[T any](val *T) Some[T] {
 		return Empty[T]()
 	}
 
-	return newOptional(val)
+	return newOptional(&val)
 }
 
 func (o Some[T]) Get() (T, bool) {

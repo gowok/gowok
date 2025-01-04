@@ -75,7 +75,7 @@ func (docs *HttpDocs) New(description string, callback func(*spec.Operation)) fu
 	operation.Description = description
 	item := spec.PathItemProps{}
 	return func(route ngamux.Route) {
-		some.Of(&callback).OrElse(func(*spec.Operation) {})(operation)
+		some.Of(callback).OrElse(func(*spec.Operation) {})(operation)
 
 		if itemFound, ok := docs.swagger.Paths.Paths[route.Path]; ok {
 			item = itemFound.PathItemProps

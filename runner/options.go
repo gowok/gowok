@@ -12,7 +12,7 @@ func WithRunFunc(runFunc func()) Option {
 
 func WithGracefulStopFunc(gracefulStopFunc func()) Option {
 	return func(runner *Runner) {
-		runner.gracefulStopFunc = some.Of(&gracefulStopFunc)
+		runner.gracefulStopFunc = some.Of(gracefulStopFunc)
 	}
 }
 

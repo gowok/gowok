@@ -58,7 +58,7 @@ func (d SQL) Get(name ...string) some.Some[*sql.DB] {
 	if len(name) > 0 {
 		n = name[0]
 		if db, ok := d[n]; ok {
-			return some.Of(&db)
+			return some.Of(db)
 		}
 	}
 
@@ -67,7 +67,7 @@ func (d SQL) Get(name ...string) some.Some[*sql.DB] {
 	}
 
 	if db, ok := d["default"]; ok {
-		return some.Of(&db)
+		return some.Of(db)
 	}
 
 	return some.Empty[*sql.DB]()

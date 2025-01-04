@@ -11,13 +11,13 @@ type Hooks struct {
 }
 
 func (h *Hooks) OnStarting(hook Hook) {
-	h.onStarting = some.Of(&hook)
+	h.onStarting = some.Of(hook)
 }
 
 func (h *Hooks) OnStarted(hook Hook) {
-	h.onStarted = some.Of(&hook)
+	h.onStarted = some.Of(hook)
 }
 
 func (h *Hooks) OnStopped(hook Hook) {
-	h.onStopped = some.Of(&hook)
+	h.onStopped = some.Of(hook)
 }

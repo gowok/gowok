@@ -101,7 +101,7 @@ func (v *Validator) ValidateStruct(input any, trans map[string]string) Validatio
 	err := v.validate.Struct(input)
 
 	result := ValidationError{}
-	some.Of(&err).IfPresent(func(err error) {
+	some.Of(err).IfPresent(func(err error) {
 		switch e := err.(type) {
 		case validator.ValidationErrors:
 			result = NewValidationError(e, v.trans, trans)

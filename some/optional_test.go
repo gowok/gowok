@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/gowok/should"
+	"gopkg.in/yaml.v3"
 )
 
 func TestEmpty(t *testing.T) {
@@ -23,7 +24,7 @@ type Test struct {
 func TestOf(t *testing.T) {
 	t.Run("positive string", func(t *testing.T) {
 		input := "limo"
-		car := Of(&input)
+		car := Of(input)
 
 		should.NotNil(t, car)
 		should.NotNil(t, car.value)
@@ -33,7 +34,7 @@ func TestOf(t *testing.T) {
 
 	t.Run("positive func", func(t *testing.T) {
 		input := func() {}
-		result := Of(&input)
+		result := Of(input)
 
 		should.NotNil(t, result)
 		should.NotNil(t, result.value)
@@ -43,7 +44,7 @@ func TestOf(t *testing.T) {
 
 	t.Run("positive error", func(t *testing.T) {
 		input := errors.New("")
-		result := Of(&input)
+		result := Of(input)
 
 		should.NotNil(t, result)
 		should.NotNil(t, result.value)
@@ -51,17 +52,9 @@ func TestOf(t *testing.T) {
 		should.Equal(t, *result.value, input)
 	})
 
-	t.Run("negative nil string", func(t *testing.T) {
-		car := Of[string](nil)
-
-		should.NotNil(t, car)
-		should.Nil(t, car.value)
-		should.False(t, car.isPresent)
-	})
-
 	t.Run("negative nil func", func(t *testing.T) {
 		var input func() = nil
-		result := Of[func()](&input)
+		result := Of[func()](input)
 
 		should.NotNil(t, result)
 		should.Nil(t, result.value)
@@ -70,7 +63,7 @@ func TestOf(t *testing.T) {
 
 	t.Run("negative nil error", func(t *testing.T) {
 		var input error = nil
-		result := Of[error](&input)
+		result := Of[error](input)
 		t.Log(result.value)
 
 		should.NotNil(t, result)
@@ -82,7 +75,7 @@ func TestOf(t *testing.T) {
 func TestGet(t *testing.T) {
 	t.Run("positive", func(t *testing.T) {
 		input := "limo"
-		car := Of(&input)
+		car := Of(input)
 
 		output, ok := car.Get()
 
@@ -91,11 +84,11 @@ func TestGet(t *testing.T) {
 	})
 
 	t.Run("input nil", func(t *testing.T) {
-		car := Of[string](nil)
+		car := Of[error](nil)
 		output, ok := car.Get()
 
 		should.False(t, ok)
-		should.Equal(t, output, "")
+		should.Nil(t, output)
 	})
 
 	t.Run("empty", func(t *testing.T) {
@@ -117,7 +110,7 @@ func TestIsPresent(t *testing.T) {
 	})
 
 	t.Run("input nil", func(t *testing.T) {
-		car := Of[string](nil)
+		car := Of[error](nil)
 		isPresent := car.IsPresent()
 		should.False(t, isPresent)
 	})
@@ -132,13 +125,13 @@ func TestIsPresent(t *testing.T) {
 func TestOrElse(t *testing.T) {
 	t.Run("positive", func(t *testing.T) {
 		input := "limo"
-		car := Of(&input).OrElse("")
+		car := Of(input).OrElse("")
 		should.Equal(t, car, input)
 	})
 
 	t.Run("input nil", func(t *testing.T) {
-		input := "limo"
-		car := Of[string](nil).OrElse(input)
+		input := errors.New("")
+		car := Of[error](nil).OrElse(input)
 		should.Equal(t, car, input)
 	})
 
@@ -152,7 +145,7 @@ func TestOrElse(t *testing.T) {
 func TestOrElseFunc(t *testing.T) {
 	t.Run("positive", func(t *testing.T) {
 		input := "limo"
-		car := Of(&input).OrElseFunc(func() string {
+		car := Of(input).OrElseFunc(func() string {
 			return ""
 		})
 		should.Equal(t, car, input)
@@ -174,7 +167,7 @@ func TestOrPanic(t *testing.T) {
 			should.Nil(t, err)
 		}()
 		input := "limo"
-		Of(&input).OrPanic(errors.New("not found"))
+		Of(&input).OrPanic()
 	})
 
 	t.Run("input nil", func(t *testing.T) {
@@ -182,7 +175,7 @@ func TestOrPanic(t *testing.T) {
 			err := recover()
 			should.NotNil(t, err)
 		}()
-		Of[string](nil).OrPanic(errors.New("not found"))
+		Of[error](nil).OrPanic()
 	})
 
 	t.Run("empty", func(t *testing.T) {
@@ -190,15 +183,58 @@ func TestOrPanic(t *testing.T) {
 			err := recover()
 			should.NotNil(t, err)
 		}()
-		Empty[string]().OrPanic(errors.New("not found"))
+		Empty[string]().OrPanic()
+	})
+
+	t.Run("empty custom error", func(t *testing.T) {
+		expected := errors.New("uwaduh")
+		defer func() {
+			err := recover()
+			should.NotNil(t, err)
+			should.Equal(t, err, expected)
+		}()
+		Empty[string]().OrPanic(expected)
 	})
 }
 
 func TestIfPresent(t *testing.T) {
 	t.Run("positive", func(t *testing.T) {
 		input := "limo"
-		Of(&input).IfPresent(func(s string) {
+		Of(input).IfPresent(func(s string) {
 			should.Equal(t, input, s)
 		})
+	})
+}
+
+func TestUnmarshalYAML(t *testing.T) {
+	t.Run("positive", func(t *testing.T) {
+		input := struct {
+			Score Some[int] `yaml:"score"`
+		}{}
+
+		err := yaml.Unmarshal([]byte(`
+score: 99
+    `), &input)
+
+		should.Nil(t, err)
+
+		score, ok := input.Score.Get()
+		should.True(t, ok)
+		should.Equal(t, score, 99)
+	})
+
+	t.Run("negative", func(t *testing.T) {
+		input := struct {
+			Score Some[int] `yaml:"score"`
+		}{}
+
+		err := yaml.Unmarshal([]byte(`
+score: ok
+    `), &input)
+
+		should.NotNil(t, err)
+
+		_, ok := input.Score.Get()
+		should.False(t, ok)
 	})
 }
