@@ -14,7 +14,6 @@ type Config struct {
 	Security config.Security
 	SQLs     map[string]config.SQL     `yaml:"sql"`
 	MongoDBs map[string]config.MongoDB `yaml:"mongodb"`
-	Caches   map[string]config.Cache   `yaml:"cache"`
 	Http     map[string]config.Http    `yaml:"http"`
 	Smtp     map[string]config.Smtp    `yaml:"smtp"`
 	Others   map[string]string         `yaml:"others"`

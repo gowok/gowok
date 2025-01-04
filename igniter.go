@@ -9,7 +9,6 @@ import (
 	"net"
 	"time"
 
-	"github.com/eko/gocache/lib/v4/cache"
 	"github.com/go-playground/locales/en"
 	ut "github.com/go-playground/universal-translator"
 	en_translations "github.com/go-playground/validator/v10/translations/en"
@@ -32,7 +31,6 @@ type Project struct {
 	Hooks      *Hooks
 	SQL        getterByName[*sql.DB]
 	MongoDB    getterByName[*mongo.Client]
-	Cache      getterByName[*cache.Cache[any]]
 	Validator  *Validator
 	web        func(...*HttpMux) **HttpMux
 	grpc       func(...*grpc.Server) **grpc.Server
@@ -61,11 +59,6 @@ func ignite() (*Project, error) {
 	}
 
 	dbMongo, err := driver.NewMongoDB(conf.MongoDBs)
-	if err != nil {
-		return nil, err
-	}
-
-	dbCache, err := driver.NewCache(conf.Caches)
 	if err != nil {
 		return nil, err
 	}
@@ -119,7 +112,6 @@ func ignite() (*Project, error) {
 		Hooks:      hooks,
 		SQL:        dbSQL.Get,
 		MongoDB:    dbMongo.Get,
-		Cache:      dbCache.Get,
 		Validator:  validator,
 		web:        web,
 		grpc:       GRPC,
