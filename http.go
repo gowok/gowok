@@ -11,7 +11,7 @@ import (
 )
 
 type HttpMux struct {
-	Mux    *ngamux.HttpServeMux
+	mux    *ngamux.HttpServeMux
 	Server *http.Server
 }
 
@@ -26,24 +26,24 @@ func NewHTTP(c *config.Web) *HttpMux {
 			Addr:    c.Host,
 			Handler: mux,
 		},
-		Mux: mux,
+		mux: mux,
 	}
 	// configureHttpViews(server, c)
 	configureHttpStatic(server, c)
 
 	c.Log.IfPresent(func(ll config.WebLog) {
 		if ll.Enabled {
-			server.Mux.Use(log.New())
+			server.mux.Use(log.New())
 		}
 	})
 	c.Cors.IfPresent(func(ll config.WebCors) {
 		if ll.Enabled {
-			server.Mux.Use(cors.New(c.GetCors()))
+			server.mux.Use(cors.New(c.GetCors()))
 		}
 	})
 	c.Pprof.IfPresent(func(ll config.WebPprof) {
 		if ll.Enabled {
-			server.Mux.Use(pprof.New(c.GetPprof()))
+			server.mux.Use(pprof.New(c.GetPprof()))
 		}
 	})
 
@@ -57,7 +57,7 @@ func configureHttpStatic(server *HttpMux, c *config.Web) {
 	}
 
 	fs := http.FileServer(http.Dir(sc.Dir))
-	server.Mux.HandleFunc(http.MethodGet, sc.Prefix, func(rw http.ResponseWriter, r *http.Request) {
+	server.mux.HandleFunc(http.MethodGet, sc.Prefix, func(rw http.ResponseWriter, r *http.Request) {
 		http.StripPrefix(sc.Prefix, fs).ServeHTTP(rw, r)
 	})
 }
@@ -70,6 +70,30 @@ func configureHttpStatic(server *HttpMux, c *config.Web) {
 //
 // 	// TODO: make support global view and rendering function
 // }
+
+func (h *HttpMux) HandleFunc(method, path string, handlerFunc http.HandlerFunc, middleware ...ngamux.MiddlewareFunc) {
+	h.mux.HandleFunc(method, path, ngamux.WithMiddlewares(middleware...)(handlerFunc))
+}
+
+func (h *HttpMux) Get(path string, handlerFunc http.HandlerFunc, middleware ...ngamux.MiddlewareFunc) {
+	h.mux.Get(path, ngamux.WithMiddlewares(middleware...)(handlerFunc))
+}
+
+func (h *HttpMux) Post(path string, handlerFunc http.HandlerFunc, middleware ...ngamux.MiddlewareFunc) {
+	h.mux.Post(path, ngamux.WithMiddlewares(middleware...)(handlerFunc))
+}
+
+func (h *HttpMux) Patch(path string, handlerFunc http.HandlerFunc, middleware ...ngamux.MiddlewareFunc) {
+	h.mux.Patch(path, ngamux.WithMiddlewares(middleware...)(handlerFunc))
+}
+
+func (h *HttpMux) Put(path string, handlerFunc http.HandlerFunc, middleware ...ngamux.MiddlewareFunc) {
+	h.mux.Put(path, ngamux.WithMiddlewares(middleware...)(handlerFunc))
+}
+
+func (h *HttpMux) Delete(path string, handlerFunc http.HandlerFunc, middleware ...ngamux.MiddlewareFunc) {
+	h.mux.Delete(path, ngamux.WithMiddlewares(middleware...)(handlerFunc))
+}
 
 func HttpBadRequest(rw http.ResponseWriter, body any) {
 	res := ngamux.Res(rw).Status(http.StatusBadRequest)

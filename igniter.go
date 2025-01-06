@@ -16,7 +16,6 @@ import (
 	"github.com/gowok/gowok/must"
 	"github.com/gowok/gowok/runner"
 	"github.com/gowok/gowok/some"
-	"github.com/ngamux/ngamux"
 	"go.mongodb.org/mongo-driver/mongo"
 	"google.golang.org/grpc"
 )
@@ -172,9 +171,9 @@ func run(project *Project) {
 	})
 }
 
-func (p *Project) Web() *ngamux.HttpServeMux {
-	w := *p.web()
-	return w.Mux
+func (p *Project) Web() *HttpMux {
+	w := p.web()
+	return *w
 }
 func (p *Project) GRPC() *grpc.Server {
 	g := p.grpc()
