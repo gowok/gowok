@@ -73,6 +73,18 @@ func (d SQL) Get(name ...string) some.Some[*sql.DB] {
 	return some.Empty[*sql.DB]()
 }
 
+func (d SQL) GetNoDefault(name ...string) some.Some[*sql.DB] {
+	n := ""
+	if len(name) > 0 {
+		n = name[0]
+		if db, ok := d[n]; ok {
+			return some.Of(db)
+		}
+	}
+
+	return some.Empty[*sql.DB]()
+}
+
 type SQLPreparation interface {
 	PrepareContext(ctx context.Context, query string) (*sql.Stmt, error)
 }
