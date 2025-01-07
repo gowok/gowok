@@ -8,6 +8,7 @@ require (
 	github.com/go-playground/locales v0.14.1
 	github.com/go-playground/universal-translator v0.18.1
 	github.com/go-playground/validator/v10 v10.23.0
+	github.com/google/uuid v1.3.1
 	github.com/gowok/should v0.0.0-20240831060519-d8ab7c7891fb
 	github.com/ngamux/middleware v0.0.8
 	github.com/ngamux/ngamux v1.7.44
