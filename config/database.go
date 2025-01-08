@@ -6,9 +6,3 @@ type SQL struct {
 	Enabled bool
 	With    map[string]string
 }
-
-type MongoDB struct {
-	DSN     string
-	Enabled bool
-	With    map[string]string
-}

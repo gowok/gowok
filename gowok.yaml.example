@@ -31,11 +31,6 @@ cache:
     dsn: 'redis://localhost'
     enabled: true
 
-mongodb:
-  default:
-    dsn: 'mongodb://localhost'
-    enabled: true
-
 message_brokers:
   default:
     driver: rabbitmq

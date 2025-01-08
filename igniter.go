@@ -16,7 +16,6 @@ import (
 	"github.com/gowok/gowok/must"
 	"github.com/gowok/gowok/runner"
 	"github.com/gowok/gowok/some"
-	"go.mongodb.org/mongo-driver/mongo"
 	"google.golang.org/grpc"
 )
 
@@ -29,7 +28,6 @@ type Project struct {
 	Runner     *runner.Runner
 	Hooks      *Hooks
 	SQL        getterByName[*sql.DB]
-	MongoDB    getterByName[*mongo.Client]
 	Validator  *Validator
 	web        func(...*HttpMux) **HttpMux
 	grpc       func(...*grpc.Server) **grpc.Server
@@ -53,11 +51,6 @@ func ignite() (*Project, error) {
 	}
 
 	dbSQL, err := driver.NewSQL(conf.SQLs)
-	if err != nil {
-		return nil, err
-	}
-
-	dbMongo, err := driver.NewMongoDB(conf.MongoDBs)
 	if err != nil {
 		return nil, err
 	}
@@ -110,7 +103,6 @@ func ignite() (*Project, error) {
 		Runner:     running,
 		Hooks:      hooks,
 		SQL:        dbSQL.Get,
-		MongoDB:    dbMongo.Get,
 		Validator:  validator,
 		web:        web,
 		grpc:       GRPC,

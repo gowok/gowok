@@ -12,11 +12,10 @@ import (
 type Config struct {
 	App      config.App
 	Security config.Security
-	SQLs     map[string]config.SQL     `yaml:"sql"`
-	MongoDBs map[string]config.MongoDB `yaml:"mongodb"`
-	Http     map[string]config.Http    `yaml:"http"`
-	Smtp     map[string]config.Smtp    `yaml:"smtp"`
-	Others   map[string]string         `yaml:"others"`
+	SQLs     map[string]config.SQL  `yaml:"sql"`
+	Http     map[string]config.Http `yaml:"http"`
+	Smtp     map[string]config.Smtp `yaml:"smtp"`
+	Others   map[string]string      `yaml:"others"`
 
 	IsTesting bool   `yaml:"is_testing"`
 	Env       string `yaml:"env"`
