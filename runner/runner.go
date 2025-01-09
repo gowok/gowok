@@ -3,6 +3,8 @@ package runner
 import (
 	"os"
 	"os/signal"
+	"runtime"
+	"sync"
 	"syscall"
 
 	"github.com/gowok/gowok/some"
@@ -17,6 +19,7 @@ type Runner struct {
 
 func New(opts ...Option) *Runner {
 	runner := &Runner{
+		numCPU:           runtime.NumCPU(),
 		runFns:           []func(){func() {}},
 		gracefulStopFunc: some.Empty[func()](),
 	}
@@ -24,6 +27,8 @@ func New(opts ...Option) *Runner {
 	for _, opt := range opts {
 		opt(runner)
 	}
+
+	runtime.GOMAXPROCS(runner.numCPU)
 	return runner
 }
 
@@ -36,12 +41,19 @@ func (r Runner) Run(forever ...bool) {
 		return
 	}
 
+	var wg sync.WaitGroup
 	for i := len(r.runFns) - 1; i >= 0; i-- {
-		go r.runFns[i]()
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			r.runFns[i]()
+		}()
 	}
 
 	if len(forever) > 0 && forever[0] {
 		r.gracefulStopRun()
+	} else {
+		wg.Wait()
 	}
 }
 
