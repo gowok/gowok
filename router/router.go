@@ -81,6 +81,10 @@ func configureHttpStatic(server *httpMux, c *config.Web) {
 // 	// TODO: make support global view and rendering function
 // }
 
+func Group(path string) *ngamux.HttpServeMux {
+	return mux.mux.Group(path)
+}
+
 func HandleFunc(method, path string, handlerFunc http.HandlerFunc, middleware ...ngamux.MiddlewareFunc) {
 	mux.mux.HandleFunc(method, path, ngamux.WithMiddlewares(middleware...)(handlerFunc))
 }
