@@ -172,11 +172,14 @@ func (p *Project) GRPC() *grpc.Server {
 	return *g
 }
 
-func (p *Project) Run() {
+func (p *Project) Run(forever ...bool) {
 	p.Runner.AddRunFunc(func() {
 		run(p)
 	})
-	p.Runner.Run()
+	if p.Config.App.Web.Enabled || p.Config.App.Grpc.Enabled {
+		forever = append([]bool{true}, forever...)
+	}
+	p.Runner.Run(forever...)
 }
 
 func (p *Project) Configures(configures ...ConfigureFunc) {

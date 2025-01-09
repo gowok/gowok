@@ -31,7 +31,7 @@ func (r *Runner) AddRunFunc(runFunc func()) {
 	r.runFns = append(r.runFns, runFunc)
 }
 
-func (r Runner) Run() {
+func (r Runner) Run(forever ...bool) {
 	if r.runFns == nil {
 		return
 	}
@@ -40,7 +40,9 @@ func (r Runner) Run() {
 		go r.runFns[i]()
 	}
 
-	r.gracefulStopRun()
+	if len(forever) > 0 && forever[0] {
+		r.gracefulStopRun()
+	}
 }
 
 func (r Runner) gracefulStopRun() {
