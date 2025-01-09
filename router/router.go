@@ -108,3 +108,7 @@ func Delete(path string, handlerFunc http.HandlerFunc, middleware ...ngamux.Midd
 func Use(middleware ...ngamux.MiddlewareFunc) {
 	mux.mux.Use(middleware...)
 }
+
+func Annotate(annotators ...ngamux.Annotator) *ngamux.Annotation {
+	return mux.mux.Annotate(annotators...)
+}

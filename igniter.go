@@ -175,9 +175,10 @@ func (p *Project) Run(forever ...bool) {
 	p.Runner.Run(forever...)
 }
 
-func (p *Project) Configures(configures ...ConfigureFunc) {
+func (p *Project) Configures(configures ...ConfigureFunc) *Project {
 	p.configures = make([]ConfigureFunc, len(configures))
 	copy(p.configures, configures)
+	return p
 }
 
 func (p *Project) Reload() {
