@@ -14,6 +14,7 @@ import (
 	en_translations "github.com/go-playground/validator/v10/translations/en"
 	"github.com/gowok/gowok/driver"
 	"github.com/gowok/gowok/must"
+	"github.com/gowok/gowok/router"
 	"github.com/gowok/gowok/runner"
 	"github.com/gowok/gowok/some"
 	"google.golang.org/grpc"
@@ -29,7 +30,6 @@ type Project struct {
 	Hooks      *Hooks
 	SQL        getterByName[*sql.DB]
 	Validator  *Validator
-	web        func(...*HttpMux) **HttpMux
 	grpc       func(...*grpc.Server) **grpc.Server
 	configures []ConfigureFunc
 }
@@ -72,9 +72,6 @@ func ignite() (*Project, error) {
 	GRPC := Singleton(func() *grpc.Server {
 		return grpc.NewServer()
 	})
-	web := Singleton(func() *HttpMux {
-		return NewHTTP(&conf.App.Web)
-	})
 
 	hooks := &Hooks{}
 	running := runner.New(
@@ -90,7 +87,7 @@ func ignite() (*Project, error) {
 				ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 				defer cancel()
 
-				_ = (*web()).Server.Shutdown(ctx)
+				_ = router.Server().Shutdown(ctx)
 			}
 			hooks.onStopped.IfPresent(func(f Hook) {
 				f()
@@ -104,7 +101,6 @@ func ignite() (*Project, error) {
 		Hooks:      hooks,
 		SQL:        dbSQL.Get,
 		Validator:  validator,
-		web:        web,
 		grpc:       GRPC,
 		configures: make([]ConfigureFunc, 0),
 	}
@@ -121,6 +117,7 @@ func Get() *Project {
 }
 
 func run(project *Project) {
+	router.Configure(&project.Config.App.Web)
 	for _, configure := range project.configures {
 		configure(project)
 	}
@@ -135,7 +132,7 @@ func run(project *Project) {
 		}
 
 		println("project: starting web")
-		err := (*project.web()).Server.ListenAndServe()
+		err := router.Server().ListenAndServe()
 		if err != nil {
 			log.Fatalf("web can't start, because: %v", err)
 		}
@@ -163,10 +160,6 @@ func run(project *Project) {
 	})
 }
 
-func (p *Project) Web() *HttpMux {
-	w := p.web()
-	return *w
-}
 func (p *Project) GRPC() *grpc.Server {
 	g := p.grpc()
 	return *g
