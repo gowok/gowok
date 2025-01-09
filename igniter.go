@@ -16,6 +16,7 @@ import (
 	"github.com/gowok/gowok/must"
 	"github.com/gowok/gowok/router"
 	"github.com/gowok/gowok/runner"
+	"github.com/gowok/gowok/singleton"
 	"github.com/gowok/gowok/some"
 	"google.golang.org/grpc"
 )
@@ -69,7 +70,7 @@ func ignite() (*Project, error) {
 	}
 	validator.trans = trans
 
-	GRPC := Singleton(func() *grpc.Server {
+	GRPC := singleton.New(func() *grpc.Server {
 		return grpc.NewServer()
 	})
 
@@ -107,7 +108,7 @@ func ignite() (*Project, error) {
 	return project, nil
 }
 
-var projectSingleton = Singleton(func() *Project {
+var projectSingleton = singleton.New(func() *Project {
 	return must.Must(ignite())
 })
 
