@@ -12,7 +12,6 @@ require (
 	github.com/gowok/should v0.0.0-20240831060519-d8ab7c7891fb
 	github.com/ngamux/middleware v0.0.8
 	github.com/ngamux/ngamux v1.7.44
-	github.com/wagslane/go-rabbitmq v0.13.0
 	golang.org/x/crypto v0.31.0
 	google.golang.org/grpc v1.59.0
 	gopkg.in/yaml.v3 v3.0.1
@@ -23,7 +22,6 @@ require (
 	github.com/golang/protobuf v1.5.3 // indirect
 	github.com/kr/pretty v0.3.1 // indirect
 	github.com/leodido/go-urn v1.4.0 // indirect
-	github.com/rabbitmq/amqp091-go v1.7.0 // indirect
 	github.com/rogpeppe/go-internal v1.11.0 // indirect
 	github.com/stretchr/testify v1.9.0 // indirect
 	golang.org/x/net v0.21.0 // indirect

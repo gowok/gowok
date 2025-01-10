@@ -1,4 +1,4 @@
-package driver
+package sql
 
 import (
 	"context"
@@ -10,8 +10,8 @@ import (
 	"github.com/gowok/gowok/some"
 )
 
-type SQL map[string]*sql.DB
-
+var plugin = "sql"
+var sqls map[string]*sql.DB
 var drivers = map[string][]string{
 	"postgres": []string{"pgx", "postgres"},
 	"mysql":    []string{"mysql"},
@@ -19,9 +19,8 @@ var drivers = map[string][]string{
 	"sqlite3":  []string{"sqlite3"},
 }
 
-func NewSQL(config map[string]config.SQL) (SQL, error) {
-	sqls := SQL{}
-
+func Configure(config map[string]config.SQL) {
+	sqls = make(map[string]*sql.DB)
 	for name, dbC := range config {
 		if !dbC.Enabled {
 			continue
@@ -29,7 +28,7 @@ func NewSQL(config map[string]config.SQL) (SQL, error) {
 
 		drivers, ok := drivers[dbC.Driver]
 		if !ok {
-			slog.Warn("unknown SQL", "driver", dbC.Driver)
+			slog.Warn("unknown", "driver", dbC.Driver, "plugin", plugin)
 			continue
 		}
 
@@ -39,7 +38,14 @@ func NewSQL(config map[string]config.SQL) (SQL, error) {
 				if strings.Contains(err.Error(), "unknown driver") {
 					continue
 				}
-				return nil, err
+				slog.Warn("failed to connect", "plugin", plugin, "name", name, "error", err)
+				return
+			}
+
+			err = ddb.Ping()
+			if err != nil {
+				slog.Warn("failed to connect", "plugin", plugin, "name", name, "error", err)
+				return
 			}
 
 			sqls[name] = ddb
@@ -49,15 +55,13 @@ func NewSQL(config map[string]config.SQL) (SQL, error) {
 			slog.Warn("not installed", "driver", dbC.Driver)
 		}
 	}
-
-	return sqls, nil
 }
 
-func (d SQL) Get(name ...string) some.Some[*sql.DB] {
+func DB(name ...string) some.Some[*sql.DB] {
 	n := ""
 	if len(name) > 0 {
 		n = name[0]
-		if db, ok := d[n]; ok {
+		if db, ok := sqls[n]; ok {
 			return some.Of(db)
 		}
 	}
@@ -66,18 +70,18 @@ func (d SQL) Get(name ...string) some.Some[*sql.DB] {
 		slog.Info("using default connection", "not_found", n)
 	}
 
-	if db, ok := d["default"]; ok {
+	if db, ok := sqls["default"]; ok {
 		return some.Of(db)
 	}
 
 	return some.Empty[*sql.DB]()
 }
 
-func (d SQL) GetNoDefault(name ...string) some.Some[*sql.DB] {
+func GetNoDefault(name ...string) some.Some[*sql.DB] {
 	n := ""
 	if len(name) > 0 {
 		n = name[0]
-		if db, ok := d[n]; ok {
+		if db, ok := sqls[n]; ok {
 			return some.Of(db)
 		}
 	}
@@ -85,24 +89,24 @@ func (d SQL) GetNoDefault(name ...string) some.Some[*sql.DB] {
 	return some.Empty[*sql.DB]()
 }
 
-type SQLPreparation interface {
+type Preparation interface {
 	PrepareContext(ctx context.Context, query string) (*sql.Stmt, error)
 }
 
-type SQLQuerier interface {
+type Querier interface {
 	PingContext(ctx context.Context) error
 	QueryContext(ctx context.Context, query string, args ...any) (*sql.Rows, error)
 	QueryRowContext(ctx context.Context, query string, args ...any) *sql.Row
 	BeginTx(ctx context.Context, opts *sql.TxOptions) (*sql.Tx, error)
 }
 
-type SQLExecutor interface {
+type Executor interface {
 	ExecContext(ctx context.Context, query string, args ...any) (sql.Result, error)
 }
 
-type SQLTx interface {
-	SQLQuerier
-	SQLExecutor
+type Tx interface {
+	Querier
+	Executor
 	Commit() error
 	Rollback() error
 }

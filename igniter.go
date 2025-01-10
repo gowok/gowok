@@ -2,7 +2,6 @@ package gowok
 
 import (
 	"context"
-	"database/sql"
 	"flag"
 	"fmt"
 	"log"
@@ -12,12 +11,12 @@ import (
 	"github.com/go-playground/locales/en"
 	ut "github.com/go-playground/universal-translator"
 	en_translations "github.com/go-playground/validator/v10/translations/en"
-	"github.com/gowok/gowok/driver"
 	"github.com/gowok/gowok/must"
 	"github.com/gowok/gowok/router"
 	"github.com/gowok/gowok/runner"
 	"github.com/gowok/gowok/singleton"
 	"github.com/gowok/gowok/some"
+	"github.com/gowok/gowok/sql"
 	"google.golang.org/grpc"
 )
 
@@ -29,7 +28,6 @@ type Project struct {
 	ConfigMap  map[string]any
 	Runner     *runner.Runner
 	Hooks      *Hooks
-	SQL        getterByName[*sql.DB]
 	Validator  *Validator
 	grpc       func(...*grpc.Server) **grpc.Server
 	configures []ConfigureFunc
@@ -47,11 +45,6 @@ func ignite() (*Project, error) {
 	flag.Parse()
 
 	conf, confRaw, err := NewConfig(pathConfig)
-	if err != nil {
-		return nil, err
-	}
-
-	dbSQL, err := driver.NewSQL(conf.SQLs)
 	if err != nil {
 		return nil, err
 	}
@@ -100,7 +93,6 @@ func ignite() (*Project, error) {
 		ConfigMap:  confRaw,
 		Runner:     running,
 		Hooks:      hooks,
-		SQL:        dbSQL.Get,
 		Validator:  validator,
 		grpc:       GRPC,
 		configures: make([]ConfigureFunc, 0),
@@ -118,6 +110,7 @@ func Get() *Project {
 }
 
 func run(project *Project) {
+	sql.Configure(project.Config.SQLs)
 	router.Configure(&project.Config.App.Web)
 	for _, configure := range project.configures {
 		configure(project)
