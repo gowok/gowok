@@ -86,6 +86,7 @@ func ignite() (*Project, error) {
 			})
 		}),
 	)
+
 	project = &Project{
 		Config:     conf,
 		ConfigMap:  confRaw,
@@ -94,6 +95,12 @@ func ignite() (*Project, error) {
 		Validator:  validator,
 		configures: make([]ConfigureFunc, 0),
 	}
+	project.Configures(func(p *Project) {
+		sql.Configure(p.Config.SQLs)
+		router.Configure(&p.Config.App.Web)
+		grpc.Configure(&p.Config.App.Grpc)
+	})
+
 	return project, nil
 }
 
@@ -107,13 +114,6 @@ func Get() *Project {
 }
 
 func run(project *Project) {
-	sql.Configure(project.Config.SQLs)
-	router.Configure(&project.Config.App.Web)
-	grpc.Configure(&project.Config.App.Grpc)
-	for _, configure := range project.configures {
-		configure(project)
-	}
-
 	project.Hooks.onStarting.IfPresent(func(f Hook) {
 		f()
 	})
