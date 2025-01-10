@@ -4,16 +4,12 @@ import (
 	"context"
 	"errors"
 	"flag"
-	"fmt"
 	"log"
 	"log/slog"
 	"net"
 	"net/http"
 	"time"
 
-	"github.com/go-playground/locales/en"
-	ut "github.com/go-playground/universal-translator"
-	en_translations "github.com/go-playground/validator/v10/translations/en"
 	"github.com/gowok/gowok/grpc"
 	"github.com/gowok/gowok/must"
 	"github.com/gowok/gowok/router"
@@ -29,7 +25,6 @@ type Project struct {
 	ConfigMap  map[string]any
 	Runner     *runner.Runner
 	Hooks      *Hooks
-	Validator  *Validator
 	configures []ConfigureFunc
 }
 
@@ -48,20 +43,6 @@ func ignite() (*Project, error) {
 	if err != nil {
 		return nil, err
 	}
-
-	validator := NewValidator()
-	en := en.New()
-	uni := ut.New(en, en)
-	trans, ok := uni.GetTranslator("en")
-	if !ok {
-		return nil, fmt.Errorf("validator: %w", ut.ErrUnknowTranslation)
-	}
-
-	err = en_translations.RegisterDefaultTranslations(validator.validate, trans)
-	if err != nil {
-		return nil, err
-	}
-	validator.trans = trans
 
 	hooks := &Hooks{}
 	running := runner.New(
@@ -90,7 +71,6 @@ func ignite() (*Project, error) {
 		ConfigMap:  confRaw,
 		Runner:     running,
 		Hooks:      hooks,
-		Validator:  validator,
 		configures: make([]ConfigureFunc, 0),
 	}
 	project.Configures(func(p *Project) {

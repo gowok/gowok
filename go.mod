@@ -3,9 +3,6 @@ module github.com/gowok/gowok
 go 1.23.4
 
 require (
-	github.com/go-playground/locales v0.14.1
-	github.com/go-playground/universal-translator v0.18.1
-	github.com/go-playground/validator/v10 v10.23.0
 	github.com/google/uuid v1.3.1
 	github.com/gowok/should v0.0.0-20240831060519-d8ab7c7891fb
 	github.com/ngamux/middleware v0.0.8
@@ -16,12 +13,9 @@ require (
 )
 
 require (
-	github.com/gabriel-vasile/mimetype v1.4.3 // indirect
 	github.com/golang/protobuf v1.5.3 // indirect
 	github.com/kr/pretty v0.3.1 // indirect
-	github.com/leodido/go-urn v1.4.0 // indirect
 	github.com/rogpeppe/go-internal v1.11.0 // indirect
-	github.com/stretchr/testify v1.9.0 // indirect
 	golang.org/x/net v0.21.0 // indirect
 	golang.org/x/sys v0.28.0 // indirect
 	golang.org/x/text v0.21.0 // indirect

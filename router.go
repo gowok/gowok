@@ -1,6 +1,7 @@
 package gowok
 
 import (
+	"encoding/json"
 	"net/http"
 
 	"github.com/ngamux/ngamux"
@@ -11,7 +12,7 @@ func HttpBadRequest(rw http.ResponseWriter, body any) {
 	switch b := body.(type) {
 	case string:
 		res.Text(b)
-	case *ValidationError, ValidationError:
+	case json.Marshaler:
 		res.JSON(b)
 	case error:
 		res.Text(b.Error())
