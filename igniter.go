@@ -166,8 +166,10 @@ func (p *Project) Run(forever ...bool) {
 }
 
 func (p *Project) Configures(configures ...ConfigureFunc) *Project {
-	p.configures = make([]ConfigureFunc, len(configures))
-	copy(p.configures, configures)
+	p.configures = append(p.configures, configures...)
+	for _, configure := range configures {
+		configure(project)
+	}
 	return p
 }
 
