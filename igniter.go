@@ -19,11 +19,9 @@ import (
 	"github.com/gowok/gowok/router"
 	"github.com/gowok/gowok/runner"
 	"github.com/gowok/gowok/singleton"
-	"github.com/gowok/gowok/some"
 	"github.com/gowok/gowok/sql"
 )
 
-type getterByName[T any] func(name ...string) some.Some[T]
 type ConfigureFunc func(*Project)
 
 type Project struct {
