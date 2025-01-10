@@ -2,22 +2,25 @@ package gowok
 
 import (
 	"context"
+	"errors"
 	"flag"
 	"fmt"
 	"log"
+	"log/slog"
 	"net"
+	"net/http"
 	"time"
 
 	"github.com/go-playground/locales/en"
 	ut "github.com/go-playground/universal-translator"
 	en_translations "github.com/go-playground/validator/v10/translations/en"
+	"github.com/gowok/gowok/grpc"
 	"github.com/gowok/gowok/must"
 	"github.com/gowok/gowok/router"
 	"github.com/gowok/gowok/runner"
 	"github.com/gowok/gowok/singleton"
 	"github.com/gowok/gowok/some"
 	"github.com/gowok/gowok/sql"
-	"google.golang.org/grpc"
 )
 
 type getterByName[T any] func(name ...string) some.Some[T]
@@ -29,7 +32,6 @@ type Project struct {
 	Runner     *runner.Runner
 	Hooks      *Hooks
 	Validator  *Validator
-	grpc       func(...*grpc.Server) **grpc.Server
 	configures []ConfigureFunc
 }
 
@@ -63,21 +65,17 @@ func ignite() (*Project, error) {
 	}
 	validator.trans = trans
 
-	GRPC := singleton.New(func() *grpc.Server {
-		return grpc.NewServer()
-	})
-
 	hooks := &Hooks{}
 	running := runner.New(
 		runner.WithRLimitEnable(true),
 		runner.WithGracefulStopFunc(func() {
 			println()
 			if conf.App.Grpc.Enabled {
-				println("project: stopping GRPC")
-				(*GRPC()).GracefulStop()
+				slog.Info("stopping GRPC")
+				grpc.Server().GracefulStop()
 			}
 			if conf.App.Web.Enabled {
-				println("project: stopping web")
+				slog.Info("stopping web")
 				ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 				defer cancel()
 
@@ -94,7 +92,6 @@ func ignite() (*Project, error) {
 		Runner:     running,
 		Hooks:      hooks,
 		Validator:  validator,
-		grpc:       GRPC,
 		configures: make([]ConfigureFunc, 0),
 	}
 	return project, nil
@@ -112,6 +109,7 @@ func Get() *Project {
 func run(project *Project) {
 	sql.Configure(project.Config.SQLs)
 	router.Configure(&project.Config.App.Web)
+	grpc.Configure(&project.Config.App.Grpc)
 	for _, configure := range project.configures {
 		configure(project)
 	}
@@ -125,9 +123,12 @@ func run(project *Project) {
 			return
 		}
 
-		println("project: starting web")
+		slog.Info("starting web")
 		err := router.Server().ListenAndServe()
 		if err != nil {
+			if errors.Is(err, http.ErrServerClosed) {
+				return
+			}
 			log.Fatalf("web can't start, because: %v", err)
 		}
 	}()
@@ -137,13 +138,13 @@ func run(project *Project) {
 			return
 		}
 
-		println("project: starting GRPC")
+		slog.Info("starting GRPC")
 		listen, err := net.Listen("tcp", project.Config.App.Grpc.Host)
 		if err != nil {
 			log.Fatalf("GRPC can't start, because: %v", err)
 		}
 
-		err = project.GRPC().Serve(listen)
+		err = grpc.Server().Serve(listen)
 		if err != nil {
 			log.Fatalf("GRPC can't start, because: %v", err)
 		}
@@ -152,11 +153,6 @@ func run(project *Project) {
 	project.Hooks.onStarted.IfPresent(func(f Hook) {
 		f()
 	})
-}
-
-func (p *Project) GRPC() *grpc.Server {
-	g := p.grpc()
-	return *g
 }
 
 func (p *Project) Run(forever ...bool) {
