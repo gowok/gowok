@@ -35,13 +35,13 @@ func NewConfig(pathConfig string) (*Config, map[string]any, error) {
 	conf := &Config{}
 	err = yaml.Unmarshal(fiContent, conf)
 	if err != nil {
-		return conf, nil, fmt.Errorf("can't decode config file: %w", err)
+		return nil, nil, fmt.Errorf("can't decode config file: %w", err)
 	}
 
 	confRaw := map[string]any{}
 	err = yaml.Unmarshal(fiContent, confRaw)
 	if err != nil {
-		return conf, nil, fmt.Errorf("can't decode config file: %w", err)
+		return nil, nil, fmt.Errorf("can't decode config file: %w", err)
 	}
 
 	return conf, confRaw, nil
