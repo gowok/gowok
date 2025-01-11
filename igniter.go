@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"flag"
-	"log"
 	"log/slog"
 	"net"
 	"net/http"
@@ -107,7 +106,7 @@ func run(project *Project) {
 			if errors.Is(err, http.ErrServerClosed) {
 				return
 			}
-			log.Fatalf("web can't start, because: %v", err)
+			panic("web can't start, because: " + err.Error())
 		}
 	}()
 
@@ -119,12 +118,12 @@ func run(project *Project) {
 		slog.Info("starting GRPC")
 		listen, err := net.Listen("tcp", project.Config.App.Grpc.Host)
 		if err != nil {
-			log.Fatalf("GRPC can't start, because: %v", err)
+			panic("GRPC can't start, because: " + err.Error())
 		}
 
 		err = grpc.Server().Serve(listen)
 		if err != nil {
-			log.Fatalf("GRPC can't start, because: %v", err)
+			panic("GRPC can't start, because: " + err.Error())
 		}
 	}()
 
