@@ -97,3 +97,10 @@ func (o *Some[T]) UnmarshalYAML(value *yaml.Node) error {
 	o.isPresent = true
 	return nil
 }
+
+func (o Some[T]) MarshalYAML() (any, error) {
+	if o.IsPresent() {
+		return o.value, nil
+	}
+	return Empty[T]().value, nil
+}
