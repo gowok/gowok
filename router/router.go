@@ -90,7 +90,10 @@ func setupHealthPath() {
 
 		databases := sql.Ping()
 
-		var resp data.Health
+		var resp = data.Health{
+			Status:    "healty",
+			Databases: databases,
+		}
 
 		for _, status := range databases {
 			if status != "healty" {
@@ -99,7 +102,6 @@ func setupHealthPath() {
 			}
 		}
 
-		resp.Status = "healty!"
 		ngamux.Res(w).JSON(resp)
 	})
 
