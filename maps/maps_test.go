@@ -16,7 +16,10 @@ func ExampleMapToStruct() {
 	}
 
 	var c Config
-	maps.MapToStruct(m, &c)
+	err := maps.MapToStruct(m, &c)
+	if err != nil {
+		panic(err)
+	}
 
 	fmt.Println(c.Host)
 	// Output:
