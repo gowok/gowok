@@ -1,9 +1,12 @@
 package router
 
 import (
+	"encoding/json"
 	"net/http"
 
 	"github.com/gowok/gowok/config"
+	"github.com/gowok/gowok/data"
+	"github.com/gowok/gowok/sql"
 	"github.com/ngamux/middleware/cors"
 	"github.com/ngamux/middleware/log"
 	"github.com/ngamux/middleware/pprof"
@@ -58,6 +61,7 @@ func Configure(c *config.Web) {
 	})
 
 	mux = server
+  setupHealthPath()
 }
 
 func configureHttpStatic(server *httpMux, c *config.Web) {
@@ -80,6 +84,33 @@ func configureHttpStatic(server *httpMux, c *config.Web) {
 //
 // 	// TODO: make support global view and rendering function
 // }
+
+func setupHealthPath() {
+  
+  mux.mux.HandleFunc(http.MethodGet, "/health", func(w http.ResponseWriter, r *http.Request) {
+
+    databases := sql.Ping()
+
+    var resp data.Health
+
+    for _, status := range databases {
+      if status != "healty" {
+        resp.Status = "un-healty!!"
+        break
+      }
+    }
+
+
+     resp.Status = "healty!"
+     if err := json.NewEncoder(w).Encode(resp); err != nil {
+       w.Write([]byte("cannot marshal status service!"))
+       w.WriteHeader(http.StatusInternalServerError)
+       return
+     }
+     w.WriteHeader(http.StatusOK)
+  })
+
+}
 
 func Group(path string) *ngamux.HttpServeMux {
 	return mux.mux.Group(path)
