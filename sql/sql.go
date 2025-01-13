@@ -87,3 +87,18 @@ func GetNoDefault(name ...string) some.Some[*sql.DB] {
 
 	return some.Empty[*sql.DB]()
 }
+
+func Ping() map[string]string {
+  
+  	var result = make(map[string]string)
+
+  	for name, dbConn := range sqls {
+		if err := dbConn.Ping(); err != nil {
+			result[name] = "un-healty"
+		}else {
+			result[name] = "healty"
+		}
+  	}
+
+  	return result
+}

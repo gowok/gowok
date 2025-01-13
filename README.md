@@ -42,6 +42,11 @@ Run this command inside your project.
 go run main.go
 ```
 
+Or if config file not on root dir, use flag `--config`
+``` bash
+go run main.go --config=folder/gowok.yaml
+```
+
 It will show output like this:
 ```
 2025/01/13 10:43:09 INFO starting web
