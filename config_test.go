@@ -30,6 +30,8 @@ func TestNewConfig(t *testing.T) {
 		}
 
 		yy, err := yaml.Marshal(expectedC)
+		should.Nil(t, err)
+
 		_, err = tempFile.Write(yy)
 		should.Nil(t, err)
 		defer tempFile.Close()
