@@ -61,7 +61,7 @@ func Configure(c *config.Web) {
 	})
 
 	mux = server
-  setupHealthPath()
+	setupHealthPath()
 }
 
 func configureHttpStatic(server *httpMux, c *config.Web) {
@@ -86,29 +86,28 @@ func configureHttpStatic(server *httpMux, c *config.Web) {
 // }
 
 func setupHealthPath() {
-  
-  mux.mux.HandleFunc(http.MethodGet, "/health", func(w http.ResponseWriter, r *http.Request) {
 
-    databases := sql.Ping()
+	mux.mux.HandleFunc(http.MethodGet, "/health", func(w http.ResponseWriter, r *http.Request) {
 
-    var resp data.Health
+		databases := sql.Ping()
 
-    for _, status := range databases {
-      if status != "healty" {
-        resp.Status = "un-healty!!"
-        break
-      }
-    }
+		var resp data.Health
 
+		for _, status := range databases {
+			if status != "healty" {
+				resp.Status = "un-healty!!"
+				break
+			}
+		}
 
-     resp.Status = "healty!"
-     if err := json.NewEncoder(w).Encode(resp); err != nil {
-       w.Write([]byte("cannot marshal status service!"))
-       w.WriteHeader(http.StatusInternalServerError)
-       return
-     }
-     w.WriteHeader(http.StatusOK)
-  })
+		resp.Status = "healty!"
+		if err := json.NewEncoder(w).Encode(resp); err != nil {
+			w.Write([]byte("cannot marshal status service!"))
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		w.WriteHeader(http.StatusOK)
+	})
 
 }
 

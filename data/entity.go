@@ -10,6 +10,6 @@ type Entity struct {
 }
 
 type Health struct {
-  Status string `json:"status"`
-  Databases map[string]string `json:"databases,omitempty"`
+	Status    string            `json:"status"`
+	Databases map[string]string `json:"databases,omitempty"`
 }
