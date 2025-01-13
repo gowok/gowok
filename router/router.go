@@ -102,7 +102,7 @@ func setupHealthPath() {
 
 		resp.Status = "healty!"
 		if err := json.NewEncoder(w).Encode(resp); err != nil {
-			w.Write([]byte("cannot marshal status service!"))
+			_, _ = w.Write([]byte("cannot marshal status service!"))
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
