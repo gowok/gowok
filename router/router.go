@@ -91,7 +91,10 @@ func setupHealthPath() {
 
 		databases := sql.Ping()
 
-		var resp data.Health
+		var resp = data.Health{
+			Status:    "healty",
+			Databases: databases,
+		}
 
 		for _, status := range databases {
 			if status != "healty" {
@@ -100,7 +103,6 @@ func setupHealthPath() {
 			}
 		}
 
-		resp.Status = "healty!"
 		if err := json.NewEncoder(w).Encode(resp); err != nil {
 			_, _ = w.Write([]byte("cannot marshal status service!"))
 			w.WriteHeader(http.StatusInternalServerError)
