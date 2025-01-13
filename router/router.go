@@ -1,7 +1,6 @@
 package router
 
 import (
-	"encoding/json"
 	"net/http"
 
 	"github.com/gowok/gowok/config"
@@ -101,12 +100,7 @@ func setupHealthPath() {
 		}
 
 		resp.Status = "healty!"
-		if err := json.NewEncoder(w).Encode(resp); err != nil {
-			w.Write([]byte("cannot marshal status service!"))
-			w.WriteHeader(http.StatusInternalServerError)
-			return
-		}
-		w.WriteHeader(http.StatusOK)
+		ngamux.Res(w).JSON(resp)
 	})
 
 }
