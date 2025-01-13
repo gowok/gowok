@@ -6,7 +6,7 @@ import (
 	"github.com/gowok/gowok/maps"
 )
 
-func ExampleMapToStruct() {
+func ExampleToStruct() {
 	type Config struct {
 		Host string `json:"host"`
 	}
@@ -16,7 +16,7 @@ func ExampleMapToStruct() {
 	}
 
 	var c Config
-	err := maps.MapToStruct(m, &c)
+	err := maps.ToStruct(m, &c)
 	if err != nil {
 		panic(err)
 	}

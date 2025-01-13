@@ -2,11 +2,12 @@ package maps
 
 import (
 	"encoding/json"
+	"errors"
 	"strings"
 )
 
-// MapToStruct is a helper function to convert map[string]any to struct
-func MapToStruct(data any, v any) error {
+// ToStruct is a helper function to convert map[string]any to struct
+func ToStruct(data map[string]any, v any) error {
 	jsoned, err := json.Marshal(data)
 	if err != nil {
 		return err
@@ -18,6 +19,14 @@ func MapToStruct(data any, v any) error {
 	}
 
 	return nil
+}
+
+func MapToStruct(data any, v any) error {
+	dd, ok := data.(map[string]any)
+	if !ok {
+		return errors.New("data is not map")
+	}
+	return ToStruct(dd, v)
 }
 
 // Get is a helper function to get value from map[string]any
