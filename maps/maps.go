@@ -21,10 +21,13 @@ func ToStruct(data map[string]any, v any) error {
 	return nil
 }
 
+// MapToStruct is a helper function to convert map[string]any to struct
+//
+// Deprecated: Use [ToStruct] instead.
 func MapToStruct(data any, v any) error {
 	dd, ok := data.(map[string]any)
 	if !ok {
-		return errors.New("data is not map")
+		return errors.New("can not convert data to struct")
 	}
 	return ToStruct(dd, v)
 }
