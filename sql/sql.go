@@ -6,7 +6,9 @@ import (
 	"strings"
 
 	"github.com/gowok/gowok/config"
+	"github.com/gowok/gowok/health"
 	"github.com/gowok/gowok/some"
+	"github.com/ngamux/ngamux"
 )
 
 var plugin = "sql"
@@ -48,6 +50,12 @@ func Configure(config map[string]config.SQL) {
 			}
 
 			sqls[name] = ddb
+
+			healthName := "sql"
+			if name != "default" {
+				healthName += "-" + name
+			}
+			health.Add(healthName, healthFunc(ddb))
 		}
 
 		if _, ok := sqls[name]; !ok {
@@ -88,17 +96,13 @@ func GetNoDefault(name ...string) some.Some[*sql.DB] {
 	return some.Empty[*sql.DB]()
 }
 
-func Ping() map[string]string {
-  
-  	var result = make(map[string]string)
-
-  	for name, dbConn := range sqls {
-		if err := dbConn.Ping(); err != nil {
-			result[name] = "un-healty"
-		}else {
-			result[name] = "healty"
+func healthFunc(db *sql.DB) func() any {
+	return func() any {
+		status := ngamux.Map{"status": "DOWN"}
+		err := db.Ping()
+		if err != nil {
+			return status
 		}
-  	}
-
-  	return result
+		return ngamux.Map{"status": "UP"}
+	}
 }
