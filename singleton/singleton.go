@@ -1,8 +1,13 @@
 package singleton
 
+import (
+	"sync"
+)
+
 type SingletonFunc[T any] func() T
 
 func New[T any](singletonFunc SingletonFunc[T]) func(...T) *T {
+	var once sync.Once
 	var value *T
 
 	return func(newValue ...T) *T {
@@ -12,8 +17,10 @@ func New[T any](singletonFunc SingletonFunc[T]) func(...T) *T {
 		}
 
 		if value == nil {
-			create := singletonFunc()
-			value = &create
+			once.Do(func() {
+				create := singletonFunc()
+				value = &create
+			})
 		}
 
 		return value
