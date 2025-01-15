@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/gowok/gowok/grpc"
+	"github.com/gowok/gowok/health"
 	"github.com/gowok/gowok/must"
 	"github.com/gowok/gowok/router"
 	"github.com/gowok/gowok/runner"
@@ -76,6 +77,7 @@ func ignite() (*Project, error) {
 		sql.Configure(p.Config.SQLs)
 		router.Configure(&p.Config.App.Web)
 		grpc.Configure(&p.Config.App.Grpc)
+		health.Configure()
 	})
 
 	return project, nil
