@@ -76,7 +76,6 @@ func ignite() (*Project, error) {
 	project.Configures(func(p *Project) {
 		sql.Configure(p.Config.SQLs)
 		router.Configure(&p.Config.App.Web)
-		grpc.Configure(&p.Config.App.Grpc)
 		health.Configure()
 	})
 
