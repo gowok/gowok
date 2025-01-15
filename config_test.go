@@ -36,7 +36,7 @@ func TestNewConfig(t *testing.T) {
 		should.Nil(t, err)
 		defer tempFile.Close()
 
-		c, cMap, err := NewConfig(tempFile.Name())
+		c, cMap, err := newConfig(tempFile.Name())
 		should.Nil(t, err)
 		should.NotNil(t, c)
 		should.NotNil(t, cMap)
@@ -45,7 +45,7 @@ func TestNewConfig(t *testing.T) {
 	})
 
 	t.Run("negative not found file", func(t *testing.T) {
-		c, cMap, err := NewConfig(time.Now().Format(time.RFC3339))
+		c, cMap, err := newConfig(time.Now().Format(time.RFC3339))
 		should.NotNil(t, err)
 		should.Nil(t, c)
 		should.Nil(t, cMap)
@@ -60,7 +60,7 @@ func TestNewConfig(t *testing.T) {
 		should.Nil(t, err)
 		defer tempFile.Close()
 
-		c, cMap, err := NewConfig(tempFile.Name())
+		c, cMap, err := newConfig(tempFile.Name())
 		should.NotNil(t, err)
 		should.Nil(t, c)
 		should.Nil(t, cMap)

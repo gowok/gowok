@@ -24,7 +24,7 @@ type Config struct {
 	EnvFile string `yaml:"env_file"`
 }
 
-func NewConfig(pathConfig string) (*Config, map[string]any, error) {
+func newConfig(pathConfig string) (*Config, map[string]any, error) {
 	fiConfig, err := os.OpenFile(pathConfig, os.O_RDONLY, 0600)
 	if err != nil {
 		return nil, nil, err

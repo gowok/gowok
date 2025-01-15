@@ -39,7 +39,7 @@ func ignite() (*Project, error) {
 	}
 	flag.Parse()
 
-	conf, confRaw, err := NewConfig(pathConfig)
+	conf, confRaw, err := newConfig(pathConfig)
 	if err != nil {
 		return nil, err
 	}
