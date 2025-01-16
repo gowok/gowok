@@ -11,7 +11,6 @@ import (
 
 	"github.com/gowok/gowok/grpc"
 	"github.com/gowok/gowok/health"
-	"github.com/gowok/gowok/must"
 	"github.com/gowok/gowok/router"
 	"github.com/gowok/gowok/runner"
 	"github.com/gowok/gowok/singleton"
@@ -40,13 +39,13 @@ func argsConfigParse() {
 	}
 }
 
-func ignite() (*Project, error) {
+var project = singleton.New(func() *Project {
 	argsConfigParse()
 	flag.Parse()
 
 	conf, confRaw, err := newConfig(args.Config)
 	if err != nil {
-		return nil, err
+		panic(err)
 	}
 
 	hooks := &Hooks{}
@@ -62,17 +61,11 @@ func ignite() (*Project, error) {
 		Hooks:      hooks,
 		configures: make([]ConfigureFunc, 0),
 	}
-	project.Configures(func(p *Project) {
-		sql.Configure(p.Config.SQLs)
-		router.Configure(&p.Config.App.Web)
-		health.Configure()
-	})
+	sql.Configure(project.Config.SQLs)
+	router.Configure(&project.Config.App.Web)
+	health.Configure()
 
-	return project, nil
-}
-
-var project = singleton.New(func() *Project {
-	return must.Must(ignite())
+	return project
 })
 
 func Get() *Project {
@@ -85,37 +78,33 @@ func run(project *Project) {
 		f()
 	})
 
-	go func() {
-		if !project.Config.App.Web.Enabled {
-			return
-		}
-
-		slog.Info("starting web")
-		err := router.Server().ListenAndServe()
-		if err != nil {
-			if errors.Is(err, http.ErrServerClosed) {
-				return
+	if project.Config.App.Web.Enabled {
+		go func() {
+			slog.Info("starting web")
+			err := router.Server().ListenAndServe()
+			if err != nil {
+				if errors.Is(err, http.ErrServerClosed) {
+					return
+				}
+				panic("failed to start web, because " + err.Error())
 			}
-			panic("web can't start, because: " + err.Error())
-		}
-	}()
+		}()
+	}
 
-	go func() {
-		if !project.Config.App.Grpc.Enabled {
-			return
-		}
+	if project.Config.App.Grpc.Enabled {
+		go func() {
+			slog.Info("starting GRPC")
+			listen, err := net.Listen("tcp", project.Config.App.Grpc.Host)
+			if err != nil {
+				panic("failed to start GRPC, because: " + err.Error())
+			}
 
-		slog.Info("starting GRPC")
-		listen, err := net.Listen("tcp", project.Config.App.Grpc.Host)
-		if err != nil {
-			panic("GRPC can't start, because: " + err.Error())
-		}
-
-		err = grpc.Server().Serve(listen)
-		if err != nil {
-			panic("GRPC can't start, because: " + err.Error())
-		}
-	}()
+			err = grpc.Server().Serve(listen)
+			if err != nil {
+				panic("failed to start GRPC, because: " + err.Error())
+			}
+		}()
+	}
 
 	project.Hooks.onStarted.IfPresent(func(f func()) {
 		f()
