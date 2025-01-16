@@ -8,7 +8,7 @@
 ### {{ .Title }}
 
 {{ range .Commits -}}
-* {{ if .Scope }}**{{ .Scope }}:** {{ end }}{{ .Subject }}
+* {{ if .Scope }}{{.Hash.Short}} **{{ .Scope }}:** {{ end }}{{ .Subject }}
 {{ end }}
 {{ end -}}
 
