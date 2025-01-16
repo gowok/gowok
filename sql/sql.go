@@ -84,7 +84,7 @@ func DB(name ...string) some.Some[*sql.DB] {
 	return some.Empty[*sql.DB]()
 }
 
-func GetNoDefault(name ...string) some.Some[*sql.DB] {
+func DBNoDefault(name ...string) some.Some[*sql.DB] {
 	n := ""
 	if len(name) > 0 {
 		n = name[0]
