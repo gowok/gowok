@@ -2,28 +2,28 @@ package runner
 
 import "github.com/gowok/gowok/some"
 
-type Option func(*Runner)
+type option func(*Runner)
 
-func WithRunFunc(runFunc func()) Option {
+func WithRunFunc(runFunc func()) option {
 	return func(runner *Runner) {
 		runner.runFns = []func(){runFunc}
 	}
 }
 
-func WithGracefulStopFunc(gracefulStopFunc func()) Option {
+func WithGracefulStopFunc(gracefulStopFunc func()) option {
 	return func(runner *Runner) {
 		runner.gracefulStopFunc = some.Of(gracefulStopFunc)
 	}
 }
 
-func WithNumCPU(numCPU int) Option {
+func WithNumCPU(numCPU int) option {
 	return func(runner *Runner) {
 		runner.numCPU = numCPU
 	}
 }
 
-func WithRLimitEnable(rlimitEnable bool) Option {
+func WithRLimitEnabled() option {
 	return func(runner *Runner) {
-		runner.rLimitEnable = rlimitEnable
+		runner.rLimitEnable = true
 	}
 }

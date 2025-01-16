@@ -17,7 +17,7 @@ type Runner struct {
 	gracefulStopFunc some.Some[func()]
 }
 
-func New(opts ...Option) *Runner {
+func New(opts ...option) *Runner {
 	runner := &Runner{
 		numCPU:           runtime.NumCPU(),
 		runFns:           []func(){func() {}},
