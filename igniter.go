@@ -28,23 +28,19 @@ type Project struct {
 	runner     *runner.Runner
 }
 
-var args = struct {
+var flags = struct {
 	Config string
 }{}
 
-func argsConfigParse() {
-	if flag.Lookup("config") == nil {
-		flag.StringVar(&args.Config, "config", "config.yaml", "configuration file location (yaml)")
-	} else {
-		args.Config = flag.Lookup("config").Value.String()
-	}
+func flagParse() {
+	flag.StringVar(&flags.Config, "config", "config.yaml", "configuration file location (yaml)")
+	flag.Parse()
 }
 
 var project = singleton.New(func() *Project {
-	argsConfigParse()
-	flag.Parse()
+	flagParse()
 
-	conf, confRaw, err := newConfig(args.Config)
+	conf, confRaw, err := newConfig(flags.Config)
 	if err != nil {
 		panic(err)
 	}
