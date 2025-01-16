@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"log/slog"
 	"strings"
+	"sync"
 
 	"github.com/gowok/gowok/async"
 	"github.com/gowok/gowok/config"
@@ -13,7 +14,7 @@ import (
 )
 
 var plugin = "sql"
-var sqls map[string]*sql.DB
+var sqls *sync.Map
 var drivers = map[string][]string{
 	"postgres": []string{"pgx", "postgres"},
 	"mysql":    []string{"mysql"},
@@ -22,7 +23,7 @@ var drivers = map[string][]string{
 }
 
 func Configure(config map[string]config.SQL) {
-	sqls = make(map[string]*sql.DB)
+	sqls = new(sync.Map)
 	tasks := make([]func() (any, error), 0)
 	for name, dbC := range config {
 		if !dbC.Enabled {
@@ -51,7 +52,7 @@ func Configure(config map[string]config.SQL) {
 					return nil, nil
 				}
 
-				sqls[name] = ddb
+				sqls.Store(name, ddb)
 
 				healthName := "sql"
 				if name != "default" {
@@ -60,7 +61,7 @@ func Configure(config map[string]config.SQL) {
 				health.Add(healthName, healthFunc(ddb))
 			}
 
-			if _, ok := sqls[name]; !ok {
+			if _, ok := sqls.Load(name); !ok {
 				slog.Warn("not installed", "driver", dbC.Driver)
 			}
 
@@ -79,8 +80,10 @@ func DB(name ...string) some.Some[*sql.DB] {
 	n := ""
 	if len(name) > 0 {
 		n = name[0]
-		if db, ok := sqls[n]; ok {
-			return some.Of(db)
+		if db, ok := sqls.Load(n); ok {
+			if db, ok := db.(*sql.DB); ok {
+				return some.Of(db)
+			}
 		}
 	}
 
@@ -88,8 +91,10 @@ func DB(name ...string) some.Some[*sql.DB] {
 		slog.Info("using default connection", "not_found", n)
 	}
 
-	if db, ok := sqls["default"]; ok {
-		return some.Of(db)
+	if db, ok := sqls.Load("default"); ok {
+		if db, ok := db.(*sql.DB); ok {
+			return some.Of(db)
+		}
 	}
 
 	return some.Empty[*sql.DB]()
@@ -99,8 +104,10 @@ func DBNoDefault(name ...string) some.Some[*sql.DB] {
 	n := ""
 	if len(name) > 0 {
 		n = name[0]
-		if db, ok := sqls[n]; ok {
-			return some.Of(db)
+		if db, ok := sqls.Load(n); ok {
+			if db, ok := db.(*sql.DB); ok {
+				return some.Of(db)
+			}
 		}
 	}
 
