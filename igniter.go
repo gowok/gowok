@@ -46,24 +46,8 @@ func ignite() (*Project, error) {
 
 	hooks := &Hooks{}
 	running := runner.New(
-		runner.WithRLimitEnable(true),
-		runner.WithGracefulStopFunc(func() {
-			println()
-			if conf.App.Grpc.Enabled {
-				slog.Info("stopping GRPC")
-				grpc.Server().GracefulStop()
-			}
-			if conf.App.Web.Enabled {
-				slog.Info("stopping web")
-				ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-				defer cancel()
-
-				_ = router.Server().Shutdown(ctx)
-			}
-			hooks.onStopped.IfPresent(func(f Hook) {
-				f()
-			})
-		}),
+		runner.WithRLimitEnabled(),
+		runner.WithGracefulStopFunc(stop(conf, hooks)),
 	)
 
 	project = &Project{
@@ -131,6 +115,26 @@ func run(project *Project) {
 	project.Hooks.onStarted.IfPresent(func(f Hook) {
 		f()
 	})
+}
+
+func stop(conf *Config, hooks *Hooks) func() {
+	return func() {
+		println()
+		if conf.App.Grpc.Enabled {
+			slog.Info("stopping GRPC")
+			grpc.Server().GracefulStop()
+		}
+		if conf.App.Web.Enabled {
+			slog.Info("stopping web")
+			ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+			defer cancel()
+
+			_ = router.Server().Shutdown(ctx)
+		}
+		hooks.onStopped.IfPresent(func(f Hook) {
+			f()
+		})
+	}
 }
 
 func (p *Project) Run(forever ...bool) {
