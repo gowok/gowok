@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/gowok/gowok/async"
 	"github.com/gowok/gowok/grpc"
 	"github.com/gowok/gowok/health"
 	"github.com/gowok/gowok/router"
@@ -143,8 +144,13 @@ func (p *Project) Run(forever ...bool) {
 
 func (p *Project) Configures(configures ...ConfigureFunc) *Project {
 	p.configures = append(p.configures, configures...)
-	for _, configure := range configures {
-		configure(p)
+	tasks := make([]func() (any, error), len(configures))
+	for i, configure := range configures {
+		tasks[i] = func() (any, error) {
+			configure(p)
+			return struct{}{}, nil
+		}
 	}
+	async.All(tasks...)
 	return p
 }
