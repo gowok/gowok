@@ -2,22 +2,20 @@ package gowok
 
 import "github.com/gowok/gowok/some"
 
-type Hook func()
-
 type Hooks struct {
-	onStarting some.Some[Hook]
-	onStarted  some.Some[Hook]
-	onStopped  some.Some[Hook]
+	onStarting some.Some[func()]
+	onStarted  some.Some[func()]
+	onStopped  some.Some[func()]
 }
 
-func (h *Hooks) OnStarting(hook Hook) {
+func (h *Hooks) OnStarting(hook func()) {
 	h.onStarting = some.Of(hook)
 }
 
-func (h *Hooks) OnStarted(hook Hook) {
+func (h *Hooks) OnStarted(hook func()) {
 	h.onStarted = some.Of(hook)
 }
 
-func (h *Hooks) OnStopped(hook Hook) {
+func (h *Hooks) OnStopped(hook func()) {
 	h.onStopped = some.Of(hook)
 }

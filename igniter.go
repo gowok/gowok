@@ -76,7 +76,7 @@ func Get() *Project {
 }
 
 func run(project *Project) {
-	project.Hooks.onStarting.IfPresent(func(f Hook) {
+	project.Hooks.onStarting.IfPresent(func(f func()) {
 		f()
 	})
 
@@ -112,7 +112,7 @@ func run(project *Project) {
 		}
 	}()
 
-	project.Hooks.onStarted.IfPresent(func(f Hook) {
+	project.Hooks.onStarted.IfPresent(func(f func()) {
 		f()
 	})
 }
@@ -131,7 +131,7 @@ func stop(conf *Config, hooks *Hooks) func() {
 
 			_ = router.Server().Shutdown(ctx)
 		}
-		hooks.onStopped.IfPresent(func(f Hook) {
+		hooks.onStopped.IfPresent(func(f func()) {
 			f()
 		})
 	}
