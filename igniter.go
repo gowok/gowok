@@ -28,18 +28,23 @@ type Project struct {
 	runner     *runner.Runner
 }
 
-var project *Project
+var args = struct {
+	Config string
+}{}
+
+func argsConfigParse() {
+	if flag.Lookup("config") == nil {
+		flag.StringVar(&args.Config, "config", "config.yaml", "configuration file location (yaml)")
+	} else {
+		args.Config = flag.Lookup("config").Value.String()
+	}
+}
 
 func ignite() (*Project, error) {
-	var pathConfig string
-	if flag.Lookup("config") == nil {
-		flag.StringVar(&pathConfig, "config", "config.yaml", "configuration file location (yaml)")
-	} else {
-		pathConfig = flag.Lookup("config").Value.String()
-	}
+	argsConfigParse()
 	flag.Parse()
 
-	conf, confRaw, err := newConfig(pathConfig)
+	conf, confRaw, err := newConfig(args.Config)
 	if err != nil {
 		return nil, err
 	}
@@ -50,7 +55,7 @@ func ignite() (*Project, error) {
 		runner.WithGracefulStopFunc(stop(conf, hooks)),
 	)
 
-	project = &Project{
+	project := &Project{
 		Config:     conf,
 		ConfigMap:  confRaw,
 		runner:     running,
@@ -66,12 +71,12 @@ func ignite() (*Project, error) {
 	return project, nil
 }
 
-var projectSingleton = singleton.New(func() *Project {
+var project = singleton.New(func() *Project {
 	return must.Must(ignite())
 })
 
 func Get() *Project {
-	pp := projectSingleton()
+	pp := project()
 	return *pp
 }
 
@@ -150,7 +155,7 @@ func (p *Project) Run(forever ...bool) {
 func (p *Project) Configures(configures ...ConfigureFunc) *Project {
 	p.configures = append(p.configures, configures...)
 	for _, configure := range configures {
-		configure(project)
+		configure(p)
 	}
 	return p
 }

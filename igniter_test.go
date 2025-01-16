@@ -28,7 +28,7 @@ func GetTest(config string) (*Project, error) {
 	if err != nil {
 		return nil, err
 	}
-	projectSingleton(p)
+	project(p)
 	p = Get()
 	if p == nil {
 		return nil, errors.New("failed to ignite")
