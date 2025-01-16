@@ -68,7 +68,11 @@ func Configure(config map[string]config.SQL) {
 		})
 	}
 
-	async.All(tasks...)
+	_, err := async.All(tasks...)
+	if err != nil {
+		slog.Warn("failed to connect", "plugin", plugin, "error", err)
+		return
+	}
 }
 
 func DB(name ...string) some.Some[*sql.DB] {

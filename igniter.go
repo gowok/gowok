@@ -151,6 +151,9 @@ func (p *Project) Configures(configures ...ConfigureFunc) *Project {
 			return struct{}{}, nil
 		}
 	}
-	async.All(tasks...)
+	_, err := async.All(tasks...)
+	if err != nil {
+		panic(err)
+	}
 	return p
 }
