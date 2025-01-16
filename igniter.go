@@ -23,9 +23,9 @@ type ConfigureFunc func(*Project)
 type Project struct {
 	Config     *Config
 	ConfigMap  map[string]any
-	Runner     *runner.Runner
 	Hooks      *Hooks
 	configures []ConfigureFunc
+	runner     *runner.Runner
 }
 
 var project *Project
@@ -53,7 +53,7 @@ func ignite() (*Project, error) {
 	project = &Project{
 		Config:     conf,
 		ConfigMap:  confRaw,
-		Runner:     running,
+		runner:     running,
 		Hooks:      hooks,
 		configures: make([]ConfigureFunc, 0),
 	}
@@ -138,13 +138,13 @@ func stop(conf *Config, hooks *Hooks) func() {
 }
 
 func (p *Project) Run(forever ...bool) {
-	p.Runner.AddRunFunc(func() {
+	p.runner.AddRunFunc(func() {
 		run(p)
 	})
 	if p.Config.App.Web.Enabled || p.Config.App.Grpc.Enabled {
 		forever = append([]bool{true}, forever...)
 	}
-	p.Runner.Run(forever...)
+	p.runner.Run(forever...)
 }
 
 func (p *Project) Configures(configures ...ConfigureFunc) *Project {
@@ -153,8 +153,4 @@ func (p *Project) Configures(configures ...ConfigureFunc) *Project {
 		configure(project)
 	}
 	return p
-}
-
-func (p *Project) Reload() {
-	must.Must(ignite())
 }
