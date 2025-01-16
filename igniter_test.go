@@ -24,12 +24,7 @@ func GetTest(config string) (*Project, error) {
 	defer tempFile.Close()
 
 	os.Args = []string{"cmd", "--config=" + tempFile.Name()}
-	p, err := ignite()
-	if err != nil {
-		return nil, err
-	}
-	project(p)
-	p = Get()
+	p := Get()
 	if p == nil {
 		return nil, errors.New("failed to ignite")
 	}
