@@ -32,7 +32,7 @@ func Of[T any](val T) Some[T] {
 		return Empty[T]()
 	}
 
-	if (k == reflect.Func) && (v.IsZero() || v.IsNil()) {
+	if (k == reflect.Func || k == reflect.Ptr) && (v.IsZero() || v.IsNil()) {
 		return Empty[T]()
 	}
 
@@ -51,9 +51,14 @@ func (o Some[T]) IsPresent() bool {
 	return o.isPresent
 }
 
-func (o Some[T]) IfPresent(callback func(T)) {
+func (o Some[T]) IfPresent(callback func(T), elseCallback ...func()) {
 	if val, ok := o.Get(); ok {
 		callback(val)
+		return
+	}
+
+	if len(elseCallback) > 0 {
+		elseCallback[0]()
 	}
 }
 
