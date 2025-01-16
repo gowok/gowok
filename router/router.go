@@ -1,7 +1,6 @@
 package router
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/gowok/gowok/config"
@@ -32,7 +31,6 @@ func Configure(c *config.Web) {
 		return
 	}
 
-	fmt.Println(123)
 	// conf := ngamux.Config{
 	// 	ProxyHeader:           fiber.HeaderXForwardedFor,
 	// }
