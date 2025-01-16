@@ -1,23 +1,25 @@
 package router
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/gowok/gowok/config"
+	"github.com/gowok/gowok/some"
 	"github.com/ngamux/middleware/cors"
 	"github.com/ngamux/middleware/log"
 	"github.com/ngamux/middleware/pprof"
 	"github.com/ngamux/ngamux"
 )
 
-var mux = &httpMux{}
+var mux = some.Empty[*httpMux]()
 
 func Router() *ngamux.HttpServeMux {
-	return mux.mux
+	return mux.OrPanic().mux
 }
 
 func Server() *http.Server {
-	return mux.Server
+	return mux.OrPanic().Server
 }
 
 type httpMux struct {
@@ -26,6 +28,11 @@ type httpMux struct {
 }
 
 func Configure(c *config.Web) {
+	if !c.Enabled {
+		return
+	}
+
+	fmt.Println(123)
 	// conf := ngamux.Config{
 	// 	ProxyHeader:           fiber.HeaderXForwardedFor,
 	// }
@@ -57,7 +64,7 @@ func Configure(c *config.Web) {
 		}
 	})
 
-	mux = server
+	mux = some.Of(server)
 }
 
 func configureHttpStatic(server *httpMux, c *config.Web) {
@@ -82,37 +89,51 @@ func configureHttpStatic(server *httpMux, c *config.Web) {
 // }
 
 func Group(path string) *ngamux.HttpServeMux {
-	return mux.mux.Group(path)
+	return Router().Group(path)
 }
 
 func HandleFunc(method, path string, handlerFunc http.HandlerFunc, middleware ...ngamux.MiddlewareFunc) {
-	mux.mux.HandleFunc(method, path, ngamux.WithMiddlewares(middleware...)(handlerFunc))
+	mux.IfPresent(func(mux *httpMux) {
+		mux.mux.HandleFunc(method, path, ngamux.WithMiddlewares(middleware...)(handlerFunc))
+	})
 }
 
 func Get(path string, handlerFunc http.HandlerFunc, middleware ...ngamux.MiddlewareFunc) {
-	mux.mux.Get(path, ngamux.WithMiddlewares(middleware...)(handlerFunc))
+	mux.IfPresent(func(mux *httpMux) {
+		mux.mux.Get(path, ngamux.WithMiddlewares(middleware...)(handlerFunc))
+	})
 }
 
 func Post(path string, handlerFunc http.HandlerFunc, middleware ...ngamux.MiddlewareFunc) {
-	mux.mux.Post(path, ngamux.WithMiddlewares(middleware...)(handlerFunc))
+	mux.IfPresent(func(mux *httpMux) {
+		mux.mux.Post(path, ngamux.WithMiddlewares(middleware...)(handlerFunc))
+	})
 }
 
 func Patch(path string, handlerFunc http.HandlerFunc, middleware ...ngamux.MiddlewareFunc) {
-	mux.mux.Patch(path, ngamux.WithMiddlewares(middleware...)(handlerFunc))
+	mux.IfPresent(func(mux *httpMux) {
+		mux.mux.Patch(path, ngamux.WithMiddlewares(middleware...)(handlerFunc))
+	})
 }
 
 func Put(path string, handlerFunc http.HandlerFunc, middleware ...ngamux.MiddlewareFunc) {
-	mux.mux.Put(path, ngamux.WithMiddlewares(middleware...)(handlerFunc))
+	mux.IfPresent(func(mux *httpMux) {
+		mux.mux.Put(path, ngamux.WithMiddlewares(middleware...)(handlerFunc))
+	})
 }
 
 func Delete(path string, handlerFunc http.HandlerFunc, middleware ...ngamux.MiddlewareFunc) {
-	mux.mux.Delete(path, ngamux.WithMiddlewares(middleware...)(handlerFunc))
+	mux.IfPresent(func(mux *httpMux) {
+		mux.mux.Delete(path, ngamux.WithMiddlewares(middleware...)(handlerFunc))
+	})
 }
 
 func Use(middleware ...ngamux.MiddlewareFunc) {
-	mux.mux.Use(middleware...)
+	mux.IfPresent(func(mux *httpMux) {
+		mux.mux.Use(middleware...)
+	})
 }
 
 func Annotate(annotators ...ngamux.Annotator) *ngamux.Annotation {
-	return mux.mux.Annotate(annotators...)
+	return Router().Annotate(annotators...)
 }

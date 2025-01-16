@@ -63,8 +63,10 @@ var project = singleton.New(func() *Project {
 		configures: make([]ConfigureFunc, 0),
 	}
 	sql.Configure(project.Config.SQLs)
-	router.Configure(&project.Config.App.Web)
-	health.Configure()
+	if project.Config.App.Web.Enabled {
+		router.Configure(&project.Config.App.Web)
+		health.Configure()
+	}
 
 	return project
 })
