@@ -92,37 +92,37 @@ func Group(path string) *ngamux.HttpServeMux {
 
 func HandleFunc(method, path string, handlerFunc http.HandlerFunc, middleware ...ngamux.MiddlewareFunc) {
 	mux.IfPresent(func(mux *httpMux) {
-		mux.mux.HandleFunc(method, path, ngamux.WithMiddlewares(middleware...)(handlerFunc))
+		mux.mux.HandleFunc(method, path, handlerFunc, middleware...)
 	})
 }
 
 func Get(path string, handlerFunc http.HandlerFunc, middleware ...ngamux.MiddlewareFunc) {
 	mux.IfPresent(func(mux *httpMux) {
-		mux.mux.Get(path, ngamux.WithMiddlewares(middleware...)(handlerFunc))
+		mux.mux.Get(path, handlerFunc, middleware...)
 	})
 }
 
 func Post(path string, handlerFunc http.HandlerFunc, middleware ...ngamux.MiddlewareFunc) {
 	mux.IfPresent(func(mux *httpMux) {
-		mux.mux.Post(path, ngamux.WithMiddlewares(middleware...)(handlerFunc))
+		mux.mux.Post(path, (handlerFunc), middleware...)
 	})
 }
 
 func Patch(path string, handlerFunc http.HandlerFunc, middleware ...ngamux.MiddlewareFunc) {
 	mux.IfPresent(func(mux *httpMux) {
-		mux.mux.Patch(path, ngamux.WithMiddlewares(middleware...)(handlerFunc))
+		mux.mux.Patch(path, (handlerFunc), middleware...)
 	})
 }
 
 func Put(path string, handlerFunc http.HandlerFunc, middleware ...ngamux.MiddlewareFunc) {
 	mux.IfPresent(func(mux *httpMux) {
-		mux.mux.Put(path, ngamux.WithMiddlewares(middleware...)(handlerFunc))
+		mux.mux.Put(path, (handlerFunc), middleware...)
 	})
 }
 
 func Delete(path string, handlerFunc http.HandlerFunc, middleware ...ngamux.MiddlewareFunc) {
 	mux.IfPresent(func(mux *httpMux) {
-		mux.mux.Delete(path, ngamux.WithMiddlewares(middleware...)(handlerFunc))
+		mux.mux.Delete(path, (handlerFunc), middleware...)
 	})
 }
 
