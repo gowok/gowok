@@ -1,22 +1,19 @@
 package gowok
 
 import (
+	"encoding/json"
 	"os"
 	"testing"
 	"time"
 
 	"github.com/gowok/gowok/config"
+	"github.com/gowok/gowok/maps"
 	"github.com/gowok/gowok/some"
 	"github.com/gowok/should"
-	"gopkg.in/yaml.v3"
 )
 
 func TestNewConfig(t *testing.T) {
 	t.Run("positive", func(t *testing.T) {
-		tempFile, err := os.CreateTemp("", "TestNewConfig*.yaml")
-		should.Nil(t, err)
-		defer os.Remove(tempFile.Name())
-
 		expectedC := &Config{
 			App: config.App{
 				Web: config.Web{
@@ -29,14 +26,14 @@ func TestNewConfig(t *testing.T) {
 			},
 		}
 
-		yy, err := yaml.Marshal(expectedC)
+		yy, err := json.Marshal(expectedC)
 		should.Nil(t, err)
 
-		_, err = tempFile.Write(yy)
+		cMap, err := newConfigRaw(string(yy))
 		should.Nil(t, err)
-		defer tempFile.Close()
 
-		c, cMap, err := newConfig(tempFile.Name(), "")
+		var c *Config
+		err = maps.ToStruct(cMap, &c)
 		should.Nil(t, err)
 		should.NotNil(t, c)
 		should.NotNil(t, cMap)

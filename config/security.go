@@ -1,5 +1,5 @@
 package config
 
 type Security struct {
-	Secret string
+	Secret string `json:"secret,omitempty"`
 }

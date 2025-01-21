@@ -12,51 +12,50 @@ import (
 )
 
 type App struct {
-	Key  string
-	Web  Web
-	Grpc Grpc
+	Key  string `json:"key,omitempty"`
+	Web  Web    `json:"web,omitempty"`
+	Grpc Grpc   `json:"grpc,omitempty"`
 }
 
 type Web struct {
-	Enabled bool
-	Host    string
-
-	Log    some.Some[WebLog]   `json:"log"`
-	Cors   some.Some[WebCors]  `json:"cors"`
-	Pprof  some.Some[WebPprof] `json:"pprof"`
-	Views  WebViews            `json:"views"`
-	Static WebStatic           `json:"static"`
+	Enabled bool                `json:"enabled,omitempty"`
+	Host    string              `json:"host,omitempty"`
+	Log     some.Some[WebLog]   `json:"log,omitempty"`
+	Cors    some.Some[WebCors]  `json:"cors,omitempty"`
+	Pprof   some.Some[WebPprof] `json:"pprof,omitempty"`
+	Views   WebViews            `json:"views"`
+	Static  WebStatic           `json:"static"`
 }
 
 type WebLog struct {
-	Enabled bool `json:"enabled"`
+	Enabled bool `json:"enabled,omitempty"`
 }
 
 type WebCors struct {
-	Enabled          bool   `json:"enabled"`
-	AllowOrigins     string `json:"allow_origins"`
-	AllowCredentials bool   `json:"allow_credentials"`
-	AllowMethods     string `json:"allow_methods"`
-	AllowHeaders     string `json:"allow_headers"`
-	MaxAge           int    `json:"max_age"`
-	ExposeHeaders    string `json:"expose_headers"`
+	Enabled          bool   `json:"enabled,omitempty"`
+	AllowOrigins     string `json:"allow_origins,omitempty"`
+	AllowCredentials bool   `json:"allow_credentials,omitempty"`
+	AllowMethods     string `json:"allow_methods,omitempty"`
+	AllowHeaders     string `json:"allow_headers,omitempty"`
+	MaxAge           int    `json:"max_age,omitempty"`
+	ExposeHeaders    string `json:"expose_headers,omitempty"`
 }
 
 type WebPprof struct {
-	Enabled bool   `json:"enabled"`
-	Prefix  string `json:"prefix"`
+	Enabled bool   `json:"enabled,omitempty"`
+	Prefix  string `json:"prefix,omitempty"`
 }
 
 type WebViews struct {
-	Enabled bool   `json:"enabled"`
-	Dir     string `json:"dir"`
-	Layout  string `json:"layout"`
+	Enabled bool   `json:"enabled,omitempty"`
+	Dir     string `json:"dir,omitempty"`
+	Layout  string `json:"layout,omitempty"`
 }
 
 type WebStatic struct {
-	Enabled bool   `json:"enabled"`
-	Prefix  string `json:"prefix"`
-	Dir     string `json:"dir"`
+	Enabled bool   `json:"enabled,omitempty"`
+	Prefix  string `json:"prefix,omitempty"`
+	Dir     string `json:"dir,omitempty"`
 }
 
 func (r Web) GetLog() log.Config {

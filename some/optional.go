@@ -1,10 +1,10 @@
 package some
 
 import (
+	"bytes"
+	"encoding/json"
 	"errors"
 	"reflect"
-
-	"gopkg.in/yaml.v3"
 )
 
 type Some[T any] struct {
@@ -93,19 +93,28 @@ func (o Some[T]) OrPanic(errs ...error) T {
 	return *o.value
 }
 
-func (o *Some[T]) UnmarshalYAML(value *yaml.Node) error {
-	var v T
-	if err := value.Decode(&v); err != nil {
+func (o *Some[T]) UnmarshalJSON(b []byte) error {
+	if bytes.Equal(b, []byte("{}")) {
+		return nil
+	}
+
+	var v *T
+	err := json.Unmarshal(b, &v)
+	if err != nil {
 		return err
 	}
-	o.value = &v
-	o.isPresent = true
+
+	if v != nil {
+		o.value = v
+		o.isPresent = true
+	}
 	return nil
 }
 
-func (o Some[T]) MarshalYAML() (any, error) {
+func (o *Some[T]) MarshalJSON() ([]byte, error) {
 	if o.IsPresent() {
-		return o.value, nil
+		return json.Marshal(o.value)
 	}
-	return Empty[T]().value, nil
+
+	return json.Marshal(map[string]any{})
 }

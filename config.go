@@ -14,14 +14,14 @@ import (
 
 type Config struct {
 	App      config.App
-	Security config.Security
-	SQLs     map[string]config.SQL  `json:"sql"`
-	Http     map[string]config.Http `json:"http"`
-	Smtp     map[string]config.Smtp `json:"smtp"`
-	Others   map[string]string      `json:"others"`
+	Security config.Security        `json:"security,omitempty"`
+	SQLs     map[string]config.SQL  `json:"sql,omitempty"`
+	Http     map[string]config.Http `json:"http,omitempty"`
+	Smtp     map[string]config.Smtp `json:"smtp,omitempty"`
+	Others   map[string]string      `json:"others,omitempty"`
 
-	EnvFile   string `json:"env_file"`
-	IsTesting bool   `json:"is_testing"`
+	EnvFile   string `json:"env_file,omitempty"`
+	IsTesting bool   `json:"is_testing,omitempty"`
 }
 
 func newConfig(pathConfig string, envFile string) (*Config, map[string]any, error) {

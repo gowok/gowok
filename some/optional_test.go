@@ -5,7 +5,6 @@ import (
 	"testing"
 
 	"github.com/gowok/should"
-	"gopkg.in/yaml.v3"
 )
 
 func TestEmpty(t *testing.T) {
@@ -203,38 +202,5 @@ func TestIfPresent(t *testing.T) {
 		Of(input).IfPresent(func(s string) {
 			should.Equal(t, input, s)
 		})
-	})
-}
-
-func TestUnmarshalYAML(t *testing.T) {
-	t.Run("positive", func(t *testing.T) {
-		input := struct {
-			Score Some[int] `yaml:"score"`
-		}{}
-
-		err := yaml.Unmarshal([]byte(`
-score: 99
-    `), &input)
-
-		should.Nil(t, err)
-
-		score, ok := input.Score.Get()
-		should.True(t, ok)
-		should.Equal(t, score, 99)
-	})
-
-	t.Run("negative", func(t *testing.T) {
-		input := struct {
-			Score Some[int] `yaml:"score"`
-		}{}
-
-		err := yaml.Unmarshal([]byte(`
-score: ok
-    `), &input)
-
-		should.NotNil(t, err)
-
-		_, ok := input.Score.Get()
-		should.False(t, ok)
 	})
 }
