@@ -8,6 +8,7 @@ import (
 	"github.com/gowok/gowok/config"
 	"github.com/gowok/gowok/maps"
 	"github.com/joho/godotenv"
+	"github.com/pelletier/go-toml/v2"
 	"gopkg.in/yaml.v3"
 )
 
@@ -44,6 +45,10 @@ func newConfig(pathConfig string, envFile string) (*Config, map[string]any, erro
 	fiContent = []byte(cfgS)
 
 	confRaw, err := newConfigRaw(string(fiContent))
+	if err != nil {
+		return nil, nil, err
+	}
+
 	conf := &Config{}
 	err = maps.ToStruct(confRaw, conf)
 	if err != nil {
@@ -56,9 +61,14 @@ func newConfig(pathConfig string, envFile string) (*Config, map[string]any, erro
 func newConfigRaw(configString string) (map[string]any, error) {
 	confRaw := map[string]any{}
 	err := yaml.Unmarshal([]byte(configString), confRaw)
-	if err != nil {
-		return nil, fmt.Errorf("can't decode config file: %w", err)
+	if err == nil {
+		return confRaw, nil
 	}
 
-	return confRaw, nil
+	err = toml.Unmarshal([]byte(configString), &confRaw)
+	if err == nil {
+		return confRaw, nil
+	}
+
+	return nil, fmt.Errorf("can't decode config file: %w", err)
 }

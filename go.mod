@@ -8,6 +8,7 @@ require (
 	github.com/joho/godotenv v1.5.1
 	github.com/ngamux/middleware v0.0.8
 	github.com/ngamux/ngamux v1.7.47
+	github.com/pelletier/go-toml/v2 v2.2.3
 	golang.org/x/crypto v0.31.0
 	google.golang.org/grpc v1.59.0
 	gopkg.in/yaml.v3 v3.0.1
