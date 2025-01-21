@@ -21,42 +21,42 @@ type Web struct {
 	Enabled bool
 	Host    string
 
-	Log    some.Some[WebLog]   `yaml:"log"`
-	Cors   some.Some[WebCors]  `yaml:"cors"`
-	Pprof  some.Some[WebPprof] `yaml:"pprof"`
-	Views  WebViews            `yaml:"views"`
-	Static WebStatic           `yaml:"static"`
+	Log    some.Some[WebLog]   `json:"log"`
+	Cors   some.Some[WebCors]  `json:"cors"`
+	Pprof  some.Some[WebPprof] `json:"pprof"`
+	Views  WebViews            `json:"views"`
+	Static WebStatic           `json:"static"`
 }
 
 type WebLog struct {
-	Enabled bool `yaml:"enabled"`
+	Enabled bool `json:"enabled"`
 }
 
 type WebCors struct {
-	Enabled          bool   `yaml:"enabled"`
-	AllowOrigins     string `yaml:"allow_origins"`
-	AllowCredentials bool   `yaml:"allow_credentials"`
-	AllowMethods     string `yaml:"allow_methods"`
-	AllowHeaders     string `yaml:"allow_headers"`
-	MaxAge           int    `yaml:"max_age"`
-	ExposeHeaders    string `yaml:"expose_headers"`
+	Enabled          bool   `json:"enabled"`
+	AllowOrigins     string `json:"allow_origins"`
+	AllowCredentials bool   `json:"allow_credentials"`
+	AllowMethods     string `json:"allow_methods"`
+	AllowHeaders     string `json:"allow_headers"`
+	MaxAge           int    `json:"max_age"`
+	ExposeHeaders    string `json:"expose_headers"`
 }
 
 type WebPprof struct {
-	Enabled bool   `yaml:"enabled"`
-	Prefix  string `yaml:"prefix"`
+	Enabled bool   `json:"enabled"`
+	Prefix  string `json:"prefix"`
 }
 
 type WebViews struct {
-	Enabled bool   `yaml:"enabled"`
-	Dir     string `yaml:"dir"`
-	Layout  string `yaml:"layout"`
+	Enabled bool   `json:"enabled"`
+	Dir     string `json:"dir"`
+	Layout  string `json:"layout"`
 }
 
 type WebStatic struct {
-	Enabled bool   `yaml:"enabled"`
-	Prefix  string `yaml:"prefix"`
-	Dir     string `yaml:"dir"`
+	Enabled bool   `json:"enabled"`
+	Prefix  string `json:"prefix"`
+	Dir     string `json:"dir"`
 }
 
 func (r Web) GetLog() log.Config {

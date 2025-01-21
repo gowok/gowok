@@ -29,18 +29,20 @@ type Project struct {
 }
 
 var flags = struct {
-	Config string
+	Config  string
+	EnvFile string
 }{}
 
 func flagParse() {
 	flag.StringVar(&flags.Config, "config", "config.yaml", "configuration file location (yaml)")
+	flag.StringVar(&flags.EnvFile, "env-file", ".env", "env file location (.env)")
 	flag.Parse()
 }
 
 var project = singleton.New(func() *Project {
 	flagParse()
 
-	conf, confRaw, err := newConfig(flags.Config)
+	conf, confRaw, err := newConfig(flags.Config, flags.EnvFile)
 	if err != nil {
 		panic(err)
 	}
