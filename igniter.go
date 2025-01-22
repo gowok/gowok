@@ -35,7 +35,7 @@ var flags = struct {
 
 func flagParse() {
 	flag.StringVar(&flags.Config, "config", "config.yaml", "configuration file location (yaml)")
-	flag.StringVar(&flags.EnvFile, "env-file", ".env", "env file location (.env)")
+	flag.StringVar(&flags.EnvFile, "env-file", "", "env file location (.env)")
 	flag.Parse()
 }
 
