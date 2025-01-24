@@ -65,3 +65,19 @@ func Get[T any](data map[string]any, path string, defaults ...T) T {
 
 	return value
 }
+
+// FromStruct is a helper function to make map[string]any from struct
+func FromStruct(v any) (map[string]any, error) {
+	jsoned, err := json.Marshal(v)
+	if err != nil {
+		return nil, err
+	}
+
+	var m map[string]any
+	err = json.Unmarshal(jsoned, &m)
+	if err != nil {
+		return nil, err
+	}
+
+	return m, nil
+}
