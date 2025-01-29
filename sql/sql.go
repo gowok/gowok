@@ -16,10 +16,10 @@ import (
 var plugin = "sql"
 var sqls *sync.Map
 var drivers = map[string][]string{
-	"postgres": []string{"pgx", "postgres"},
-	"mysql":    []string{"mysql"},
-	"mariadb":  []string{"mysql"},
-	"sqlite3":  []string{"sqlite3"},
+	"postgres": {"pgx", "postgres"},
+	"mysql":    {"mysql"},
+	"mariadb":  {"mysql"},
+	"sqlite3":  {"sqlite3"},
 }
 
 func Configure(config map[string]config.SQL) {
