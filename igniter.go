@@ -35,7 +35,7 @@ var flags = struct {
 	Help    bool
 }{}
 
-func flagParse() {
+func FlagParse() {
 	flag.StringVar(&flags.Config, "config", "config.yaml", "configuration file location (yaml, toml)")
 	flag.StringVar(&flags.EnvFile, "env-file", "", "env file location")
 	flag.BoolVar(&flags.Help, "help", false, "show help message")
@@ -48,7 +48,7 @@ func flagHelp() {
 
 var hooks = singleton.New(func() *runner.Hooks {
 	return &runner.Hooks{
-		Init: some.Of(flagParse),
+		Init: some.Empty[func()](),
 	}
 })
 
@@ -58,6 +58,7 @@ func Hooks() *runner.Hooks {
 
 var project = singleton.New(func() *Project {
 	Hooks().Init.OrElse(func() {
+		FlagParse()
 		flag.Parse()
 	})()
 
