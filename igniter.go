@@ -16,6 +16,7 @@ import (
 	"github.com/gowok/gowok/router"
 	"github.com/gowok/gowok/runner"
 	"github.com/gowok/gowok/singleton"
+	"github.com/gowok/gowok/some"
 	"github.com/gowok/gowok/sql"
 )
 
@@ -38,7 +39,6 @@ func flagParse() {
 	flag.StringVar(&flags.Config, "config", "config.yaml", "configuration file location (yaml, toml)")
 	flag.StringVar(&flags.EnvFile, "env-file", "", "env file location")
 	flag.BoolVar(&flags.Help, "help", false, "show help message")
-	flag.Parse()
 }
 
 func flagHelp() {
@@ -47,7 +47,9 @@ func flagHelp() {
 }
 
 var hooks = singleton.New(func() *runner.Hooks {
-	return &runner.Hooks{}
+	return &runner.Hooks{
+		Init: some.Of(flagParse),
+	}
 })
 
 func Hooks() *runner.Hooks {
@@ -55,9 +57,10 @@ func Hooks() *runner.Hooks {
 }
 
 var project = singleton.New(func() *Project {
-	Hooks().Init()()
+	Hooks().Init.OrElse(func() {
+		flag.Parse()
+	})()
 
-	flagParse()
 	project := &Project{
 		configures: make([]ConfigureFunc, 0),
 		runner:     runner.New(),
