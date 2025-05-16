@@ -24,7 +24,6 @@ type ConfigureFunc func(*Project)
 type Project struct {
 	Config     *Config
 	ConfigMap  map[string]any
-	Hooks      *Hooks
 	configures []ConfigureFunc
 	runner     *runner.Runner
 }
@@ -47,12 +46,20 @@ func flagHelp() {
 	flag.PrintDefaults()
 }
 
+var hooks = singleton.New(func() *runner.Hooks {
+	return &runner.Hooks{}
+})
+
+func Hooks() *runner.Hooks {
+	return *hooks()
+}
+
 var project = singleton.New(func() *Project {
+	Hooks().OnStarting()()
+
 	flagParse()
-	hooks := &Hooks{}
 	project := &Project{
 		configures: make([]ConfigureFunc, 0),
-		Hooks:      hooks,
 		runner:     runner.New(),
 	}
 
@@ -69,7 +76,7 @@ var project = singleton.New(func() *Project {
 	project.ConfigMap = confRaw
 	project.runner = runner.New(
 		runner.WithRLimitEnabled(),
-		runner.WithGracefulStopFunc(stop(conf, project.Hooks)),
+		runner.WithGracefulStopFunc(stop(conf, Hooks())),
 	)
 
 	sql.Configure(project.Config.SQLs)
@@ -87,8 +94,6 @@ func Get() *Project {
 }
 
 func run(project *Project) {
-	project.Hooks.OnStarting()()
-
 	if project.Config != nil {
 		if project.Config.App.Web.Enabled {
 			go func() {
@@ -119,10 +124,10 @@ func run(project *Project) {
 		}
 	}
 
-	project.Hooks.OnStarted()()
+	Hooks().OnStarted()()
 }
 
-func stop(conf *Config, hooks *Hooks) func() {
+func stop(conf *Config, hooks *runner.Hooks) func() {
 	return func() {
 		println()
 		if conf.App.Grpc.Enabled {

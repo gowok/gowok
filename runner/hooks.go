@@ -1,4 +1,4 @@
-package gowok
+package runner
 
 import (
 	"github.com/gowok/gowok/some"
