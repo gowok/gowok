@@ -3,6 +3,8 @@ module github.com/gowok/gowok
 go 1.23.4
 
 require (
+	github.com/gofiber/fiber/v2 v2.49.1
+	github.com/golang-must/must v1.0.0
 	github.com/google/uuid v1.3.1
 	github.com/gowok/should v0.0.0-20240831060519-d8ab7c7891fb
 	github.com/joho/godotenv v1.5.1
@@ -11,14 +13,22 @@ require (
 	github.com/pelletier/go-toml/v2 v2.2.3
 	golang.org/x/crypto v0.31.0
 	google.golang.org/grpc v1.59.0
-	gopkg.in/yaml.v2 v2.4.0
 	gopkg.in/yaml.v3 v3.0.1
 )
 
 require (
+	github.com/andybalholm/brotli v1.0.5 // indirect
 	github.com/golang/protobuf v1.5.3 // indirect
+	github.com/klauspost/compress v1.16.7 // indirect
 	github.com/kr/pretty v0.3.1 // indirect
+	github.com/mattn/go-colorable v0.1.13 // indirect
+	github.com/mattn/go-isatty v0.0.19 // indirect
+	github.com/mattn/go-runewidth v0.0.15 // indirect
+	github.com/rivo/uniseg v0.2.0 // indirect
 	github.com/rogpeppe/go-internal v1.11.0 // indirect
+	github.com/valyala/bytebufferpool v1.0.0 // indirect
+	github.com/valyala/fasthttp v1.49.0 // indirect
+	github.com/valyala/tcplisten v1.0.0 // indirect
 	golang.org/x/net v0.21.0 // indirect
 	golang.org/x/sys v0.28.0 // indirect
 	golang.org/x/text v0.21.0 // indirect
