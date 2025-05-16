@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"flag"
-	"fmt"
 	"log"
 	"log/slog"
 	"net"
@@ -29,21 +28,23 @@ type Project struct {
 	runner     *runner.Runner
 }
 
-var flags = struct {
+type flags struct {
 	Config  string
 	EnvFile string
 	Help    bool
-}{}
-
-func FlagParse() {
-	flag.StringVar(&flags.Config, "config", "config.yaml", "configuration file location (yaml, toml)")
-	flag.StringVar(&flags.EnvFile, "env-file", "", "env file location")
-	flag.BoolVar(&flags.Help, "help", false, "show help message")
 }
 
-func flagHelp() {
-	fmt.Fprintln(flag.CommandLine.Output(), "Usage:")
-	flag.PrintDefaults()
+var _flags = singleton.New(func() *flags {
+	return &flags{}
+})
+
+func Flags() *flags {
+	return *_flags()
+}
+
+func FlagParse() {
+	flag.StringVar(&Flags().Config, "config", "config.yaml", "configuration file location (yaml, toml)")
+	flag.StringVar(&Flags().EnvFile, "env-file", "", "env file location")
 }
 
 var hooks = singleton.New(func() *runner.Hooks {
@@ -67,12 +68,7 @@ var project = singleton.New(func() *Project {
 		runner:     runner.New(),
 	}
 
-	if flags.Help {
-		flagHelp()
-		return project
-	}
-
-	conf, confRaw, err := newConfig(flags.Config, flags.EnvFile)
+	conf, confRaw, err := newConfig(Flags().Config, Flags().EnvFile)
 	if err != nil {
 		log.Fatalln(err)
 	}
