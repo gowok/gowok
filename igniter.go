@@ -55,7 +55,7 @@ func Hooks() *runner.Hooks {
 }
 
 var project = singleton.New(func() *Project {
-	Hooks().OnStarting()()
+	Hooks().Init()()
 
 	flagParse()
 	project := &Project{
@@ -94,6 +94,8 @@ func Get() *Project {
 }
 
 func run(project *Project) {
+	Hooks().OnStarting()()
+
 	if project.Config != nil {
 		if project.Config.App.Web.Enabled {
 			go func() {
