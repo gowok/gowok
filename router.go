@@ -24,7 +24,7 @@ func HttpUnauthorized(rw http.ResponseWriter) {
 	ngamux.Res(rw).Status(http.StatusUnauthorized).Text("unauthorized")
 }
 func HttpNotFound(rw http.ResponseWriter) {
-	ngamux.Res(rw).Status(http.StatusUnauthorized).Text("not found")
+	ngamux.Res(rw).Status(http.StatusNotFound).Text("not found")
 }
 func HttpOk(rw http.ResponseWriter, body any) {
 	res := ngamux.Res(rw).Status(http.StatusOK)
