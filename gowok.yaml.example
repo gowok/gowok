@@ -56,3 +56,8 @@ smtp:
     password: iqueo3u8ur83uqe89u3q89eu
     from: no-reply@gowok.com
 
+notification:
+  onesignal:
+    app_id: xxx-xxx-xxx
+    rest_api_key: xxx-xxx-xxx
+
