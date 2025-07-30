@@ -45,8 +45,12 @@ func Flags() *flags {
 }
 
 func FlagParse() {
-	flag.StringVar(&Flags().Config, "config", "", "configuration file location (yaml, toml)")
-	flag.StringVar(&Flags().EnvFile, "env-file", "", "env file location")
+	if flag.Lookup("config") == nil {
+		flag.StringVar(&Flags().Config, "config", "", "configuration file location (yaml, toml)")
+	}
+	if flag.Lookup("env-file") == nil {
+		flag.StringVar(&Flags().EnvFile, "env-file", "", "env file location")
+	}
 }
 
 var hooks = singleton.New(func() *runner.Hooks {
