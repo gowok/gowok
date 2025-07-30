@@ -8,6 +8,7 @@ import (
 	"log/slog"
 	"net"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/gowok/gowok/grpc"
@@ -89,6 +90,7 @@ var project = singleton.New(func() *Project {
 })
 
 func Get() *Project {
+	slog.SetDefault(slog.New(slog.NewJSONHandler(os.Stdout, nil)))
 	pp := project()
 	return *pp
 }
