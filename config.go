@@ -18,7 +18,7 @@ type Config struct {
 	SQLs     map[string]config.SQL  `json:"sql,omitempty"`
 	Http     map[string]config.Http `json:"http,omitempty"`
 	Smtp     map[string]config.Smtp `json:"smtp,omitempty"`
-	Others   map[string]string      `json:"others,omitempty"`
+	Others   map[string]any         `json:"others,omitempty"`
 
 	EnvFile   string `json:"env_file,omitempty"`
 	IsTesting bool   `json:"is_testing,omitempty"`
