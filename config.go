@@ -24,6 +24,25 @@ type Config struct {
 	IsTesting bool   `json:"is_testing,omitempty"`
 }
 
+func newConfigEmpty() (*Config, map[string]any) {
+	conf := &Config{
+		config.App{},
+		config.Security{},
+		make(map[string]config.SQL),
+		make(map[string]config.Http),
+		make(map[string]config.Smtp),
+		make(map[string]any),
+		"", false,
+	}
+
+	confRaw, err := maps.FromStruct(conf)
+	if err != nil {
+		return conf, map[string]any{}
+	}
+
+	return conf, confRaw
+}
+
 func newConfig(pathConfig string, envFile string) (*Config, map[string]any, error) {
 	fiConfig, err := os.OpenFile(pathConfig, os.O_RDONLY, 0600)
 	if err != nil {
