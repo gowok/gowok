@@ -1,6 +1,6 @@
 module github.com/gowok/gowok
 
-go 1.23.4
+go 1.24.5
 
 require (
 	github.com/golang-must/must v1.0.0
