@@ -68,6 +68,11 @@ var _project = singleton.New(func() *Project {
 })
 
 func Get(config ...Config) *Project {
+	pp := _project()
+	if *pp != nil {
+		return *pp
+	}
+
 	slog.SetDefault(slog.New(slog.NewJSONHandler(os.Stdout, nil)))
 	Hooks().Init.OrElse(func() {
 		FlagParse()
@@ -81,7 +86,6 @@ func Get(config ...Config) *Project {
 
 	var conf *Config
 	confRaw := map[string]any{}
-	slog.Info("config", Flags().Config, Flags().EnvFile)
 	if Flags().Config != "" {
 		_conf, _confRaw, err := newConfig(Flags().Config, Flags().EnvFile)
 		if err != nil {
@@ -113,7 +117,7 @@ func Get(config ...Config) *Project {
 		router.Configure(&project.Config.App.Web)
 		health.Configure()
 	}
-	pp := _project(project)
+	pp = _project(project)
 	return *pp
 }
 
