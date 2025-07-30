@@ -56,11 +56,23 @@ func Get[T any](data map[string]any, path string, defaults ...T) T {
 			return value
 		}
 
-		next, ok := val.(map[string]any)
-		if !ok {
-			return value
+		switch next := val.(type) {
+		case map[string]any:
+			current = next
+		default:
+			jsonB, err := json.Marshal(next)
+			if err != nil {
+				return value
+			}
+
+			n := map[string]any{}
+			err = json.Unmarshal(jsonB, &n)
+			if err != nil {
+				return value
+			}
+
+			current = n
 		}
-		current = next
 	}
 
 	return value
