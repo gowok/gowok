@@ -44,3 +44,14 @@ func (m Model) Entity() Entity {
 
 	return res
 }
+
+func (m *Model) BeforeCreateID_UUID() error {
+	if m.ID == (uuid.NullUUID{}).UUID {
+		id, err := uuid.NewV7()
+		if err != nil {
+			return err
+		}
+		m.ID = id
+	}
+	return nil
+}
