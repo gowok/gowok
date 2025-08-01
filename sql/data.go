@@ -2,10 +2,12 @@ package sql
 
 import (
 	"database/sql"
+	"database/sql/driver"
 	"encoding/json"
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/ngamux/ngamux"
 )
 
 func NewNullString(inp *string) sql.NullString {
@@ -63,4 +65,18 @@ func NewNullUUID(inp *uuid.UUID) uuid.NullUUID {
 	}
 
 	return res
+}
+
+type JsonB ngamux.Map
+
+func (j JsonB) Value() (driver.Value, error) {
+	return json.Marshal(j)
+}
+
+func (j *JsonB) Scan(value any) error {
+	bytes, ok := value.([]byte)
+	if !ok {
+		return nil
+	}
+	return json.Unmarshal(bytes, j)
 }

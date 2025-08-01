@@ -8,10 +8,12 @@ import (
 	"log/slog"
 	"net"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/gowok/gowok/grpc"
 	"github.com/gowok/gowok/health"
+	"github.com/gowok/gowok/maps"
 	"github.com/gowok/gowok/router"
 	"github.com/gowok/gowok/runner"
 	"github.com/gowok/gowok/singleton"
@@ -43,8 +45,12 @@ func Flags() *flags {
 }
 
 func FlagParse() {
-	flag.StringVar(&Flags().Config, "config", "config.yaml", "configuration file location (yaml, toml)")
-	flag.StringVar(&Flags().EnvFile, "env-file", "", "env file location")
+	if flag.Lookup("config") == nil {
+		flag.StringVar(&Flags().Config, "config", "", "configuration file location (yaml, toml)")
+	}
+	if flag.Lookup("env-file") == nil {
+		flag.StringVar(&Flags().EnvFile, "env-file", "", "env file location")
+	}
 }
 
 var hooks = singleton.New(func() *runner.Hooks {
@@ -57,7 +63,17 @@ func Hooks() *runner.Hooks {
 	return *hooks()
 }
 
-var project = singleton.New(func() *Project {
+var _project = singleton.New(func() *Project {
+	return nil
+})
+
+func Get(config ...Config) *Project {
+	pp := _project()
+	if *pp != nil {
+		return *pp
+	}
+
+	slog.SetDefault(slog.New(slog.NewJSONHandler(os.Stdout, nil)))
 	Hooks().Init.OrElse(func() {
 		FlagParse()
 		flag.Parse()
@@ -68,15 +84,32 @@ var project = singleton.New(func() *Project {
 		runner:     runner.New(),
 	}
 
-	conf, confRaw, err := newConfig(Flags().Config, Flags().EnvFile)
-	if err != nil {
-		log.Fatalln(err)
+	var conf *Config
+	confRaw := map[string]any{}
+	if Flags().Config != "" {
+		_conf, _confRaw, err := newConfig(Flags().Config, Flags().EnvFile)
+		if err != nil {
+			log.Fatalln(err)
+		}
+		conf = _conf
+		confRaw = _confRaw
+	} else if len(config) > 0 {
+		conf = &config[0]
+		_confRaw, err := maps.FromStruct(conf)
+		if err == nil {
+			confRaw = _confRaw
+		}
 	}
+
+	if conf == nil {
+		conf, confRaw = newConfigEmpty()
+	}
+
 	project.Config = conf
 	project.ConfigMap = confRaw
 	project.runner = runner.New(
 		runner.WithRLimitEnabled(),
-		runner.WithGracefulStopFunc(stop(conf, Hooks())),
+		runner.WithGracefulStopFunc(project.stop(Hooks())),
 	)
 
 	sql.Configure(project.Config.SQLs)
@@ -84,12 +117,7 @@ var project = singleton.New(func() *Project {
 		router.Configure(&project.Config.App.Web)
 		health.Configure()
 	}
-
-	return project
-})
-
-func Get() *Project {
-	pp := project()
+	pp = _project(project)
 	return *pp
 }
 
@@ -129,14 +157,14 @@ func run(project *Project) {
 	Hooks().OnStarted()()
 }
 
-func stop(conf *Config, hooks *runner.Hooks) func() {
+func (p Project) stop(hooks *runner.Hooks) func() {
 	return func() {
 		println()
-		if conf.App.Grpc.Enabled {
+		if p.Config.App.Grpc.Enabled {
 			slog.Info("stopping GRPC")
 			grpc.Server().GracefulStop()
 		}
-		if conf.App.Web.Enabled {
+		if p.Config.App.Web.Enabled {
 			slog.Info("stopping web")
 			ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 			defer cancel()
