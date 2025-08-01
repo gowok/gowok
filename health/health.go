@@ -10,7 +10,7 @@ import (
 var healths = map[string]func() any{}
 
 func Configure() {
-	r := router.Group("/health")
+	r := router.Router().Group("/health")
 	r.Get("", func(w http.ResponseWriter, r *http.Request) {
 		urls := make(map[string]string, len(healths))
 		for k := range healths {
