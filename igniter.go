@@ -121,6 +121,24 @@ func Get(config ...Config) *Project {
 	return *pp
 }
 
+func (p *Project) WithConfig(yamlConfigPath, envFilePath string) *Project {
+	conf, confRaw, err := newConfig(yamlConfigPath, envFilePath)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	p.Config = conf
+	p.ConfigMap = confRaw
+
+	sql.Configure(p.Config.SQLs)
+	if p.Config.App.Web.Enabled {
+		router.Configure(&p.Config.App.Web)
+		health.Configure()
+	}
+
+	return p
+}
+
 func run(project *Project) {
 	Hooks().OnStarting()()
 
