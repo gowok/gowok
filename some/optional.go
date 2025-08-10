@@ -14,10 +14,7 @@ type Some[T any] struct {
 }
 
 func newOptional[T any](val *T) Some[T] {
-	isPresent := false
-	if val != nil {
-		isPresent = true
-	}
+	isPresent := val != nil
 	return Some[T]{val, isPresent}
 }
 
@@ -80,7 +77,7 @@ func (o Some[T]) OrElseFunc(gen func() T) T {
 }
 
 func (o Some[T]) OrPanic(errs ...error) T {
-	err := exception.NoValuePresent
+	err := exception.ErrNoValuePresent
 	if len(errs) > 0 {
 		err = errs[0]
 	}
