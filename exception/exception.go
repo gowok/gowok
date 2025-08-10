@@ -21,4 +21,6 @@ var (
 	NilPointerDeref = errors.New("nil pointer dereference")
 	GetOfNoValue    = errors.New("get of no value")
 	NoDatabaseFound = errors.New("no database found")
+
+	NoValuePresent = errors.New("no value present")
 )

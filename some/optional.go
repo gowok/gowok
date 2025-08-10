@@ -3,8 +3,9 @@ package some
 import (
 	"bytes"
 	"encoding/json"
-	"errors"
 	"reflect"
+
+	"github.com/gowok/gowok/exception"
 )
 
 type Some[T any] struct {
@@ -78,10 +79,8 @@ func (o Some[T]) OrElseFunc(gen func() T) T {
 	return *o.value
 }
 
-var orPanicErr = errors.New("some: no value present")
-
 func (o Some[T]) OrPanic(errs ...error) T {
-	err := orPanicErr
+	err := exception.NoValuePresent
 	if len(errs) > 0 {
 		err = errs[0]
 	}
