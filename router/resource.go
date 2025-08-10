@@ -15,7 +15,7 @@ type ResourceHandler interface {
 }
 
 func Resource(path string, resource ResourceHandler, opts ...func(*ngamux.HttpServeMux)) {
-	g := Group(path)
+	g := Router().Group(path)
 	for _, opt := range opts {
 		opt(g)
 	}
