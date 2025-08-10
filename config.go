@@ -18,7 +18,6 @@ type Config struct {
 	Grpc     config.Grpc            `json:"grpc,omitempty"`
 	Security config.Security        `json:"security,omitempty"`
 	SQLs     map[string]config.SQL  `json:"sql,omitempty"`
-	Http     map[string]config.Http `json:"http,omitempty"`
 	Smtp     map[string]config.Smtp `json:"smtp,omitempty"`
 	Others   map[string]any         `json:"others,omitempty"`
 
@@ -33,7 +32,6 @@ func newConfigEmpty() (*Config, map[string]any) {
 		config.Grpc{},
 		config.Security{},
 		make(map[string]config.SQL),
-		make(map[string]config.Http),
 		make(map[string]config.Smtp),
 		make(map[string]any),
 		"", false,
