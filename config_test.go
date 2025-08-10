@@ -15,14 +15,12 @@ import (
 func TestNewConfig(t *testing.T) {
 	t.Run("positive", func(t *testing.T) {
 		expectedC := &Config{
-			App: config.App{
-				Web: config.Web{
+			Web: config.Web{
+				Enabled: true,
+				Host:    ":8080",
+				Cors: some.Of(config.WebCors{
 					Enabled: true,
-					Host:    ":8080",
-					Cors: some.Of(config.WebCors{
-						Enabled: true,
-					}),
-				},
+				}),
 			},
 		}
 
@@ -38,7 +36,7 @@ func TestNewConfig(t *testing.T) {
 		should.NotNil(t, c)
 		should.NotNil(t, cMap)
 
-		should.Equal(t, c.App.Web, expectedC.App.Web)
+		should.Equal(t, c.Web, expectedC.Web)
 	})
 
 	t.Run("negative not found file", func(t *testing.T) {
