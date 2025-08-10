@@ -110,8 +110,8 @@ func Get(config ...Config) *Project {
 	)
 
 	sql.Configure(project.Config.SQLs)
-	if project.Config.App.Web.Enabled {
-		web.Configure(&project.Config.App.Web)
+	if project.Config.Web.Enabled {
+		web.Configure(&project.Config.Web)
 		health.Configure()
 	}
 	pp = _project(project)
@@ -122,7 +122,7 @@ func run(project *Project) {
 	Hooks().OnStarting()()
 
 	if project.Config != nil {
-		if project.Config.App.Web.Enabled {
+		if project.Config.Web.Enabled {
 			go func() {
 				slog.Info("starting web")
 				err := web.Server().ListenAndServe()
@@ -135,10 +135,10 @@ func run(project *Project) {
 			}()
 		}
 
-		if project.Config.App.Grpc.Enabled {
+		if project.Config.Grpc.Enabled {
 			go func() {
 				slog.Info("starting GRPC")
-				listen, err := net.Listen("tcp", project.Config.App.Grpc.Host)
+				listen, err := net.Listen("tcp", project.Config.Grpc.Host)
 				if err != nil {
 					log.Fatalln("grpc: failed to start: " + err.Error())
 				}
@@ -157,11 +157,11 @@ func run(project *Project) {
 func (p Project) stop(hooks *runner.Hooks) func() {
 	return func() {
 		println()
-		if p.Config.App.Grpc.Enabled {
+		if p.Config.Grpc.Enabled {
 			slog.Info("stopping GRPC")
 			grpc.Server().GracefulStop()
 		}
-		if p.Config.App.Web.Enabled {
+		if p.Config.Web.Enabled {
 			slog.Info("stopping web")
 			ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 			defer cancel()
@@ -177,7 +177,7 @@ func (p *Project) Run(forever ...bool) {
 		run(p)
 	})
 	if p.Config != nil {
-		if p.Config.App.Web.Enabled || p.Config.App.Grpc.Enabled {
+		if p.Config.Web.Enabled || p.Config.Grpc.Enabled {
 			forever = append([]bool{true}, forever...)
 		}
 	}

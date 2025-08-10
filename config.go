@@ -13,7 +13,9 @@ import (
 )
 
 type Config struct {
-	App      config.App
+	Key      string                 `json:"key,omitempty"`
+	Web      config.Web             `json:"web,omitempty"`
+	Grpc     config.Grpc            `json:"grpc,omitempty"`
 	Security config.Security        `json:"security,omitempty"`
 	SQLs     map[string]config.SQL  `json:"sql,omitempty"`
 	Http     map[string]config.Http `json:"http,omitempty"`
@@ -26,7 +28,9 @@ type Config struct {
 
 func newConfigEmpty() (*Config, map[string]any) {
 	conf := &Config{
-		config.App{},
+		"",
+		config.Web{},
+		config.Grpc{},
 		config.Security{},
 		make(map[string]config.SQL),
 		make(map[string]config.Http),
