@@ -11,9 +11,9 @@ import (
 	"os"
 	"time"
 
+	"github.com/gowok/fp/maps"
 	"github.com/gowok/gowok/grpc"
 	"github.com/gowok/gowok/health"
-	"github.com/gowok/gowok/maps"
 	"github.com/gowok/gowok/router"
 	"github.com/gowok/gowok/runner"
 	"github.com/gowok/gowok/singleton"
@@ -95,10 +95,7 @@ func Get(config ...Config) *Project {
 		confRaw = _confRaw
 	} else if len(config) > 0 {
 		conf = &config[0]
-		_confRaw, err := maps.FromStruct(conf)
-		if err == nil {
-			confRaw = _confRaw
-		}
+		confRaw = maps.FromStruct(conf)
 	}
 
 	if conf == nil {

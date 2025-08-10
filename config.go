@@ -5,8 +5,8 @@ import (
 	"io"
 	"os"
 
+	"github.com/gowok/fp/maps"
 	"github.com/gowok/gowok/config"
-	"github.com/gowok/gowok/maps"
 	"github.com/joho/godotenv"
 	"github.com/pelletier/go-toml/v2"
 	"gopkg.in/yaml.v3"
@@ -35,11 +35,7 @@ func newConfigEmpty() (*Config, map[string]any) {
 		"", false,
 	}
 
-	confRaw, err := maps.FromStruct(conf)
-	if err != nil {
-		return conf, map[string]any{}
-	}
-
+	confRaw := maps.FromStruct(conf)
 	return conf, confRaw
 }
 
