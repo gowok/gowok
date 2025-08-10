@@ -3,14 +3,14 @@ package gowok
 import (
 	"net/http"
 
-	"github.com/gowok/gowok/router"
+	"github.com/gowok/gowok/web"
 	"github.com/ngamux/ngamux"
 )
 
 func Router() *ngamux.HttpServeMux {
-	return router.Router()
+	return web.Router()
 }
 
 func Server() *http.Server {
-	return router.Server()
+	return web.Server()
 }

@@ -14,11 +14,11 @@ import (
 	"github.com/gowok/fp/maps"
 	"github.com/gowok/gowok/grpc"
 	"github.com/gowok/gowok/health"
-	"github.com/gowok/gowok/router"
 	"github.com/gowok/gowok/runner"
 	"github.com/gowok/gowok/singleton"
 	"github.com/gowok/gowok/some"
 	"github.com/gowok/gowok/sql"
+	"github.com/gowok/gowok/web"
 )
 
 type ConfigureFunc func(*Project)
@@ -111,7 +111,7 @@ func Get(config ...Config) *Project {
 
 	sql.Configure(project.Config.SQLs)
 	if project.Config.App.Web.Enabled {
-		router.Configure(&project.Config.App.Web)
+		web.Configure(&project.Config.App.Web)
 		health.Configure()
 	}
 	pp = _project(project)
@@ -125,7 +125,7 @@ func run(project *Project) {
 		if project.Config.App.Web.Enabled {
 			go func() {
 				slog.Info("starting web")
-				err := router.Server().ListenAndServe()
+				err := web.Server().ListenAndServe()
 				if err != nil {
 					if errors.Is(err, http.ErrServerClosed) {
 						return
@@ -166,7 +166,7 @@ func (p Project) stop(hooks *runner.Hooks) func() {
 			ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 			defer cancel()
 
-			_ = router.Server().Shutdown(ctx)
+			_ = web.Server().Shutdown(ctx)
 		}
 		hooks.OnStopped()()
 	}

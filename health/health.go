@@ -3,14 +3,14 @@ package health
 import (
 	"net/http"
 
-	"github.com/gowok/gowok/router"
+	"github.com/gowok/gowok/web"
 	"github.com/ngamux/ngamux"
 )
 
 var healths = map[string]func() any{}
 
 func Configure() {
-	r := router.Group("/health")
+	r := web.Router().Group("/health")
 	r.Get("", func(w http.ResponseWriter, r *http.Request) {
 		urls := make(map[string]string, len(healths))
 		for k := range healths {
