@@ -1,4 +1,5 @@
-![](https://gowok.github.io/docs/gowok-logo-docs.png)
+<img src="https://gowok.github.io/docs/gowok-logo-docs.png" alt="" style="width:25%; height:auto;">
+
 [![made-with-Go](https://img.shields.io/badge/Made%20with-Go-1f425f.svg)](http://golang.org)
 [![Go Version](https://img.shields.io/github/go-mod/go-version/gowok/gowok.svg)](https://github.com/gowok/gowok)
 [![GoDoc Reference](https://img.shields.io/badge/godoc-reference-blue.svg)](https://pkg.go.dev/github.com/gowok/gowok)
