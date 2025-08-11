@@ -1,3 +1,11 @@
+![](https://gowok.github.io/docs/gowok-logo-docs.png)
+[![made-with-Go](https://img.shields.io/badge/Made%20with-Go-1f425f.svg)](http://golang.org)
+[![Go Version](https://img.shields.io/github/go-mod/go-version/gowok/gowok.svg)](https://github.com/gowok/gowok)
+[![GoDoc Reference](https://img.shields.io/badge/godoc-reference-blue.svg)](https://pkg.go.dev/github.com/gowok/gowok)
+[![GoReportCard](https://goreportcard.com/badge/github.com/gowok/gowok)](https://goreportcard.com/report/github.com/gowok/gowok)
+[![Coverage Status](https://codecov.io/gh/gowok/gowok/branch/master/graph/badge.svg?token=7ORUPOWS3I)](https://codecov.io/gh/gowok/gowok)
+
+
 Gowok is a library that contains a lot of functions that help you to build [Go](https://go.dev) project.
 
 It has some utilities like:
@@ -30,10 +38,9 @@ func main() {
 1. Create a YAML file named `config.yaml`.
 2. Then write this.
 ```yaml
-app:
-  web:
-    enabled: true
-    host: :8080
+web:
+  enabled: true
+  host: :8080
 ```
 
 ## Running the Project
