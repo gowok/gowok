@@ -1,4 +1,4 @@
-package exception
+package errors
 
 import (
 	"errors"
@@ -9,6 +9,7 @@ var (
 	ErrNotImplemented = errors.New("not implemented")
 	ErrConfigNotFound = errors.New("config file not found")
 	ErrConfigDecoding = func(err error) error { return fmt.Errorf("config decoding failed: %s", err.Error()) }
+	ErrNotConfigured  = func(name string) error { return fmt.Errorf("%s not configured", name) }
 
 	ErrEmailAlreadyUsed       = errors.New("email already used")
 	ErrEmailOrPasswordInvalid = errors.New("email or password invalid")

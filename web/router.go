@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/gowok/gowok/config"
+	"github.com/gowok/gowok/errors"
 	"github.com/gowok/gowok/some"
 	"github.com/ngamux/middleware/cors"
 	"github.com/ngamux/middleware/log"
@@ -14,11 +15,11 @@ import (
 var mux = some.Empty[*httpMux]()
 
 func Router() *ngamux.HttpServeMux {
-	return mux.OrPanic().mux
+	return mux.OrPanic(errors.ErrNotConfigured("web")).mux
 }
 
 func Server() *http.Server {
-	return mux.OrPanic().Server
+	return mux.OrPanic(errors.ErrNotConfigured("web")).Server
 }
 
 type httpMux struct {

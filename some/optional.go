@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"reflect"
 
-	"github.com/gowok/gowok/exception"
+	"github.com/gowok/gowok/errors"
 )
 
 type Some[T any] struct {
@@ -77,7 +77,7 @@ func (o Some[T]) OrElseFunc(gen func() T) T {
 }
 
 func (o Some[T]) OrPanic(errs ...error) T {
-	err := exception.ErrNoValuePresent
+	err := errors.ErrNoValuePresent
 	if len(errs) > 0 {
 		err = errs[0]
 	}
