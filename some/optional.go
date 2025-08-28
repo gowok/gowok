@@ -79,7 +79,7 @@ func (o Some[T]) OrElseFunc(gen func() T) T {
 func (o Some[T]) OrPanic(errs ...error) T {
 	err := errors.ErrNoValuePresent
 	if len(errs) > 0 {
-		err = errs[0]
+		err = errors.New(errs[0].Error())
 	}
 
 	if !o.IsPresent() {
