@@ -14,7 +14,7 @@ import (
 	"github.com/gowok/fp/maps"
 	"github.com/gowok/gowok/grpc"
 	"github.com/gowok/gowok/health"
-	"github.com/gowok/gowok/runner"
+	"github.com/gowok/gowok/runtime"
 	"github.com/gowok/gowok/singleton"
 	"github.com/gowok/gowok/some"
 	"github.com/gowok/gowok/sql"
@@ -27,7 +27,7 @@ type Project struct {
 	Config     *Config
 	ConfigMap  map[string]any
 	configures []ConfigureFunc
-	runner     *runner.Runner
+	runtime    *runtime.Runtime
 }
 
 type flags struct {
@@ -53,13 +53,13 @@ func FlagParse() {
 	}
 }
 
-var hooks = singleton.New(func() *runner.Hooks {
-	return &runner.Hooks{
+var hooks = singleton.New(func() *runtime.Hooks {
+	return &runtime.Hooks{
 		Init: some.Empty[func()](),
 	}
 })
 
-func Hooks() *runner.Hooks {
+func Hooks() *runtime.Hooks {
 	return *hooks()
 }
 
@@ -81,7 +81,7 @@ func Get(config ...Config) *Project {
 
 	project := &Project{
 		configures: make([]ConfigureFunc, 0),
-		runner:     runner.New(),
+		runtime:    runtime.New(),
 	}
 
 	var conf *Config
@@ -104,9 +104,9 @@ func Get(config ...Config) *Project {
 
 	project.Config = conf
 	project.ConfigMap = confRaw
-	project.runner = runner.New(
-		runner.WithRLimitEnabled(),
-		runner.WithGracefulStopFunc(project.stop(Hooks())),
+	project.runtime = runtime.New(
+		runtime.WithRLimitEnabled(),
+		runtime.WithGracefulStopFunc(project.stop(Hooks())),
 	)
 
 	sql.Configure(project.Config.SQLs)
@@ -154,7 +154,7 @@ func run(project *Project) {
 	Hooks().OnStarted()()
 }
 
-func (p Project) stop(hooks *runner.Hooks) func() {
+func (p Project) stop(hooks *runtime.Hooks) func() {
 	return func() {
 		println()
 		if p.Config.Grpc.Enabled {
@@ -173,7 +173,7 @@ func (p Project) stop(hooks *runner.Hooks) func() {
 }
 
 func (p *Project) Run(forever ...bool) {
-	p.runner.AddRunFunc(func() {
+	p.runtime.AddRunFunc(func() {
 		run(p)
 	})
 	if p.Config != nil {
@@ -181,7 +181,7 @@ func (p *Project) Run(forever ...bool) {
 			forever = append([]bool{true}, forever...)
 		}
 	}
-	p.runner.Run(forever...)
+	p.runtime.Run(forever...)
 }
 
 func (p *Project) Configures(configures ...ConfigureFunc) *Project {

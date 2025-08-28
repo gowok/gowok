@@ -1,4 +1,4 @@
-package runner
+package runtime
 
 import (
 	"os"
@@ -10,15 +10,15 @@ import (
 	"github.com/gowok/gowok/some"
 )
 
-type Runner struct {
+type Runtime struct {
 	numCPU           int
 	rLimitEnable     bool
 	runFns           []func()
 	gracefulStopFunc some.Some[func()]
 }
 
-func New(opts ...option) *Runner {
-	runner := &Runner{
+func New(opts ...option) *Runtime {
+	runner := &Runtime{
 		numCPU:           runtime.NumCPU(),
 		runFns:           []func(){func() {}},
 		gracefulStopFunc: some.Empty[func()](),
@@ -32,11 +32,11 @@ func New(opts ...option) *Runner {
 	return runner
 }
 
-func (r *Runner) AddRunFunc(runFunc func()) {
+func (r *Runtime) AddRunFunc(runFunc func()) {
 	r.runFns = append(r.runFns, runFunc)
 }
 
-func (r Runner) Run(forever ...bool) {
+func (r Runtime) Run(forever ...bool) {
 	if r.runFns == nil {
 		return
 	}
@@ -57,7 +57,7 @@ func (r Runner) Run(forever ...bool) {
 	}
 }
 
-func (r Runner) gracefulStopRun() {
+func (r Runtime) gracefulStopRun() {
 	var gracefulStop = make(chan os.Signal, 1)
 	signal.Notify(gracefulStop, syscall.SIGTERM)
 	signal.Notify(gracefulStop, syscall.SIGINT)
