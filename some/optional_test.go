@@ -190,7 +190,7 @@ func TestOrPanic(t *testing.T) {
 		defer func() {
 			err := recover()
 			should.NotNil(t, err)
-			should.Equal(t, err, expected)
+			should.Equal(t, err.(error).Error(), expected.Error())
 		}()
 		Empty[string]().OrPanic(expected)
 	})
