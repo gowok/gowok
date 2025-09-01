@@ -28,10 +28,6 @@ type httpMux struct {
 }
 
 func Configure(c *config.Web) {
-	if !c.Enabled {
-		return
-	}
-
 	// conf := ngamux.Config{
 	// 	ProxyHeader:           fiber.HeaderXForwardedFor,
 	// }

@@ -84,8 +84,7 @@ func Get(config ...Config) *Project {
 		runtime:    runtime.New(),
 	}
 
-	var conf *Config
-	confRaw := map[string]any{}
+	conf, confRaw := newConfigEmpty()
 	if Flags().Config != "" {
 		_conf, _confRaw, err := newConfig(Flags().Config, Flags().EnvFile)
 		if err != nil {
@@ -99,10 +98,6 @@ func Get(config ...Config) *Project {
 		confRaw = maps.FromStruct(conf)
 	}
 
-	if conf == nil {
-		conf, confRaw = newConfigEmpty()
-	}
-
 	project.Config = conf
 	project.ConfigMap = confRaw
 	project.runtime = runtime.New(
@@ -111,8 +106,8 @@ func Get(config ...Config) *Project {
 	)
 
 	sql.Configure(project.Config.SQLs)
+	web.Configure(&project.Config.Web)
 	if project.Config.Web.Enabled {
-		web.Configure(&project.Config.Web)
 		health.Configure()
 	}
 	if !project.Config.Forever {
@@ -193,6 +188,15 @@ func Run(config ...Config) {
 }
 
 func (p *Project) Configures(configures ...ConfigureFunc) *Project {
+	p.configures = append(p.configures, configures...)
+	for _, configure := range configures {
+		configure(p)
+	}
+	return p
+}
+
+func Configures(configures ...ConfigureFunc) *Project {
+	p := Get()
 	p.configures = append(p.configures, configures...)
 	for _, configure := range configures {
 		configure(p)

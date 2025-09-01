@@ -8,9 +8,11 @@ import (
 )
 
 func Router() *ngamux.HttpServeMux {
+	Get()
 	return web.Router()
 }
 
 func Server() *http.Server {
+	Get()
 	return web.Server()
 }
