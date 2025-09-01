@@ -23,6 +23,7 @@ type Config struct {
 
 	EnvFile   string `json:"env_file,omitempty"`
 	IsTesting bool   `json:"is_testing,omitempty"`
+	Forever   bool   `json:"-"`
 }
 
 func newConfigEmpty() (*Config, map[string]any) {
@@ -34,7 +35,7 @@ func newConfigEmpty() (*Config, map[string]any) {
 		make(map[string]config.SQL),
 		make(map[string]config.Smtp),
 		make(map[string]any),
-		"", false,
+		"", false, false,
 	}
 
 	confRaw := maps.FromStruct(conf)

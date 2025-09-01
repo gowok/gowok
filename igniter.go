@@ -93,7 +93,8 @@ func Get(config ...Config) *Project {
 		}
 		conf = _conf
 		confRaw = _confRaw
-	} else if len(config) > 0 {
+	}
+	if len(config) > 0 {
 		conf = &config[0]
 		confRaw = maps.FromStruct(conf)
 	}
@@ -114,6 +115,10 @@ func Get(config ...Config) *Project {
 		web.Configure(&project.Config.Web)
 		health.Configure()
 	}
+	if !project.Config.Forever {
+		project.Config.Forever = project.Config.Web.Enabled || project.Config.Grpc.Enabled
+	}
+
 	pp = _project(project)
 	return *pp
 }
@@ -172,16 +177,19 @@ func (p Project) stop(hooks *runtime.Hooks) func() {
 	}
 }
 
-func (p *Project) Run(forever ...bool) {
+func (p *Project) Run() {
 	p.runtime.AddRunFunc(func() {
 		run(p)
 	})
-	if p.Config != nil {
-		if p.Config.Web.Enabled || p.Config.Grpc.Enabled {
-			forever = append([]bool{true}, forever...)
-		}
-	}
-	p.runtime.Run(forever...)
+	p.runtime.Run(p.Config.Forever)
+}
+
+func Run(config ...Config) {
+	p := Get(config...)
+	p.runtime.AddRunFunc(func() {
+		run(p)
+	})
+	p.runtime.Run(p.Config.Forever)
 }
 
 func (p *Project) Configures(configures ...ConfigureFunc) *Project {
