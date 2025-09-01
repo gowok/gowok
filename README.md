@@ -30,10 +30,9 @@ func main() {
 1. Create a YAML file named `config.yaml`.
 2. Then write this.
 ```yaml
-app:
-  web:
-    enabled: true
-    host: :8080
+web:
+  enabled: true
+  host: :8080
 ```
 
 ## Running the Project
