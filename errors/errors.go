@@ -1,6 +1,7 @@
 package errors
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
@@ -49,6 +50,16 @@ func (e Error) Error() string {
 
 func (e Error) WriteResponse(rw http.ResponseWriter) {
 	ngamux.Res(rw).Status(e.code).Text(e.Error())
+}
+
+func (e Error) MarshalJSON() ([]byte, error) {
+	res := ngamux.Map{
+		"error": e.err.Error(),
+	}
+	if e.code != 0 {
+		res["code"] = e.code
+	}
+	return json.Marshal(res)
 }
 
 type Option func(*Error)
