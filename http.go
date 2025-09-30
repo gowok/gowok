@@ -26,11 +26,18 @@ func HttpUnauthorized(rw http.ResponseWriter) {
 func HttpNotFound(rw http.ResponseWriter) {
 	ngamux.Res(rw).Status(http.StatusNotFound).Text("not found")
 }
-func HttpOk(rw http.ResponseWriter, body any) {
+func HttpOk(rw http.ResponseWriter, body ...any) {
+	var body1 any = ""
+	if len(body) > 0 {
+		body1 = body[0]
+	}
+
 	res := ngamux.Res(rw).Status(http.StatusOK)
-	switch b := body.(type) {
+	switch b := body1.(type) {
 	case string:
-		res.Text(b)
+		if b != "" {
+			res.Text(b)
+		}
 	default:
 		res.JSON(b)
 	}
