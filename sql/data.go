@@ -4,10 +4,10 @@ import (
 	"database/sql"
 	"database/sql/driver"
 	"encoding/json"
+	"fmt"
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/ngamux/ngamux"
 )
 
 func NewNullString(inp *string) sql.NullString {
@@ -67,16 +67,39 @@ func NewNullUUID(inp *uuid.UUID) uuid.NullUUID {
 	return res
 }
 
-type JsonB ngamux.Map
-
-func (j JsonB) Value() (driver.Value, error) {
-	return json.Marshal(j)
+type JsonB[T any] struct {
+	value T
 }
 
-func (j *JsonB) Scan(value any) error {
+func NewJsonB[T any](value T) *JsonB[T] {
+	return &JsonB[T]{value}
+}
+
+func (j JsonB[T]) Value() (driver.Value, error) {
+	return json.Marshal(j.value)
+}
+
+func (j JsonB[T]) ValueType() T {
+	return j.value
+}
+
+func (j *JsonB[T]) Scan(value any) error {
 	bytes, ok := value.([]byte)
 	if !ok {
 		return nil
 	}
-	return json.Unmarshal(bytes, j)
+	return json.Unmarshal(bytes, &j.value)
+}
+
+func (j JsonB[T]) String() string {
+	val, err := j.Value()
+	if err != nil {
+		return ""
+	}
+	switch v := val.(type) {
+	case []byte:
+		return string(v)
+	}
+
+	return fmt.Sprint(val)
 }
