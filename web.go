@@ -3,6 +3,7 @@ package gowok
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"time"
 
@@ -127,4 +128,42 @@ func (ctx WebCtx) NoContent(rw http.ResponseWriter) error {
 func (ctx WebCtx) Accepted(rw http.ResponseWriter, body any) error {
 	HttpAccepted(ctx.res, body)
 	return nil
+}
+
+type WebSseCtx struct {
+	*WebCtx
+	flusher *http.Flusher
+}
+
+func (ctx *WebSseCtx) Flush() {
+	(*ctx.flusher).Flush()
+}
+
+func (ctx *WebSseCtx) Publish(message []byte) error {
+	fmt.Fprintf(ctx.res, "data: %s\n\n", string(message))
+	(*ctx.flusher).Flush()
+	return nil
+}
+
+func HandlerSse(handler func(ctx *WebSseCtx)) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "text/event-stream")
+		w.Header().Set("Cache-Control", "no-cache")
+		w.Header().Set("Connection", "keep-alive")
+
+		flusher, ok := w.(http.Flusher)
+		if !ok {
+			HttpInternalServerError(w, errors.ErrStreamingUnsupported)
+			return
+		}
+
+		handler(&WebSseCtx{
+			WebCtx: &WebCtx{
+				res: ngamux.Res(w),
+				req: ngamux.Req(r),
+				ctx: r.Context(),
+			},
+			flusher: &flusher,
+		})
+	}
 }

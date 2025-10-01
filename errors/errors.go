@@ -10,8 +10,9 @@ import (
 )
 
 var (
-	ErrNotImplemented = New("not implemented")
-	ErrConfigNotFound = New("config file not found")
+	ErrNotImplemented       = New("not implemented")
+	ErrConfigNotFound       = New("config file not found")
+	ErrStreamingUnsupported = New("streaming unsupported")
 
 	ErrConfigDecoding = func(err error) error { return New(fmt.Sprintf("config decoding failed: %s", err.Error())) }
 	ErrNotConfigured  = func(name string) error { return New(fmt.Sprintf("%s not configured", name)) }
