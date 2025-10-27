@@ -94,15 +94,11 @@ func (ctx *WebSseCtx) Flush() {
 }
 
 func (ctx *WebSseCtx) Publish(message []byte) error {
-	fmt.Fprintf(ctx.res, "data: %s\n\n", string(message))
-	(*ctx.flusher).Flush()
-	return nil
+	return ctx.PublishRaw("data: %s\n\n", string(message))
 }
 
 func (ctx *WebSseCtx) Emit(event string, message []byte) error {
-	fmt.Fprintf(ctx.res, "event: %s\ndata: %s\n\n", event, string(message))
-	(*ctx.flusher).Flush()
-	return nil
+	return ctx.PublishRaw("event: %s\ndata: %s\n\n", event, string(message))
 }
 
 func (ctx *WebSseCtx) PublishRaw(format string, a ...any) error {
