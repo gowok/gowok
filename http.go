@@ -1,94 +1,47 @@
 package gowok
 
 import (
-	"encoding/json"
 	"net/http"
 
-	"github.com/ngamux/ngamux"
+	"github.com/gowok/gowok/web"
 )
 
-func HttpBadRequest(rw http.ResponseWriter, body any) {
-	res := ngamux.Res(rw).Status(http.StatusBadRequest)
-	switch b := body.(type) {
-	case string:
-		res.Text(b)
-	case json.Marshaler:
-		res.JSON(b)
-	case error:
-		res.Text(b.Error())
-	default:
-		res.JSON(b)
-	}
-}
-func HttpUnauthorized(rw http.ResponseWriter) {
-	ngamux.Res(rw).Status(http.StatusUnauthorized).Text("unauthorized")
-}
-func HttpNotFound(rw http.ResponseWriter) {
-	ngamux.Res(rw).Status(http.StatusNotFound).Text("not found")
-}
-func HttpOk(rw http.ResponseWriter, body ...any) {
-	var body1 any = ""
-	if len(body) > 0 {
-		body1 = body[0]
-	}
-
-	res := ngamux.Res(rw).Status(http.StatusOK)
-	switch b := body1.(type) {
-	case string:
-		if b != "" {
-			res.Text(b)
-		}
-	default:
-		res.JSON(b)
-	}
+func HttpBadRequest(w http.ResponseWriter, body any) {
+	web.NewResponse(w).BadRequest(body)
 }
 
-func HttpInternalServerError(rw http.ResponseWriter, body any) {
-	res := ngamux.Res(rw).Status(http.StatusInternalServerError)
-	switch b := body.(type) {
-	case string:
-		res.Text(b)
-	case error:
-		res.Text(b.Error())
-	default:
-		res.JSON(b)
-	}
+func HttpUnauthorized(w http.ResponseWriter) {
+	web.NewResponse(w).Unauthorized("unauthorized")
 }
 
-func HttpCreated(rw http.ResponseWriter, body any) {
-	res := ngamux.Res(rw).Status(http.StatusCreated)
-	switch b := body.(type) {
-	case string:
-		res.Text(b)
-	default:
-		res.JSON(b)
-	}
+func HttpNotFound(w http.ResponseWriter) {
+	web.NewResponse(w).NotFound("not found")
 }
 
-func HttpForbidden(rw http.ResponseWriter) {
-	ngamux.Res(rw).Status(http.StatusForbidden).Text("forbidden")
+func HttpOk(w http.ResponseWriter, body ...any) {
+	web.NewResponse(w).Ok(body...)
 }
 
-func HttpConflict(rw http.ResponseWriter, body any) {
-	res := ngamux.Res(rw).Status(http.StatusConflict)
-	switch b := body.(type) {
-	case string:
-		res.Text(b)
-	default:
-		res.JSON(b)
-	}
+func HttpInternalServerError(w http.ResponseWriter, body ...any) {
+	web.NewResponse(w).InternalServerError(body...)
 }
 
-func HttpNoContent(rw http.ResponseWriter) {
-	ngamux.Res(rw).Status(http.StatusNoContent).Text("")
+func HttpCreated(w http.ResponseWriter, body ...any) {
+	web.NewResponse(w).Created(body...)
 }
 
-func HttpAccepted(rw http.ResponseWriter, body any) {
-	res := ngamux.Res(rw).Status(http.StatusAccepted)
-	switch b := body.(type) {
-	case string:
-		res.Text(b)
-	default:
-		res.JSON(b)
-	}
+func HttpForbidden(w http.ResponseWriter) {
+	web.NewResponse(w).Forbidden("forbidden")
+}
+
+func HttpConflict(w http.ResponseWriter, body ...any) {
+	web.NewResponse(w).Conflict(body)
+}
+
+func HttpNoContent(w http.ResponseWriter) {
+	web.NewResponse(w).NoContent()
+}
+
+func HttpAccepted(w http.ResponseWriter, body ...any) {
+	web.NewResponse(w).Accepted(body...)
 }
