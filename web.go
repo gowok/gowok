@@ -24,7 +24,7 @@ func Server() *http.Server {
 
 func Handler(handler func(ctx *WebCtx) error) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		ctx := &WebCtx{r.Context(), ngamux.Res(w), ngamux.Req(r)}
+		ctx := &WebCtx{r.Context(), &HttpResponse{ngamux.Res(w)}, &HttpRequest{ngamux.Req(r)}}
 		err := handler(ctx)
 		if err != nil {
 			if gowokErr, ok := err.(errors.Error); ok {
@@ -38,17 +38,25 @@ func Handler(handler func(ctx *WebCtx) error) http.HandlerFunc {
 	}
 }
 
-type WebCtx struct {
-	ctx context.Context
-	res *ngamux.Response
-	req *ngamux.Request
+type HttpResponse struct {
+	*ngamux.Response
 }
 
-func (ctx WebCtx) Req() *ngamux.Request {
+type HttpRequest struct {
+	*ngamux.Request
+}
+
+type WebCtx struct {
+	ctx context.Context
+	res *HttpResponse
+	req *HttpRequest
+}
+
+func (ctx WebCtx) Req() *HttpRequest {
 	return ctx.req
 }
 
-func (ctx WebCtx) Res() *ngamux.Response {
+func (ctx WebCtx) Res() *HttpResponse {
 	return ctx.res
 }
 
@@ -80,53 +88,53 @@ func (ctx *WebCtx) SetValue(key, value any) {
 	ctx.SetContext(context.WithValue(ctx.ctx, key, value))
 }
 
-func (ctx WebCtx) Ok(body ...any) error {
-	HttpOk(ctx.res, body...)
+func (ctx HttpResponse) Ok(body ...any) error {
+	HttpOk(ctx, body...)
 	return nil
 }
 
-func (ctx WebCtx) HttpBadRequest(body any) error {
-	HttpBadRequest(ctx.res, body)
+func (ctx HttpResponse) BadRequest(body any) error {
+	HttpBadRequest(ctx, body)
 	return nil
 }
 
-func (ctx WebCtx) HttpUnauthorized() error {
-	HttpUnauthorized(ctx.res)
+func (ctx HttpResponse) Unauthorized() error {
+	HttpUnauthorized(ctx)
 	return nil
 }
 
-func (ctx WebCtx) HttpNotFound() error {
-	HttpNotFound(ctx.res)
+func (ctx HttpResponse) NotFound() error {
+	HttpNotFound(ctx)
 	return nil
 }
 
-func (ctx WebCtx) HttpInternalServerError(body any) error {
-	HttpNotFound(ctx.res)
+func (ctx HttpResponse) InternalServerError(body any) error {
+	HttpNotFound(ctx)
 	return nil
 }
 
-func (ctx WebCtx) HttpCreated(body any) error {
-	HttpNotFound(ctx.res)
+func (ctx HttpResponse) Created(body any) error {
+	HttpNotFound(ctx)
 	return nil
 }
 
-func (ctx WebCtx) HttpForbidden() error {
-	HttpNotFound(ctx.res)
+func (ctx HttpResponse) Forbidden() error {
+	HttpNotFound(ctx)
 	return nil
 }
 
-func (ctx WebCtx) HttpConflict(rw http.ResponseWriter, body any) error {
-	HttpNotFound(ctx.res)
+func (ctx HttpResponse) Conflict(rw http.ResponseWriter, body any) error {
+	HttpNotFound(ctx)
 	return nil
 }
 
-func (ctx WebCtx) NoContent(rw http.ResponseWriter) error {
-	HttpNoContent(ctx.res)
+func (ctx HttpResponse) NoContent(rw http.ResponseWriter) error {
+	HttpNoContent(ctx)
 	return nil
 }
 
-func (ctx WebCtx) Accepted(rw http.ResponseWriter, body any) error {
-	HttpAccepted(ctx.res, body)
+func (ctx HttpResponse) Accepted(rw http.ResponseWriter, body any) error {
+	HttpAccepted(ctx, body)
 	return nil
 }
 
@@ -171,8 +179,8 @@ func HandlerSse(handler func(ctx *WebSseCtx)) http.HandlerFunc {
 
 		handler(&WebSseCtx{
 			WebCtx: &WebCtx{
-				res: ngamux.Res(w),
-				req: ngamux.Req(r),
+				res: &HttpResponse{ngamux.Res(w)},
+				req: &HttpRequest{ngamux.Req(r)},
 				ctx: r.Context(),
 			},
 			flusher: &flusher,
