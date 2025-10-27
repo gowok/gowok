@@ -145,6 +145,12 @@ func (ctx *WebSseCtx) Publish(message []byte) error {
 	return nil
 }
 
+func (ctx *WebSseCtx) Emit(event string, message []byte) error {
+	fmt.Fprintf(ctx.res, "event: %s\ndata: %s\n\n", event, string(message))
+	(*ctx.flusher).Flush()
+	return nil
+}
+
 func HandlerSse(handler func(ctx *WebSseCtx)) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/event-stream")
