@@ -1,0 +1,11 @@
+[web]
+enabled = true
+host = "$HOST"
+
+[web.cors]
+enabled = true
+
+[sql.default]
+enabled = false
+driver = "postgres"
+
