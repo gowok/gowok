@@ -24,7 +24,7 @@ func Server() *http.Server {
 
 func Handler(handler func(ctx *WebCtx) error) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		ctx := &WebCtx{r.Context(), &HttpResponse{ngamux.Res(w)}, &HttpRequest{ngamux.Req(r)}}
+		ctx := &WebCtx{r.Context(), web.NewResponse(w), &HttpRequest{ngamux.Req(r)}}
 		err := handler(ctx)
 		if err != nil {
 			if gowokErr, ok := err.(errors.Error); ok {
@@ -38,17 +38,13 @@ func Handler(handler func(ctx *WebCtx) error) http.HandlerFunc {
 	}
 }
 
-type HttpResponse struct {
-	*ngamux.Response
-}
-
 type HttpRequest struct {
 	*ngamux.Request
 }
 
 type WebCtx struct {
 	ctx context.Context
-	res *HttpResponse
+	res *web.HttpResponse
 	req *HttpRequest
 }
 
@@ -56,7 +52,7 @@ func (ctx WebCtx) Req() *HttpRequest {
 	return ctx.req
 }
 
-func (ctx WebCtx) Res() *HttpResponse {
+func (ctx WebCtx) Res() *web.HttpResponse {
 	return ctx.res
 }
 
@@ -86,56 +82,6 @@ func (ctx WebCtx) Value(key any) any {
 
 func (ctx *WebCtx) SetValue(key, value any) {
 	ctx.SetContext(context.WithValue(ctx.ctx, key, value))
-}
-
-func (ctx HttpResponse) Ok(body ...any) error {
-	HttpOk(ctx, body...)
-	return nil
-}
-
-func (ctx HttpResponse) BadRequest(body any) error {
-	HttpBadRequest(ctx, body)
-	return nil
-}
-
-func (ctx HttpResponse) Unauthorized() error {
-	HttpUnauthorized(ctx)
-	return nil
-}
-
-func (ctx HttpResponse) NotFound() error {
-	HttpNotFound(ctx)
-	return nil
-}
-
-func (ctx HttpResponse) InternalServerError(body any) error {
-	HttpNotFound(ctx)
-	return nil
-}
-
-func (ctx HttpResponse) Created(body any) error {
-	HttpNotFound(ctx)
-	return nil
-}
-
-func (ctx HttpResponse) Forbidden() error {
-	HttpNotFound(ctx)
-	return nil
-}
-
-func (ctx HttpResponse) Conflict(rw http.ResponseWriter, body any) error {
-	HttpNotFound(ctx)
-	return nil
-}
-
-func (ctx HttpResponse) NoContent(rw http.ResponseWriter) error {
-	HttpNoContent(ctx)
-	return nil
-}
-
-func (ctx HttpResponse) Accepted(rw http.ResponseWriter, body any) error {
-	HttpAccepted(ctx, body)
-	return nil
 }
 
 type WebSseCtx struct {
@@ -179,7 +125,7 @@ func HandlerSse(handler func(ctx *WebSseCtx)) http.HandlerFunc {
 
 		handler(&WebSseCtx{
 			WebCtx: &WebCtx{
-				res: &HttpResponse{ngamux.Res(w)},
+				res: web.NewResponse(w),
 				req: &HttpRequest{ngamux.Req(r)},
 				ctx: r.Context(),
 			},
