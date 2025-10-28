@@ -19,6 +19,7 @@ import (
 	"github.com/gowok/gowok/some"
 	"github.com/gowok/gowok/sql"
 	"github.com/gowok/gowok/web"
+	"github.com/spf13/cobra"
 )
 
 type ConfigureFunc func(*Project)
@@ -202,4 +203,22 @@ func Configures(configures ...ConfigureFunc) *Project {
 		configure(p)
 	}
 	return p
+}
+
+var cmd = singleton.New(func() *cobra.Command {
+	return &cobra.Command{}
+})
+
+func CMD(cmds ...*cobra.Command) *cobra.Command {
+	cmd := *cmd()
+	FlagParse()
+	cmd.Flags().AddGoFlagSet(flag.CommandLine)
+	return cmd
+}
+
+func AddCommand(cmd ...*cobra.Command) {
+	for _, c := range cmd {
+		CMD().AddCommand(c)
+		c.Flags().AddFlagSet(CMD().Flags())
+	}
 }
