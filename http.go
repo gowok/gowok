@@ -7,41 +7,41 @@ import (
 )
 
 func HttpBadRequest(w http.ResponseWriter, body any) {
-	web.NewResponse(w).BadRequest(body)
+	_ = web.NewResponse(w).BadRequest(body)
 }
 
 func HttpUnauthorized(w http.ResponseWriter) {
-	web.NewResponse(w).Unauthorized("unauthorized")
+	_ = web.NewResponse(w).Unauthorized("unauthorized")
 }
 
 func HttpNotFound(w http.ResponseWriter) {
-	web.NewResponse(w).NotFound("not found")
+	_ = web.NewResponse(w).NotFound("not found")
 }
 
 func HttpOk(w http.ResponseWriter, body ...any) {
-	web.NewResponse(w).Ok(body...)
+	_ = web.NewResponse(w).Ok(body...)
 }
 
 func HttpInternalServerError(w http.ResponseWriter, body ...any) {
-	web.NewResponse(w).InternalServerError(body...)
+	_ = web.NewResponse(w).InternalServerError(body...)
 }
 
 func HttpCreated(w http.ResponseWriter, body ...any) {
-	web.NewResponse(w).Created(body...)
+	_ = web.NewResponse(w).Created(body...)
 }
 
 func HttpForbidden(w http.ResponseWriter) {
-	web.NewResponse(w).Forbidden("forbidden")
+	_ = web.NewResponse(w).Forbidden("forbidden")
 }
 
 func HttpConflict(w http.ResponseWriter, body ...any) {
-	web.NewResponse(w).Conflict(body)
+	_ = web.NewResponse(w).Conflict(body)
 }
 
 func HttpNoContent(w http.ResponseWriter) {
-	web.NewResponse(w).NoContent()
+	_ = web.NewResponse(w).NoContent()
 }
 
 func HttpAccepted(w http.ResponseWriter, body ...any) {
-	web.NewResponse(w).Accepted(body...)
+	_ = web.NewResponse(w).Accepted(body...)
 }

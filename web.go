@@ -102,7 +102,7 @@ func (ctx *WebSseCtx) Emit(event string, message []byte) error {
 }
 
 func (ctx *WebSseCtx) PublishRaw(format string, a ...any) error {
-	fmt.Fprintf(ctx.res, format, a...)
+	_, _ = fmt.Fprintf(ctx.res, format, a...)
 	(*ctx.flusher).Flush()
 	return nil
 }
