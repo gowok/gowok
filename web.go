@@ -24,7 +24,7 @@ func Server() *http.Server {
 
 func Handler(handler func(ctx *WebCtx) error) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		ctx := &WebCtx{r.Context(), web.NewResponse(w), &HttpRequest{ngamux.Req(r)}}
+		ctx := &WebCtx{r.Context(), web.NewResponse(w), web.NewRequest(r)}
 		err := handler(ctx)
 		if err != nil {
 			if gowokErr, ok := err.(errors.Error); ok {
@@ -38,17 +38,13 @@ func Handler(handler func(ctx *WebCtx) error) http.HandlerFunc {
 	}
 }
 
-type HttpRequest struct {
-	*ngamux.Request
-}
-
 type WebCtx struct {
 	ctx context.Context
 	res *web.HttpResponse
-	req *HttpRequest
+	req *web.Request
 }
 
-func (ctx WebCtx) Req() *HttpRequest {
+func (ctx WebCtx) Req() *web.Request {
 	return ctx.req
 }
 
@@ -122,7 +118,7 @@ func HandlerSse(handler func(ctx *WebSseCtx)) http.HandlerFunc {
 		handler(&WebSseCtx{
 			WebCtx: &WebCtx{
 				res: web.NewResponse(w),
-				req: &HttpRequest{ngamux.Req(r)},
+				req: web.NewRequest(r),
 				ctx: r.Context(),
 			},
 			flusher: &flusher,
