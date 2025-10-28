@@ -7,15 +7,15 @@ import (
 	"github.com/ngamux/ngamux"
 )
 
-type HttpResponse struct {
+type Response struct {
 	*ngamux.Response
 }
 
-func NewResponse(w http.ResponseWriter) *HttpResponse {
-	return &HttpResponse{ngamux.Res(w)}
+func NewResponse(w http.ResponseWriter) *Response {
+	return &Response{ngamux.Res(w)}
 }
 
-func (ctx HttpResponse) bodyParse(res *ngamux.Response, body ...any) {
+func (ctx Response) bodyParse(res *ngamux.Response, body ...any) {
 	var body1 any = ""
 	if len(body) > 0 {
 		body1 = body[0]
@@ -33,61 +33,61 @@ func (ctx HttpResponse) bodyParse(res *ngamux.Response, body ...any) {
 	}
 }
 
-func (ctx HttpResponse) Ok(body ...any) error {
+func (ctx Response) Ok(body ...any) error {
 	res := ctx.Status(http.StatusOK)
 	ctx.bodyParse(res, body...)
 	return nil
 }
 
-func (ctx HttpResponse) BadRequest(body ...any) error {
+func (ctx Response) BadRequest(body ...any) error {
 	res := ctx.Status(http.StatusBadRequest)
 	ctx.bodyParse(res, body...)
 	return nil
 }
 
-func (ctx HttpResponse) Unauthorized(body ...any) error {
+func (ctx Response) Unauthorized(body ...any) error {
 	res := ctx.Status(http.StatusUnauthorized)
 	ctx.bodyParse(res, body...)
 	return nil
 }
 
-func (ctx HttpResponse) NotFound(body ...any) error {
+func (ctx Response) NotFound(body ...any) error {
 	res := ctx.Status(http.StatusNotFound)
 	ctx.bodyParse(res, body...)
 	return nil
 }
 
-func (ctx HttpResponse) InternalServerError(body ...any) error {
+func (ctx Response) InternalServerError(body ...any) error {
 	res := ctx.Status(http.StatusInternalServerError)
 	ctx.bodyParse(res, body...)
 	return nil
 }
 
-func (ctx HttpResponse) Created(body ...any) error {
+func (ctx Response) Created(body ...any) error {
 	res := ctx.Status(http.StatusCreated)
 	ctx.bodyParse(res, body...)
 	return nil
 }
 
-func (ctx HttpResponse) Forbidden(body ...any) error {
+func (ctx Response) Forbidden(body ...any) error {
 	res := ctx.Status(http.StatusForbidden)
 	ctx.bodyParse(res, body...)
 	return nil
 }
 
-func (ctx HttpResponse) Conflict(body ...any) error {
+func (ctx Response) Conflict(body ...any) error {
 	res := ctx.Status(http.StatusConflict)
 	ctx.bodyParse(res, body...)
 	return nil
 }
 
-func (ctx HttpResponse) NoContent() error {
+func (ctx Response) NoContent() error {
 	res := ctx.Status(http.StatusNoContent)
 	ctx.bodyParse(res)
 	return nil
 }
 
-func (ctx HttpResponse) Accepted(body ...any) error {
+func (ctx Response) Accepted(body ...any) error {
 	res := ctx.Status(http.StatusAccepted)
 	ctx.bodyParse(res, body...)
 	return nil

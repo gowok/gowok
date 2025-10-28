@@ -40,7 +40,7 @@ func Handler(handler func(ctx *WebCtx) error) http.HandlerFunc {
 
 type WebCtx struct {
 	ctx context.Context
-	res *web.HttpResponse
+	res *web.Response
 	req *web.Request
 }
 
@@ -48,7 +48,7 @@ func (ctx WebCtx) Req() *web.Request {
 	return ctx.req
 }
 
-func (ctx WebCtx) Res() *web.HttpResponse {
+func (ctx WebCtx) Res() *web.Response {
 	return ctx.res
 }
 
