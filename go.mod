@@ -9,7 +9,7 @@ require (
 	github.com/gowok/should v0.0.0-20240831060519-d8ab7c7891fb
 	github.com/joho/godotenv v1.5.1
 	github.com/ngamux/middleware v0.0.8
-	github.com/ngamux/ngamux v1.7.47
+	github.com/ngamux/ngamux v1.7.50
 	github.com/pelletier/go-toml/v2 v2.2.3
 	golang.org/x/crypto v0.31.0
 	google.golang.org/grpc v1.59.0
