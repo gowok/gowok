@@ -1,7 +1,6 @@
 package gowok
 
 import (
-	"encoding/json"
 	"net/http"
 
 	"github.com/gowok/gowok/errors"
@@ -24,13 +23,12 @@ func Handler(handler func(ctx *web.Ctx) error) http.HandlerFunc {
 		ctx := web.NewCtx(r.Context(), w, r)
 		err := handler(ctx)
 		if err != nil {
-			if gowokErr, ok := err.(errors.Error); ok {
-				err = json.NewEncoder(ctx.Res()).Encode(gowokErr)
-				if err == nil {
-					return
-				}
+			switch e := err.(type) {
+			case errors.Error:
+				ngamux.Res(w).JSON(e)
+			default:
+				HttpInternalServerError(w, err)
 			}
-			HttpInternalServerError(w, err)
 		}
 	}
 }

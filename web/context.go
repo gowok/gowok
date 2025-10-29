@@ -65,7 +65,7 @@ type CtxSse struct {
 }
 
 func NewCtxSse(ctx *Ctx) (*CtxSse, error) {
-	flusher, ok := ctx.res.Response.ResponseWriter.(http.Flusher)
+	flusher, ok := ctx.res.ResponseWriter.(http.Flusher)
 	if !ok {
 		return nil, errors.ErrStreamingUnsupported
 	}
