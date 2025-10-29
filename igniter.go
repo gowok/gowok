@@ -210,7 +210,7 @@ var cmd = singleton.New(func() *cobra.Command {
 })
 
 func CMD(cmds ...*cobra.Command) *cobra.Command {
-	cmd := *cmd()
+	cmd := *cmd(cmds...)
 	FlagParse()
 	cmd.Flags().AddGoFlagSet(flag.CommandLine)
 	return cmd
