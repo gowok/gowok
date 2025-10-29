@@ -42,13 +42,13 @@ func PaginationFromReq[T any](r *http.Request) Pagination[T] {
 	return pagination
 }
 
-func PaginationFromPagination[T, U any](input Pagination[T]) Pagination[U] {
-	pagination := Pagination[U]{
+func PaginationFromPagination[T, U any](input Pagination[U]) Pagination[T] {
+	pagination := Pagination[T]{
 		Page:    input.Page,
 		PerPage: input.PerPage,
 		Filter:  input.Filter,
 		Sort:    input.Sort,
-		Data:    make([]U, 0),
+		Data:    make([]T, 0),
 	}
 
 	return pagination
