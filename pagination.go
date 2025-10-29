@@ -42,6 +42,18 @@ func PaginationFromReq[T any](r *http.Request) Pagination[T] {
 	return pagination
 }
 
+func PaginationFromPagination[T, U any](input Pagination[T]) Pagination[U] {
+	pagination := Pagination[U]{
+		Page:    input.Page,
+		PerPage: input.PerPage,
+		Filter:  input.Filter,
+		Sort:    input.Sort,
+		Data:    make([]U, 0),
+	}
+
+	return pagination
+}
+
 func (p *Pagination[T]) SetData(data ...T) {
 	p.Data = data
 }
