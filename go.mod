@@ -5,7 +5,7 @@ go 1.24.6
 require (
 	github.com/golang-must/must v1.0.0
 	github.com/google/uuid v1.6.0
-	github.com/gowok/fp v0.2.0
+	github.com/gowok/fp v0.2.1
 	github.com/gowok/should v0.0.0-20240831060519-d8ab7c7891fb
 	github.com/joho/godotenv v1.5.1
 	github.com/ngamux/middleware v0.0.8
