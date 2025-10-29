@@ -33,6 +33,10 @@ func (ctx Response) bodyParse(res *ngamux.Response, body ...any) {
 	}
 }
 
+func (r *Response) ToHttp() http.ResponseWriter {
+	return r.ResponseWriter
+}
+
 func (ctx Response) Ok(body ...any) error {
 	res := ctx.Status(http.StatusOK)
 	ctx.bodyParse(res, body...)
