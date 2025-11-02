@@ -210,15 +210,17 @@ var cmd = singleton.New(func() *cobra.Command {
 })
 
 func CMD(cmds ...*cobra.Command) *cobra.Command {
-	cmd := *cmd(cmds...)
-	FlagParse()
-	cmd.Flags().AddGoFlagSet(flag.CommandLine)
-	return cmd
+	return *cmd(cmds...)
 }
 
-func AddCommand(cmd ...*cobra.Command) {
+func AddCMD(cmd ...*cobra.Command) {
 	for _, c := range cmd {
 		CMD().AddCommand(c)
-		c.Flags().AddFlagSet(CMD().Flags())
 	}
+}
+
+func WrapCMD(c *cobra.Command) *cobra.Command {
+	FlagParse()
+	c.Flags().AddGoFlagSet(flag.CommandLine)
+	return c
 }
