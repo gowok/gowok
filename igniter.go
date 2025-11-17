@@ -45,7 +45,7 @@ func Flags() *flags {
 	return *_flags()
 }
 
-func FlagParse() {
+func flagParse() {
 	if flag.Lookup("config") == nil {
 		flag.StringVar(&Flags().Config, "config", "", "configuration file location (yaml, toml)")
 	}
@@ -76,7 +76,7 @@ func Get(config ...Config) *Project {
 
 	slog.SetDefault(slog.New(slog.NewJSONHandler(os.Stdout, nil)))
 	Hooks().Init.OrElse(func() {
-		FlagParse()
+		flagParse()
 		flag.Parse()
 	})()
 
@@ -220,7 +220,7 @@ func AddCMD(cmd ...*cobra.Command) {
 }
 
 func WrapCMD(c *cobra.Command) *cobra.Command {
-	FlagParse()
+	flagParse()
 	c.Flags().AddGoFlagSet(flag.CommandLine)
 	return c
 }
