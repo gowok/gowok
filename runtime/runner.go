@@ -59,8 +59,7 @@ func (r Runtime) Run(forever ...bool) {
 
 func (r Runtime) gracefulStopRun() {
 	var gracefulStop = make(chan os.Signal, 1)
-	signal.Notify(gracefulStop, syscall.SIGTERM)
-	signal.Notify(gracefulStop, syscall.SIGINT)
+	signal.Notify(gracefulStop, syscall.SIGTERM, syscall.SIGINT)
 
 	func() {
 		<-gracefulStop
