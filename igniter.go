@@ -15,7 +15,6 @@ import (
 	"github.com/gowok/gowok/runtime"
 	"github.com/gowok/gowok/singleton"
 	"github.com/gowok/gowok/some"
-	"github.com/gowok/gowok/web"
 	"github.com/spf13/cobra"
 )
 
@@ -164,7 +163,7 @@ func (p Project) stop(hooks *runtime.Hooks) func() {
 			ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 			defer cancel()
 
-			_ = web.Server().Shutdown(ctx)
+			_ = Web.Server.Shutdown(ctx)
 		}
 		hooks.OnStopped()()
 	}
