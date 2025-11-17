@@ -12,7 +12,6 @@ import (
 	"time"
 
 	"github.com/gowok/fp/maps"
-	"github.com/gowok/gowok/grpc"
 	"github.com/gowok/gowok/runtime"
 	"github.com/gowok/gowok/singleton"
 	"github.com/gowok/gowok/some"
@@ -142,7 +141,7 @@ func run(project *Project) {
 					log.Fatalln("grpc: failed to start: " + err.Error())
 				}
 
-				err = grpc.Server().Serve(listen)
+				err = GRPC.Serve(listen)
 				if err != nil {
 					log.Fatalln("grpc: failed to start: " + err.Error())
 				}
@@ -158,7 +157,7 @@ func (p Project) stop(hooks *runtime.Hooks) func() {
 		println()
 		if p.Config.Grpc.Enabled {
 			slog.Info("stopping GRPC")
-			grpc.Server().GracefulStop()
+			GRPC.GracefulStop()
 		}
 		if p.Config.Web.Enabled {
 			slog.Info("stopping web")
