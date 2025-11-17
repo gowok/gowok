@@ -1,4 +1,4 @@
-package hash
+package gowok
 
 import (
 	"crypto/rand"
@@ -7,6 +7,10 @@ import (
 
 	"golang.org/x/crypto/pbkdf2"
 )
+
+type _hash struct{}
+
+var Hash = _hash{}
 
 type Password struct {
 	Hashed string
@@ -27,7 +31,7 @@ func genSalt(size int) string {
 	return result
 }
 
-func PasswordHash(raw string, salt ...string) Password {
+func (p *_hash) Password(raw string, salt ...string) Password {
 	if len(salt) <= 0 {
 		salt = []string{genSalt(16)}
 	}
@@ -51,7 +55,7 @@ func equal(cipherText, newCipherText string) bool {
 	return diff == 0
 }
 
-func PasswordVerify(raw, hashed, salt string) bool {
+func (p *_hash) PasswordVerify(raw, hashed, salt string) bool {
 	dk := pbkdf2.Key([]byte(raw), []byte(salt), iter, keyLen, sha512.New)
 
 	return equal(hashed, string(dk))
