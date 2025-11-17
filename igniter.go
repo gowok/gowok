@@ -16,7 +16,6 @@ import (
 	"github.com/gowok/gowok/runtime"
 	"github.com/gowok/gowok/singleton"
 	"github.com/gowok/gowok/some"
-	"github.com/gowok/gowok/sql"
 	"github.com/gowok/gowok/web"
 	"github.com/spf13/cobra"
 )
@@ -105,7 +104,7 @@ func Get(config ...Config) *Project {
 		runtime.WithGracefulStopFunc(project.stop(Hooks())),
 	)
 
-	sql.Configure(project.Config.SQLs)
+	SQL.Configure(project.Config.SQLs)
 	web.Configure(&project.Config.Web)
 	if project.Config.Web.Enabled {
 		Health.Configure()
