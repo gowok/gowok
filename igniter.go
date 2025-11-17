@@ -13,7 +13,6 @@ import (
 
 	"github.com/gowok/fp/maps"
 	"github.com/gowok/gowok/grpc"
-	"github.com/gowok/gowok/health"
 	"github.com/gowok/gowok/runtime"
 	"github.com/gowok/gowok/singleton"
 	"github.com/gowok/gowok/some"
@@ -109,7 +108,7 @@ func Get(config ...Config) *Project {
 	sql.Configure(project.Config.SQLs)
 	web.Configure(&project.Config.Web)
 	if project.Config.Web.Enabled {
-		health.Configure()
+		Health.Configure()
 	}
 	if !project.Config.Forever {
 		project.Config.Forever = project.Config.Web.Enabled || project.Config.Grpc.Enabled
