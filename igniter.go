@@ -169,27 +169,12 @@ func (p Project) stop(hooks *runtime.Hooks) func() {
 	}
 }
 
-func (p *Project) Run() {
-	p.runtime.AddRunFunc(func() {
-		run(p)
-	})
-	p.runtime.Run(p.Config.Forever)
-}
-
 func Run(config ...Config) {
 	p := Get(config...)
 	p.runtime.AddRunFunc(func() {
 		run(p)
 	})
 	p.runtime.Run(p.Config.Forever)
-}
-
-func (p *Project) Configures(configures ...ConfigureFunc) *Project {
-	p.configures = append(p.configures, configures...)
-	for _, configure := range configures {
-		configure(p)
-	}
-	return p
 }
 
 func Configures(configures ...ConfigureFunc) *Project {
