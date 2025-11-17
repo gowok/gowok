@@ -95,3 +95,21 @@ func (p *_web) Configure(c *config.Web) {
 
 	Web.Server = server
 }
+
+func (w *_web) Resource(path string, resource web.ResourceHandler, opts ...func(*ngamux.HttpServeMux)) {
+	g := w.Group(path)
+	for _, opt := range opts {
+		opt(g)
+	}
+	g.Get("", resource.Index)
+	g.Post("", resource.Store)
+	g.Get("/{id}", resource.Show)
+	g.Put("/{id}", resource.Update)
+	g.Delete("/{id}", resource.Destroy)
+}
+
+func WithResourceMiddleware(middlewares ...ngamux.MiddlewareFunc) func(*ngamux.HttpServeMux) {
+	return func(mux *ngamux.HttpServeMux) {
+		mux.Use(middlewares...)
+	}
+}
