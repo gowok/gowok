@@ -3,7 +3,6 @@ package gowok
 import (
 	"net/http"
 
-	"github.com/gowok/gowok/web"
 	"github.com/ngamux/ngamux"
 )
 
@@ -16,7 +15,7 @@ var Health = _health{
 }
 
 func (p *_health) Configure() {
-	r := web.Router().Group("/health")
+	r := Web.Group("/health")
 	r.Get("", func(w http.ResponseWriter, r *http.Request) {
 		urls := make(map[string]string, len(p.healths))
 		for k := range p.healths {

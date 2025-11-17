@@ -104,7 +104,7 @@ func Get(config ...Config) *Project {
 	)
 
 	SQL.Configure(project.Config.SQLs)
-	web.Configure(&project.Config.Web)
+	Web.Configure(&project.Config.Web)
 	if project.Config.Web.Enabled {
 		Health.Configure()
 	}
@@ -123,7 +123,7 @@ func run(project *Project) {
 		if project.Config.Web.Enabled {
 			go func() {
 				slog.Info("starting web")
-				err := web.Server().ListenAndServe()
+				err := Web.Server.ListenAndServe()
 				if err != nil {
 					if errors.Is(err, http.ErrServerClosed) {
 						return
