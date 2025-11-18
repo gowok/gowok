@@ -36,7 +36,7 @@ func (w *_webHandler) Handler(handler func(ctx *web.Ctx) error) http.HandlerFunc
 			case errors.Error:
 				ctx.Res().JSON(e)
 			default:
-				ctx.Res().InternalServerError(err)
+				_ = ctx.Res().InternalServerError(err)
 			}
 		}
 	}
@@ -50,7 +50,7 @@ func (w *_webHandler) SSE(handler func(ctx *web.CtxSse)) http.HandlerFunc {
 
 		ctx, err := web.NewCtxSse(web.NewCtx(r.Context(), w, r))
 		if err != nil {
-			ctx.Res().InternalServerError(err)
+			_ = ctx.Res().InternalServerError(err)
 			return
 		}
 

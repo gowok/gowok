@@ -16,14 +16,9 @@ var Config = &config.Config{}
 
 func newConfigEmpty() (*config.Config, map[string]any) {
 	conf := &config.Config{
-		"",
-		config.Web{},
-		config.Grpc{},
-		config.Security{},
-		make(map[string]config.SQL),
-		make(map[string]config.Smtp),
-		make(map[string]any),
-		"", false, false,
+		SQLs:   make(map[string]config.SQL),
+		Smtp:   make(map[string]config.Smtp),
+		Others: make(map[string]any),
 	}
 
 	confRaw := maps.FromStruct(conf)
