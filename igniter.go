@@ -16,7 +16,6 @@ import (
 	"github.com/gowok/gowok/runtime"
 	"github.com/gowok/gowok/singleton"
 	"github.com/gowok/gowok/some"
-	"github.com/spf13/cobra"
 )
 
 type ConfigureFunc func(*Project)
@@ -184,24 +183,4 @@ func Configures(configures ...ConfigureFunc) *Project {
 		configure(p)
 	}
 	return p
-}
-
-var cmd = singleton.New(func() *cobra.Command {
-	return &cobra.Command{}
-})
-
-func CMD(cmds ...*cobra.Command) *cobra.Command {
-	return *cmd(cmds...)
-}
-
-func AddCMD(cmd ...*cobra.Command) {
-	for _, c := range cmd {
-		CMD().AddCommand(c)
-	}
-}
-
-func WrapCMD(c *cobra.Command) *cobra.Command {
-	flagParse()
-	c.Flags().AddGoFlagSet(flag.CommandLine)
-	return c
 }
