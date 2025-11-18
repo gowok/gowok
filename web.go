@@ -108,7 +108,7 @@ func (w *_web) Resource(path string, resource web.ResourceHandler, opts ...func(
 	g.Delete("/{id}", resource.Destroy)
 }
 
-func WithResourceMiddleware(middlewares ...ngamux.MiddlewareFunc) func(*ngamux.HttpServeMux) {
+func (w _web) WithResourceMiddleware(middlewares ...ngamux.MiddlewareFunc) func(*ngamux.HttpServeMux) {
 	return func(mux *ngamux.HttpServeMux) {
 		mux.Use(middlewares...)
 	}
