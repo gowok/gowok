@@ -15,7 +15,6 @@ import (
 	"github.com/gowok/gowok/config"
 	"github.com/gowok/gowok/runtime"
 	"github.com/gowok/gowok/singleton"
-	"github.com/gowok/gowok/some"
 )
 
 type ConfigureFunc func(*Project)
@@ -23,16 +22,6 @@ type ConfigureFunc func(*Project)
 type Project struct {
 	configures []ConfigureFunc
 	runtime    *runtime.Runtime
-}
-
-var hooks = singleton.New(func() *runtime.Hooks {
-	return &runtime.Hooks{
-		Init: some.Empty[func()](),
-	}
-})
-
-func Hooks() *runtime.Hooks {
-	return *hooks()
 }
 
 var _project = singleton.New(func() *Project {
@@ -46,7 +35,7 @@ func Configure(configs ...config.Config) {
 	}
 
 	slog.SetDefault(slog.New(slog.NewJSONHandler(os.Stdout, nil)))
-	Hooks().Init.OrElse(func() {
+	Hooks.Init.OrElse(func() {
 		flagParse()
 		flag.Parse()
 	})()
@@ -90,7 +79,7 @@ func Configure(configs ...config.Config) {
 }
 
 func run(project *Project) {
-	Hooks().OnStarting()()
+	Hooks.OnStarting()()
 
 	if Config != nil {
 		if Config.Web.Enabled {
@@ -122,11 +111,10 @@ func run(project *Project) {
 		}
 	}
 
-	Hooks().OnStarted()()
+	Hooks.OnStarted()()
 }
 
 func stop() func() {
-	hooks := Hooks()
 	return func() {
 		println()
 		if Config.Grpc.Enabled {
@@ -140,7 +128,7 @@ func stop() func() {
 
 			_ = Web.Server.Shutdown(ctx)
 		}
-		hooks.OnStopped()()
+		Hooks.OnStopped()()
 	}
 }
 
