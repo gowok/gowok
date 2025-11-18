@@ -34,9 +34,9 @@ func (w *_webHandler) Handler(handler func(ctx *web.Ctx) error) http.HandlerFunc
 		if err != nil {
 			switch e := err.(type) {
 			case errors.Error:
-				ngamux.Res(w).JSON(e)
+				ctx.Res().JSON(e)
 			default:
-				HttpInternalServerError(w, err)
+				ctx.Res().InternalServerError(err)
 			}
 		}
 	}
@@ -50,7 +50,7 @@ func (w *_webHandler) SSE(handler func(ctx *web.CtxSse)) http.HandlerFunc {
 
 		ctx, err := web.NewCtxSse(web.NewCtx(r.Context(), w, r))
 		if err != nil {
-			HttpInternalServerError(w, err)
+			ctx.Res().InternalServerError(err)
 			return
 		}
 
