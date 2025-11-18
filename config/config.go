@@ -13,3 +13,9 @@ type Config struct {
 	IsTesting bool   `json:"is_testing,omitempty"`
 	Forever   bool   `json:"-"`
 }
+
+var ConfigMap = map[string]any{}
+
+func (c *Config) Map() map[string]any {
+	return ConfigMap
+}

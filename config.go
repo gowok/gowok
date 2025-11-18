@@ -13,7 +13,6 @@ import (
 )
 
 var Config = &config.Config{}
-var ConfigMap = map[string]any{}
 
 func newConfigEmpty() (*config.Config, map[string]any) {
 	conf := &config.Config{

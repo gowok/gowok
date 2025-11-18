@@ -25,29 +25,6 @@ type Project struct {
 	runtime    *runtime.Runtime
 }
 
-type flags struct {
-	Config  string
-	EnvFile string
-	Help    bool
-}
-
-var _flags = singleton.New(func() *flags {
-	return &flags{}
-})
-
-func Flags() *flags {
-	return *_flags()
-}
-
-func flagParse() {
-	if flag.Lookup("config") == nil {
-		flag.StringVar(&Flags().Config, "config", "", "configuration file location (yaml, toml)")
-	}
-	if flag.Lookup("env-file") == nil {
-		flag.StringVar(&Flags().EnvFile, "env-file", "", "env file location")
-	}
-}
-
 var hooks = singleton.New(func() *runtime.Hooks {
 	return &runtime.Hooks{
 		Init: some.Empty[func()](),
@@ -62,7 +39,7 @@ var _project = singleton.New(func() *Project {
 	return nil
 })
 
-func Configure(config ...config.Config) {
+func Configure(configs ...config.Config) {
 	p := *_project()
 	if p != nil {
 		return
@@ -88,16 +65,16 @@ func Configure(config ...config.Config) {
 		conf = _conf
 		confRaw = _confRaw
 	}
-	if len(config) > 0 {
-		conf = &config[0]
+	if len(configs) > 0 {
+		conf = &configs[0]
 		confRaw = maps.FromStruct(conf)
 	}
 
 	Config = conf
-	ConfigMap = confRaw
+	config.ConfigMap = confRaw
 	project.runtime = runtime.New(
 		runtime.WithRLimitEnabled(),
-		runtime.WithGracefulStopFunc(project.stop(Hooks())),
+		runtime.WithGracefulStopFunc(stop()),
 	)
 
 	SQL.Configure(Config.SQLs)
@@ -148,7 +125,8 @@ func run(project *Project) {
 	Hooks().OnStarted()()
 }
 
-func (p Project) stop(hooks *runtime.Hooks) func() {
+func stop() func() {
+	hooks := Hooks()
 	return func() {
 		println()
 		if Config.Grpc.Enabled {
