@@ -14,7 +14,7 @@ import (
 
 func TestNewConfig(t *testing.T) {
 	t.Run("positive", func(t *testing.T) {
-		expectedC := &Config{
+		expectedC := &config.Config{
 			Web: config.Web{
 				Enabled: true,
 				Host:    ":8080",
@@ -30,7 +30,7 @@ func TestNewConfig(t *testing.T) {
 		cMap, err := newConfigRaw(string(yy))
 		should.Nil(t, err)
 
-		var c *Config
+		var c *config.Config
 		err = maps.ToStruct(cMap, &c)
 		should.Nil(t, err)
 		should.NotNil(t, c)
