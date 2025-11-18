@@ -12,22 +12,11 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-type Config struct {
-	Key      string                 `json:"key,omitempty"`
-	Web      config.Web             `json:"web,omitempty"`
-	Grpc     config.Grpc            `json:"grpc,omitempty"`
-	Security config.Security        `json:"security,omitempty"`
-	SQLs     map[string]config.SQL  `json:"sql,omitempty"`
-	Smtp     map[string]config.Smtp `json:"smtp,omitempty"`
-	Others   map[string]any         `json:"others,omitempty"`
+var Config = &config.Config{}
+var ConfigMap = map[string]any{}
 
-	EnvFile   string `json:"env_file,omitempty"`
-	IsTesting bool   `json:"is_testing,omitempty"`
-	Forever   bool   `json:"-"`
-}
-
-func newConfigEmpty() (*Config, map[string]any) {
-	conf := &Config{
+func newConfigEmpty() (*config.Config, map[string]any) {
+	conf := &config.Config{
 		"",
 		config.Web{},
 		config.Grpc{},
@@ -42,7 +31,7 @@ func newConfigEmpty() (*Config, map[string]any) {
 	return conf, confRaw
 }
 
-func newConfig(pathConfig string, envFile string) (*Config, map[string]any, error) {
+func newConfig(pathConfig string, envFile string) (*config.Config, map[string]any, error) {
 	fiConfig, err := os.OpenFile(pathConfig, os.O_RDONLY, 0600)
 	if err != nil {
 		return nil, nil, err
@@ -67,7 +56,7 @@ func newConfig(pathConfig string, envFile string) (*Config, map[string]any, erro
 		return nil, nil, err
 	}
 
-	conf := &Config{}
+	conf := &config.Config{}
 	err = maps.ToStruct(confRaw, conf)
 	if err != nil {
 		return nil, nil, fmt.Errorf("can't decode config file: %w", err)

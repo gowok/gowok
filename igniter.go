@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/gowok/fp/maps"
+	"github.com/gowok/gowok/config"
 	"github.com/gowok/gowok/runtime"
 	"github.com/gowok/gowok/singleton"
 	"github.com/gowok/gowok/some"
@@ -21,8 +22,6 @@ import (
 type ConfigureFunc func(*Project)
 
 type Project struct {
-	Config     *Config
-	ConfigMap  map[string]any
 	configures []ConfigureFunc
 	runtime    *runtime.Runtime
 }
@@ -64,10 +63,10 @@ var _project = singleton.New(func() *Project {
 	return nil
 })
 
-func Get(config ...Config) *Project {
-	pp := _project()
-	if *pp != nil {
-		return *pp
+func Configure(config ...config.Config) {
+	p := *_project()
+	if p != nil {
+		return
 	}
 
 	slog.SetDefault(slog.New(slog.NewJSONHandler(os.Stdout, nil)))
@@ -95,31 +94,30 @@ func Get(config ...Config) *Project {
 		confRaw = maps.FromStruct(conf)
 	}
 
-	project.Config = conf
-	project.ConfigMap = confRaw
+	Config = conf
+	ConfigMap = confRaw
 	project.runtime = runtime.New(
 		runtime.WithRLimitEnabled(),
 		runtime.WithGracefulStopFunc(project.stop(Hooks())),
 	)
 
-	SQL.Configure(project.Config.SQLs)
-	Web.Configure(&project.Config.Web)
-	if project.Config.Web.Enabled {
+	SQL.Configure(Config.SQLs)
+	Web.Configure(&Config.Web)
+	if Config.Web.Enabled {
 		Health.Configure()
 	}
-	if !project.Config.Forever {
-		project.Config.Forever = project.Config.Web.Enabled || project.Config.Grpc.Enabled
+	if !Config.Forever {
+		Config.Forever = Config.Web.Enabled || Config.Grpc.Enabled
 	}
 
-	pp = _project(project)
-	return *pp
+	_project(project)
 }
 
 func run(project *Project) {
 	Hooks().OnStarting()()
 
-	if project.Config != nil {
-		if project.Config.Web.Enabled {
+	if Config != nil {
+		if Config.Web.Enabled {
 			go func() {
 				slog.Info("starting web")
 				err := Web.Server.ListenAndServe()
@@ -132,10 +130,10 @@ func run(project *Project) {
 			}()
 		}
 
-		if project.Config.Grpc.Enabled {
+		if Config.Grpc.Enabled {
 			go func() {
 				slog.Info("starting GRPC")
-				listen, err := net.Listen("tcp", project.Config.Grpc.Host)
+				listen, err := net.Listen("tcp", Config.Grpc.Host)
 				if err != nil {
 					log.Fatalln("grpc: failed to start: " + err.Error())
 				}
@@ -154,11 +152,11 @@ func run(project *Project) {
 func (p Project) stop(hooks *runtime.Hooks) func() {
 	return func() {
 		println()
-		if p.Config.Grpc.Enabled {
+		if Config.Grpc.Enabled {
 			slog.Info("stopping GRPC")
 			GRPC.GracefulStop()
 		}
-		if p.Config.Web.Enabled {
+		if Config.Web.Enabled {
 			slog.Info("stopping web")
 			ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 			defer cancel()
@@ -169,16 +167,18 @@ func (p Project) stop(hooks *runtime.Hooks) func() {
 	}
 }
 
-func Run(config ...Config) {
-	p := Get(config...)
+func Run(config ...config.Config) {
+	Configure(config...)
+	p := *_project()
 	p.runtime.AddRunFunc(func() {
 		run(p)
 	})
-	p.runtime.Run(p.Config.Forever)
+	p.runtime.Run(Config.Forever)
 }
 
 func Configures(configures ...ConfigureFunc) *Project {
-	p := Get()
+	Configure()
+	p := *_project()
 	p.configures = append(p.configures, configures...)
 	for _, configure := range configures {
 		configure(p)
