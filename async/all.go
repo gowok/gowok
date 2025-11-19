@@ -7,7 +7,7 @@ import (
 // All runs all tasks
 func All(tasks ...func() (any, error)) ([]any, error) {
 	var wg sync.WaitGroup
-	results := make([]interface{}, 0)
+	results := make([]any, 0)
 	var gerr error
 	var gerrOnce sync.Once
 
