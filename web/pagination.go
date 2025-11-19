@@ -1,4 +1,4 @@
-package gowok
+package web
 
 import (
 	"encoding/json"
