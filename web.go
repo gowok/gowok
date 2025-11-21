@@ -14,17 +14,26 @@ import (
 
 type _web struct {
 	*ngamux.HttpServeMux
-	Server  *http.Server
-	Handler *_webHandler
+	Server   *http.Server
+	Handler  *_webHandler
+	Response *_webResponse
+	Request  *_webRequest
 }
 
 type _webHandler struct {
+}
+
+type _webResponse struct {
+}
+
+type _webRequest struct {
 }
 
 var Web = &_web{
 	HttpServeMux: ngamux.NewHttpServeMux(),
 	Server:       &http.Server{},
 	Handler:      &_webHandler{},
+	Response:     &_webResponse{},
 }
 
 func (w *_webHandler) Handler(handler func(ctx *web.Ctx) error) http.HandlerFunc {
@@ -112,4 +121,12 @@ func (w _web) WithResourceMiddleware(middlewares ...ngamux.MiddlewareFunc) func(
 	return func(mux *ngamux.HttpServeMux) {
 		mux.Use(middlewares...)
 	}
+}
+
+func (p *_webResponse) New(w http.ResponseWriter) *web.Response {
+	return web.NewResponse(w)
+}
+
+func (p *_webRequest) New(r *http.Request) *web.Request {
+	return web.NewRequest(r)
 }
