@@ -2,6 +2,7 @@ package config
 
 type Config struct {
 	Key      string          `json:"key,omitempty"`
+	Net      Net             `json:"net"`
 	Web      Web             `json:"web"`
 	Grpc     Grpc            `json:"grpc"`
 	Security Security        `json:"security"`

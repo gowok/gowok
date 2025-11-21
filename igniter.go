@@ -82,34 +82,36 @@ func configure(configs ...config.Config) *Project {
 func (p *Project) run() {
 	Hooks.OnStarting()()
 
-	if Config != nil {
-		if Config.Web.Enabled {
-			go func() {
-				slog.Info("starting web")
-				err := Web.Server.ListenAndServe()
-				if err != nil {
-					if errors.Is(err, http.ErrServerClosed) {
-						return
-					}
-					log.Fatalln("web: failed to start: " + err.Error())
+	if Config.Web.Enabled {
+		go func() {
+			slog.Info("starting web")
+			err := Web.Server.ListenAndServe()
+			if err != nil {
+				if errors.Is(err, http.ErrServerClosed) {
+					return
 				}
-			}()
-		}
+				log.Fatalln("web: failed to start: " + err.Error())
+			}
+		}()
+	}
 
-		if Config.Grpc.Enabled {
-			go func() {
-				slog.Info("starting GRPC")
-				listen, err := net.Listen("tcp", Config.Grpc.Host)
-				if err != nil {
-					log.Fatalln("grpc: failed to start: " + err.Error())
-				}
+	if Config.Grpc.Enabled {
+		go func() {
+			slog.Info("starting GRPC")
+			listen, err := net.Listen("tcp", Config.Grpc.Host)
+			if err != nil {
+				log.Fatalln("grpc: failed to start: " + err.Error())
+			}
 
-				err = GRPC.Serve(listen)
-				if err != nil {
-					log.Fatalln("grpc: failed to start: " + err.Error())
-				}
-			}()
-		}
+			err = GRPC.Serve(listen)
+			if err != nil {
+				log.Fatalln("grpc: failed to start: " + err.Error())
+			}
+		}()
+	}
+
+	if Config.Net.Enabled {
+		go Net.configure()
 	}
 
 	Hooks.OnStarted()()
