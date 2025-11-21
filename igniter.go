@@ -28,10 +28,10 @@ var _project = singleton.New(func() *Project {
 	return nil
 })
 
-func Configure(configs ...config.Config) {
+func configure(configs ...config.Config) *Project {
 	p := *_project()
 	if p != nil {
-		return
+		return p
 	}
 
 	slog.SetDefault(slog.New(slog.NewJSONHandler(os.Stdout, nil)))
@@ -76,9 +76,10 @@ func Configure(configs ...config.Config) {
 	}
 
 	_project(project)
+	return project
 }
 
-func run(project *Project) {
+func (p *Project) run() {
 	Hooks.OnStarting()()
 
 	if Config != nil {
@@ -132,17 +133,18 @@ func stop() func() {
 	}
 }
 
-func Run(config ...config.Config) {
-	Configure(config...)
-	p := *_project()
-	p.runtime.AddRunFunc(func() {
-		run(p)
-	})
+func (p *Project) Run(config ...config.Config) {
+	p.runtime.AddRunFunc(p.run)
 	p.runtime.Run(Config.Forever)
 }
 
+func Run(config ...config.Config) {
+	p := configure(config...)
+	p.Run()
+}
+
 func Configures(configures ...ConfigureFunc) *Project {
-	Configure()
+	configure()
 	p := *_project()
 	p.configures = append(p.configures, configures...)
 	for _, configure := range configures {
