@@ -2,11 +2,9 @@ package gowok
 
 import (
 	"context"
-	"errors"
 	"flag"
 	"log"
 	"log/slog"
-	"net/http"
 	"os"
 	"time"
 
@@ -66,10 +64,6 @@ func configure(configs ...config.Config) *Project {
 	)
 
 	SQL.Configure(Config.SQLs)
-	Web.Configure(&Config.Web)
-	if Config.Web.Enabled {
-		Health.Configure()
-	}
 	if !Config.Forever {
 		Config.Forever = Config.Web.Enabled || Config.Grpc.Enabled
 	}
@@ -82,16 +76,8 @@ func (p *Project) run() {
 	Hooks.OnStarting()()
 
 	if Config.Web.Enabled {
-		go func() {
-			slog.Info("starting web")
-			err := Web.Server.ListenAndServe()
-			if err != nil {
-				if errors.Is(err, http.ErrServerClosed) {
-					return
-				}
-				log.Fatalln("web: failed to start: " + err.Error())
-			}
-		}()
+		go Web.configure()
+		Health.Configure()
 	}
 
 	if Config.Grpc.Enabled {

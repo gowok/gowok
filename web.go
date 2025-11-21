@@ -1,15 +1,18 @@
 package gowok
 
 import (
+	"errors"
+	"log"
+	"log/slog"
 	"net/http"
 
 	"github.com/gowok/gowok/config"
-	"github.com/gowok/gowok/errors"
+	gowokErrors "github.com/gowok/gowok/errors"
 	"github.com/gowok/gowok/web"
 	"github.com/gowok/gowok/web/request"
 	"github.com/gowok/gowok/web/response"
 	"github.com/ngamux/middleware/cors"
-	"github.com/ngamux/middleware/log"
+	middlewareLog "github.com/ngamux/middleware/log"
 	"github.com/ngamux/middleware/pprof"
 	"github.com/ngamux/ngamux"
 )
@@ -45,7 +48,7 @@ func (w *_webHandler) Handler(handler func(ctx *web.Ctx) error) http.HandlerFunc
 		err := handler(ctx)
 		if err != nil {
 			switch e := err.(type) {
-			case errors.Error:
+			case gowokErrors.Error:
 				ctx.Res().JSON(e)
 			default:
 				_ = ctx.Res().InternalServerError(err)
@@ -70,7 +73,10 @@ func (w *_webHandler) SSE(handler func(ctx *web.CtxSse)) http.HandlerFunc {
 	}
 }
 
-func (p *_web) Configure(c *config.Web) {
+func (p *_web) configure() {
+	c := Config.Web
+	slog.Info("starting web", "host", c.Host)
+
 	mux := Web.HttpServeMux
 	server := &http.Server{
 		Addr:    c.Host,
@@ -91,7 +97,7 @@ func (p *_web) Configure(c *config.Web) {
 
 	c.Log.IfPresent(func(ll config.WebLog) {
 		if ll.Enabled {
-			mux.Use(log.New())
+			mux.Use(middlewareLog.New())
 		}
 	})
 	c.Cors.IfPresent(func(ll config.WebCors) {
@@ -106,6 +112,14 @@ func (p *_web) Configure(c *config.Web) {
 	})
 
 	Web.Server = server
+
+	err := Web.Server.ListenAndServe()
+	if err != nil {
+		if errors.Is(err, http.ErrServerClosed) {
+			return
+		}
+		log.Fatalln("web: failed to start: " + err.Error())
+	}
 }
 
 func (w *_web) Resource(path string, resource web.ResourceHandler, opts ...func(*ngamux.HttpServeMux)) {
