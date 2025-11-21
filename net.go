@@ -1,6 +1,7 @@
 package gowok
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"log/slog"
@@ -9,6 +10,7 @@ import (
 )
 
 type _net struct {
+	net.Listener
 	handler func(net.Conn)
 }
 
@@ -28,9 +30,14 @@ func (p *_net) configure() {
 		log.Fatalln("net: failed to start: " + err.Error())
 	}
 
+	p.Listener = listen
 	for {
 		conn, err := listen.Accept()
 		if err != nil {
+			if errors.Is(err, net.ErrClosed) {
+				break
+			}
+
 			fmt.Println("net: failed to process: " + err.Error())
 			continue
 		}
@@ -40,4 +47,8 @@ func (p *_net) configure() {
 
 func (p *_net) HandleFunc(handler func(net.Conn)) {
 	p.handler = handler
+}
+
+func (p *_net) Shutdown() {
+	_ = p.Listener.Close()
 }

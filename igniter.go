@@ -105,6 +105,10 @@ func stop() func() {
 
 			_ = Web.Server.Shutdown(ctx)
 		}
+		if Config.Net.Enabled {
+			slog.Info("stopping net")
+			Net.Shutdown()
+		}
 		Hooks.OnStopped()()
 	}
 }
