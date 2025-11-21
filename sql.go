@@ -94,8 +94,8 @@ func (p *_sql) healthFunc(db *sql.DB) func() any {
 	}
 }
 
-func (p *_sql) Get(name ...string) some.Some[*sql.DB] {
-	db := p.GetNoDefault(name...)
+func (p *_sql) Conn(name ...string) some.Some[*sql.DB] {
+	db := p.ConnNoDefault(name...)
 	if db.IsPresent() {
 		return db
 	}
@@ -113,10 +113,10 @@ func (p *_sql) Get(name ...string) some.Some[*sql.DB] {
 		slog.Info("using default connection", "not_found", n)
 	}
 
-	return p.Get("default")
+	return p.Conn("default")
 }
 
-func (p *_sql) GetNoDefault(name ...string) some.Some[*sql.DB] {
+func (p *_sql) ConnNoDefault(name ...string) some.Some[*sql.DB] {
 	n := ""
 	if len(name) > 0 {
 		n = name[0]
