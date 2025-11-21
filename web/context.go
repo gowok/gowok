@@ -7,27 +7,29 @@ import (
 	"time"
 
 	"github.com/gowok/gowok/errors"
+	"github.com/gowok/gowok/web/request"
+	"github.com/gowok/gowok/web/response"
 )
 
 type Ctx struct {
 	ctx context.Context
-	res *Response
-	req *Request
+	res *response.Response
+	req *request.Request
 }
 
 func NewCtx(ctx context.Context, w http.ResponseWriter, r *http.Request) *Ctx {
 	return &Ctx{
 		r.Context(),
-		NewResponse(w),
-		NewRequest(r),
+		response.New(w),
+		request.New(r),
 	}
 }
 
-func (ctx Ctx) Req() *Request {
+func (ctx Ctx) Req() *request.Request {
 	return ctx.req
 }
 
-func (ctx Ctx) Res() *Response {
+func (ctx Ctx) Res() *response.Response {
 	return ctx.res
 }
 

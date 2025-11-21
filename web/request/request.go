@@ -1,4 +1,4 @@
-package web
+package request
 
 import (
 	"net/http"
@@ -11,7 +11,7 @@ type Request struct {
 	raw *http.Request
 }
 
-func NewRequest(r *http.Request) *Request {
+func New(r *http.Request) *Request {
 	return &Request{ngamux.Req(r), r}
 }
 

@@ -6,6 +6,8 @@ import (
 	"github.com/gowok/gowok/config"
 	"github.com/gowok/gowok/errors"
 	"github.com/gowok/gowok/web"
+	"github.com/gowok/gowok/web/request"
+	"github.com/gowok/gowok/web/response"
 	"github.com/ngamux/middleware/cors"
 	"github.com/ngamux/middleware/log"
 	"github.com/ngamux/middleware/pprof"
@@ -34,6 +36,7 @@ var Web = &_web{
 	Server:       &http.Server{},
 	Handler:      &_webHandler{},
 	Response:     &_webResponse{},
+	Request:      &_webRequest{},
 }
 
 func (w *_webHandler) Handler(handler func(ctx *web.Ctx) error) http.HandlerFunc {
@@ -123,10 +126,10 @@ func (w _web) WithResourceMiddleware(middlewares ...ngamux.MiddlewareFunc) func(
 	}
 }
 
-func (p *_webResponse) New(w http.ResponseWriter) *web.Response {
-	return web.NewResponse(w)
+func (p *_webResponse) New(w http.ResponseWriter) *response.Response {
+	return response.New(w)
 }
 
-func (p *_webRequest) New(r *http.Request) *web.Request {
-	return web.NewRequest(r)
+func (p *_webRequest) New(r *http.Request) *request.Request {
+	return request.New(r)
 }

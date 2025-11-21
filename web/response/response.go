@@ -1,4 +1,4 @@
-package web
+package response
 
 import (
 	"encoding/json"
@@ -11,7 +11,7 @@ type Response struct {
 	*ngamux.Response
 }
 
-func NewResponse(w http.ResponseWriter) *Response {
+func New(w http.ResponseWriter) *Response {
 	return &Response{ngamux.Res(w)}
 }
 
