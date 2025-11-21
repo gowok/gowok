@@ -17,7 +17,7 @@ import (
 	"github.com/gowok/gowok/singleton"
 )
 
-type ConfigureFunc func(*Project)
+type ConfigureFunc func()
 
 type Project struct {
 	configures []ConfigureFunc
@@ -146,7 +146,7 @@ func Configures(configures ...ConfigureFunc) *Project {
 	p := *_project()
 	p.configures = append(p.configures, configures...)
 	for _, configure := range configures {
-		configure(p)
+		configure()
 	}
 	return p
 }
