@@ -2,104 +2,43 @@ package sql
 
 import (
 	"database/sql"
-	"database/sql/driver"
 	"encoding/json"
-	"fmt"
-	"time"
-
-	"github.com/google/uuid"
 )
 
-func NewNullString(inp *string) sql.NullString {
-	res := sql.NullString{}
+type Null[T any] struct {
+	sql.Null[T]
+}
+
+func NewNull[T any](inp *T) Null[T] {
+	res := sql.Null[T]{}
 	if inp != nil {
 		res.Valid = true
-		res.String = *inp
+		res.V = *inp
 	}
 
-	return res
+	return Null[T]{res}
 }
 
-type NullTime struct {
-	sql.NullTime
-}
-
-func NewNullTime(inp *time.Time) NullTime {
-	res := sql.NullTime{}
-	if inp != nil {
-		res.Valid = true
-		res.Time = *inp
-	}
-
-	return NullTime{res}
-}
-
-func (nt NullTime) MarshalJSON() ([]byte, error) {
+func (nt Null[T]) MarshalJSON() ([]byte, error) {
 	if !nt.Valid {
 		return json.Marshal(nil)
 	}
-	return json.Marshal(nt.Time)
+
+	return json.Marshal(nt.V)
 }
 
-func (nt *NullTime) UnmarshalJSON(data []byte) error {
+func (nt *Null[T]) UnmarshalJSON(data []byte) error {
 	if string(data) == "null" {
 		nt.Valid = false
 		return nil
 	}
 
-	var t time.Time
+	var t T
 	if err := json.Unmarshal(data, &t); err != nil {
 		return err
 	}
 
-	nt.Time = t
+	nt.V = t
 	nt.Valid = true
 	return nil
-}
-
-func NewNullUUID(inp *uuid.UUID) uuid.NullUUID {
-	res := uuid.NullUUID{}
-	if inp != nil {
-		res.Valid = true
-		res.UUID = *inp
-	}
-
-	return res
-}
-
-type JsonB[T any] struct {
-	value T
-}
-
-func NewJsonB[T any](value T) *JsonB[T] {
-	return &JsonB[T]{value}
-}
-
-func (j JsonB[T]) Value() (driver.Value, error) {
-	return json.Marshal(j.value)
-}
-
-func (j JsonB[T]) ValueType() T {
-	return j.value
-}
-
-func (j *JsonB[T]) Scan(value any) error {
-	bytes, ok := value.([]byte)
-	if !ok {
-		return nil
-	}
-	return json.Unmarshal(bytes, &j.value)
-}
-
-func (j JsonB[T]) String() string {
-	val, err := j.Value()
-	if err != nil {
-		return ""
-	}
-	switch v := val.(type) {
-	case []byte:
-		return string(v)
-	}
-
-	return fmt.Sprint(val)
 }
