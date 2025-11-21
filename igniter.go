@@ -6,7 +6,6 @@ import (
 	"flag"
 	"log"
 	"log/slog"
-	"net"
 	"net/http"
 	"os"
 	"time"
@@ -96,18 +95,7 @@ func (p *Project) run() {
 	}
 
 	if Config.Grpc.Enabled {
-		go func() {
-			slog.Info("starting GRPC")
-			listen, err := net.Listen("tcp", Config.Grpc.Host)
-			if err != nil {
-				log.Fatalln("grpc: failed to start: " + err.Error())
-			}
-
-			err = GRPC.Serve(listen)
-			if err != nil {
-				log.Fatalln("grpc: failed to start: " + err.Error())
-			}
-		}()
+		go GRPC.configure()
 	}
 
 	if Config.Net.Enabled {
