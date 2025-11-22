@@ -7,7 +7,6 @@ import (
 	"net/http"
 
 	"github.com/gowok/gowok/config"
-	gowokErrors "github.com/gowok/gowok/errors"
 	"github.com/gowok/gowok/web"
 	"github.com/gowok/gowok/web/request"
 	"github.com/gowok/gowok/web/response"
@@ -23,6 +22,7 @@ type _web struct {
 	Handler  *_webHandler
 	Response *_webResponse
 	Request  *_webRequest
+	Resource *_webResource
 }
 
 type _webHandler struct {
@@ -34,43 +34,24 @@ type _webResponse struct {
 type _webRequest struct {
 }
 
+type _webResource struct {
+}
+
 var Web = &_web{
 	HttpServeMux: ngamux.NewHttpServeMux(),
 	Server:       &http.Server{},
 	Handler:      &_webHandler{},
 	Response:     &_webResponse{},
 	Request:      &_webRequest{},
+	Resource:     &_webResource{},
 }
 
 func (w *_webHandler) Handler(handler func(ctx *web.Ctx) error) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		ctx := web.NewCtx(r.Context(), w, r)
-		err := handler(ctx)
-		if err != nil {
-			switch e := err.(type) {
-			case gowokErrors.Error:
-				ctx.Res().JSON(e)
-			default:
-				_ = ctx.Res().InternalServerError(err)
-			}
-		}
-	}
+	return web.Handler(handler)
 }
 
 func (w *_webHandler) SSE(handler func(ctx *web.CtxSse)) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "text/event-stream")
-		w.Header().Set("Cache-Control", "no-cache")
-		w.Header().Set("Connection", "keep-alive")
-
-		ctx, err := web.NewCtxSse(web.NewCtx(r.Context(), w, r))
-		if err != nil {
-			_ = ctx.Res().InternalServerError(err)
-			return
-		}
-
-		handler(ctx)
-	}
+	return web.HandlerSSE(handler)
 }
 
 func (p *_web) configure() {
@@ -122,8 +103,8 @@ func (p *_web) configure() {
 	}
 }
 
-func (w *_web) Resource(path string, resource web.ResourceHandler, opts ...func(*ngamux.HttpServeMux)) {
-	g := w.Group(path)
+func (p *_webResource) New(path string, resource web.ResourceHandler, opts ...func(*ngamux.HttpServeMux)) {
+	g := Web.Group(path)
 	for _, opt := range opts {
 		opt(g)
 	}
@@ -134,7 +115,7 @@ func (w *_web) Resource(path string, resource web.ResourceHandler, opts ...func(
 	g.Delete("/{id}", resource.Destroy)
 }
 
-func (w _web) WithResourceMiddleware(middlewares ...ngamux.MiddlewareFunc) func(*ngamux.HttpServeMux) {
+func (p _webResource) WithMiddleware(middlewares ...ngamux.MiddlewareFunc) func(*ngamux.HttpServeMux) {
 	return func(mux *ngamux.HttpServeMux) {
 		mux.Use(middlewares...)
 	}
