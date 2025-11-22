@@ -29,7 +29,7 @@ var SQL = _sql{
 	plugin: "sql",
 }
 
-func (p *_sql) Configure(config map[string]config.SQL) {
+func (p *_sql) configure(config map[string]config.SQL) {
 	p.sqls = new(sync.Map)
 	tasks := make([]func() (any, error), 0)
 	for name, dbC := range config {

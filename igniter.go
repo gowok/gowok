@@ -63,7 +63,7 @@ func configure(configs ...config.Config) *Project {
 		runtime.WithGracefulStopFunc(stop()),
 	)
 
-	SQL.Configure(Config.SQLs)
+	SQL.configure(Config.SQLs)
 	if !Config.Forever {
 		Config.Forever = Config.Web.Enabled || Config.Grpc.Enabled
 	}
