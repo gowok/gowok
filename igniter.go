@@ -25,10 +25,12 @@ var _project = singleton.New(func() *Project {
 	return nil
 })
 
-func configure(configs ...config.Config) *Project {
+func configure(configs ...any) *Project {
 	p := *_project()
 	if p != nil {
-		return p
+		if len(configs) <= 0 {
+			return p
+		}
 	}
 
 	slog.SetDefault(slog.New(slog.NewJSONHandler(os.Stdout, nil)))
@@ -51,9 +53,20 @@ func configure(configs ...config.Config) *Project {
 		conf = _conf
 		confRaw = _confRaw
 	}
+
 	if len(configs) > 0 {
-		conf = &configs[0]
-		confRaw = maps.FromStruct(conf)
+		switch c := configs[0].(type) {
+		case string:
+			_conf, _confRaw, err := newConfig(c, "")
+			if err != nil {
+				log.Fatalln(err)
+			}
+			conf = _conf
+			confRaw = _confRaw
+		case config.Config:
+			conf = &c
+			confRaw = maps.FromStruct(conf)
+		}
 	}
 
 	Config = conf
@@ -113,19 +126,19 @@ func stop() func() {
 	}
 }
 
-func (p *Project) Run(config ...config.Config) {
+func (p *Project) Run(config ...any) {
+	p = configure(config...)
 	p.runtime.AddRunFunc(p.run)
 	p.runtime.Run(Config.Forever)
 }
 
-func Run(config ...config.Config) {
+func Run(config ...any) {
 	p := configure(config...)
 	p.Run()
 }
 
 func Configures(configures ...ConfigureFunc) *Project {
-	configure()
-	p := *_project()
+	p := configure()
 	p.configures = append(p.configures, configures...)
 	for _, configure := range configures {
 		configure()
