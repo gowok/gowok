@@ -126,6 +126,11 @@ func stop() func() {
 	}
 }
 
+func Shutdown() {
+	p := configure()
+	p.runtime.Shutdown()
+}
+
 func (p *Project) Run(config ...any) {
 	p = configure(config...)
 	p.runtime.AddRunFunc(p.run)

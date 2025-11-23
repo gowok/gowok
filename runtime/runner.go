@@ -14,6 +14,7 @@ type Runtime struct {
 	numCPU           int
 	rLimitEnable     bool
 	runFns           []func()
+	gracefulStop     chan os.Signal
 	gracefulStopFunc some.Some[func()]
 }
 
@@ -21,6 +22,7 @@ func New(opts ...option) *Runtime {
 	runner := &Runtime{
 		numCPU:           runtime.NumCPU(),
 		runFns:           []func(){func() {}},
+		gracefulStop:     make(chan os.Signal, 1),
 		gracefulStopFunc: some.Empty[func()](),
 	}
 
@@ -57,14 +59,17 @@ func (r Runtime) Run(forever ...bool) {
 	}
 }
 
-func (r Runtime) gracefulStopRun() {
-	var gracefulStop = make(chan os.Signal, 1)
-	signal.Notify(gracefulStop, syscall.SIGTERM, syscall.SIGINT)
+func (r *Runtime) gracefulStopRun() {
+	signal.Notify(r.gracefulStop, syscall.SIGTERM, syscall.SIGINT)
 
 	func() {
-		<-gracefulStop
+		<-r.gracefulStop
 
 		r.gracefulStopFunc.OrElse(func() {})()
 		os.Exit(0)
 	}()
+}
+
+func (r *Runtime) Shutdown() {
+	r.gracefulStop <- os.Kill
 }
