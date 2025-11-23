@@ -4,12 +4,10 @@ import (
 	"context"
 	"log/slog"
 	"sync"
-
-	"github.com/gowok/gowok"
 )
 
-func Configure(handlers ...slog.Handler) func(p *gowok.Project) {
-	return func(p *gowok.Project) {
+func Configure(handlers ...slog.Handler) func() {
+	return func() {
 		slog.SetDefault(slog.New(&handler{handlers: handlers}))
 	}
 }
