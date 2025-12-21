@@ -9,15 +9,15 @@ import (
 )
 
 type Pagination[T any] struct {
-	Page        int `query:"page" json:"page"`
-	PerPage     int `query:"per_page" json:"per_page"`
-	TotalRecord int `json:"total_record"`
-
 	Filter map[string]any    `query:"filter" json:"filter"`
 	Fields []string          `query:"fields" json:"fields"`
 	Sort   map[string]string `query:"sort" json:"sort"`
 
 	Data []T `json:"data"`
+
+	Page        int `query:"page" json:"page"`
+	PerPage     int `query:"per_page" json:"per_page"`
+	TotalRecord int `json:"total_record"`
 }
 
 func PaginationFromReq[T any](r *http.Request) Pagination[T] {
@@ -39,16 +39,19 @@ func PaginationFromReq[T any](r *http.Request) Pagination[T] {
 	err = json.Unmarshal([]byte(filterQ), &pagination.Filter)
 	_ = err
 
+	pagination.Data = make([]T, pagination.PerPage)
 	return pagination
 }
 
 func PaginationFromPagination[T, U any](input Pagination[U]) Pagination[T] {
 	pagination := Pagination[T]{
-		Page:    input.Page,
-		PerPage: input.PerPage,
-		Filter:  input.Filter,
-		Sort:    input.Sort,
-		Data:    make([]T, 0),
+		Page:        input.Page,
+		PerPage:     input.PerPage,
+		Filter:      input.Filter,
+		Sort:        input.Sort,
+		TotalRecord: input.TotalRecord,
+		Fields:      input.Fields,
+		Data:        make([]T, len(input.Data)),
 	}
 
 	return pagination
@@ -69,6 +72,7 @@ func (p Pagination[T]) TotalPage() float64 {
 func (p Pagination[T]) MarshalJSON() ([]byte, error) {
 	res := map[string]any{
 		"page":         p.Page,
+		"fields":       p.Fields,
 		"per_page":     p.PerPage,
 		"total_record": p.TotalRecord,
 		"total_page":   1,
