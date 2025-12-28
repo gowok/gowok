@@ -34,10 +34,10 @@ func configure(configs ...any) *Project {
 	}
 
 	slog.SetDefault(slog.New(slog.NewJSONHandler(os.Stdout, nil)))
-	Hooks.Init.OrElse(func() {
-		flagParse()
-		flag.Parse()
-	})()
+	flagParse()
+	flag.Parse()
+
+	Hooks.Init()()
 
 	project := &Project{
 		configures: make([]ConfigureFunc, 0),

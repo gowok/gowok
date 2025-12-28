@@ -5,14 +5,14 @@ import (
 )
 
 type Hooks struct {
-	Init       some.Some[func()]
+	init       some.Some[func()]
 	onStarting some.Some[func()]
 	onStarted  some.Some[func()]
 	onStopped  some.Some[func()]
 }
 
 func (h *Hooks) SetInit(hook func()) {
-	h.Init = some.Of(hook)
+	h.init = some.Of(hook)
 }
 
 func (h *Hooks) SetOnStarting(hook func()) {
@@ -27,9 +27,9 @@ func (h *Hooks) SetOnStopped(hook func()) {
 	h.onStopped = some.Of(hook)
 }
 
-// func (h *Hooks) Init() func() {
-// 	return h.init.OrElse(func() {})
-// }
+func (h *Hooks) Init() func() {
+	return h.init.OrElse(func() {})
+}
 
 func (h *Hooks) OnStarting() func() {
 	return h.onStarting.OrElse(func() {})
