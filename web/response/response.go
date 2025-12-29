@@ -2,7 +2,10 @@ package response
 
 import (
 	"encoding/json"
+	"fmt"
+	"io"
 	"net/http"
+	"os"
 
 	"github.com/ngamux/ngamux"
 )
@@ -35,4 +38,21 @@ func (ctx Response) bodyParse(res *ngamux.Response, body ...any) {
 
 func (r *Response) ToHttp() http.ResponseWriter {
 	return r.ResponseWriter
+}
+
+func (r *Response) Download(filepath string) {
+	f, err := os.Open(filepath)
+	if err != nil {
+		r.NotFound(fmt.Sprintf("file %s is not found", filepath))
+		return
+	}
+	defer f.Close()
+
+	info, _ := f.Stat()
+	r.Header().Set("Content-Disposition", "attachment; filename="+info.Name())
+	r.Header().Set("Content-Type", "application/octet-stream")
+	_, err = io.Copy(r, f)
+	if err != nil {
+		return
+	}
 }
