@@ -30,7 +30,7 @@ func Of[T any](val T) Some[T] {
 		return Empty[T]()
 	}
 
-	if (k == reflect.Func || k == reflect.Ptr) && (v.IsZero() || v.IsNil()) {
+	if (k == reflect.Func || k == reflect.Pointer) && (v.IsZero() || v.IsNil()) {
 		return Empty[T]()
 	}
 
