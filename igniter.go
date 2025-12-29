@@ -73,7 +73,7 @@ func configure(configs ...any) *Project {
 	config.ConfigMap = confRaw
 	project.runtime = runtime.New(
 		runtime.WithRLimitEnabled(),
-		runtime.WithGracefulStopFunc(stop()),
+		runtime.WithGracefulStopFunc(stop),
 	)
 
 	SQL.configure(Config.SQLs)
@@ -104,26 +104,25 @@ func (p *Project) run() {
 	Hooks.OnStarted()()
 }
 
-func stop() func() {
-	return func() {
-		println()
-		if Config.Grpc.Enabled {
-			slog.Info("stopping GRPC")
-			GRPC.GracefulStop()
-		}
-		if Config.Web.Enabled {
-			slog.Info("stopping web")
-			ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-			defer cancel()
-
-			_ = Web.Server.Shutdown(ctx)
-		}
-		if Config.Net.Enabled {
-			slog.Info("stopping net")
-			Net.Shutdown()
-		}
-		Hooks.OnStopped()()
+func stop() {
+	println()
+	if Config.Grpc.Enabled {
+		slog.Info("stopping GRPC")
+		GRPC.GracefulStop()
 	}
+	if Config.Web.Enabled {
+		slog.Info("stopping web")
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer cancel()
+
+		_ = Web.Server.Shutdown(ctx)
+	}
+	if Config.Net.Enabled {
+		slog.Info("stopping net")
+		Net.Shutdown()
+	}
+
+	Hooks.OnStopped()()
 }
 
 func Shutdown() {
