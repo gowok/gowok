@@ -27,7 +27,7 @@ func TestNewConfig(t *testing.T) {
 		yy, err := json.Marshal(expectedC)
 		should.Nil(t, err)
 
-		cMap, err := newConfigRaw(string(yy))
+		cMap, err := newConfigRaw(".json", string(yy))
 		should.Nil(t, err)
 
 		var c *config.Config

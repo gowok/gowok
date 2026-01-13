@@ -1,9 +1,11 @@
 package gowok
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 	"os"
+	"path"
 
 	"github.com/gowok/fp/maps"
 	"github.com/gowok/gowok/config"
@@ -45,7 +47,7 @@ func newConfig(pathConfig string, envFile string) (*config.Config, map[string]an
 	cfgS := os.ExpandEnv(string(fiContent))
 	fiContent = []byte(cfgS)
 
-	confRaw, err := newConfigRaw(string(fiContent))
+	confRaw, err := newConfigRaw(path.Ext(fiConfig.Name()), string(fiContent))
 	if err != nil {
 		return nil, nil, err
 	}
@@ -59,17 +61,21 @@ func newConfig(pathConfig string, envFile string) (*config.Config, map[string]an
 	return conf, confRaw, nil
 }
 
-func newConfigRaw(configString string) (map[string]any, error) {
+func newConfigRaw(filetype string, configString string) (map[string]any, error) {
 	confRaw := map[string]any{}
-	err := yaml.Unmarshal([]byte(configString), confRaw)
-	if err == nil {
-		return confRaw, nil
+	var err error
+
+	switch filetype {
+	case ".json":
+		err = json.Unmarshal([]byte(configString), &confRaw)
+	case ".yaml", ".yml":
+		err = yaml.Unmarshal([]byte(configString), &confRaw)
+	case ".toml":
+		err = toml.Unmarshal([]byte(configString), &confRaw)
+	}
+	if err != nil {
+		return nil, err
 	}
 
-	err = toml.Unmarshal([]byte(configString), &confRaw)
-	if err == nil {
-		return confRaw, nil
-	}
-
-	return nil, fmt.Errorf("can't decode config file: %w", err)
+	return confRaw, nil
 }
