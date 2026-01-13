@@ -1,8 +1,11 @@
 package response
 
 import (
+	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"os"
+	"path"
 	"testing"
 
 	"github.com/golang-must/must"
@@ -71,6 +74,73 @@ func TestHeader(t *testing.T) {
 			r.Header(c.Input...)
 
 			c.Check(t, c.Input, r.ToHttp().Header())
+		})
+	}
+}
+
+func TestDownload(t *testing.T) {
+	cases := []struct {
+		Name  string
+		Input func() string
+		Check func(*testing.T, string, *httptest.ResponseRecorder)
+	}{
+		{
+			"positive",
+			func() string {
+				tmpFile, err := os.CreateTemp("", "testing-gowok-*.tmp")
+				if err != nil {
+					panic(err)
+				}
+				defer tmpFile.Close()
+
+				fmt.Fprint(tmpFile, "123")
+
+				return tmpFile.Name()
+			},
+			func(t *testing.T, input string, r *httptest.ResponseRecorder) {
+				header := r.Header()
+				must.Equal(t, "application/octet-stream", header.Get("Content-Type"))
+				must.Equal(t, fmt.Sprintf("attachment; filename=%s", path.Base(input)), header.Get("Content-Disposition"))
+
+				body := r.Body.String()
+				must.Equal(t, "123", body)
+			},
+		},
+		{
+			"negative filename empty",
+			func() string {
+				return ""
+			},
+			func(t *testing.T, input string, r *httptest.ResponseRecorder) {
+				header := r.Header()
+				must.Equal(t, "text/plain", header.Get("Content-Type"))
+				must.Equal(t, "", header.Get("Content-Disposition"))
+
+				must.Equal(t, http.StatusNotFound, r.Result().StatusCode)
+			},
+		},
+		{
+			"negative file not found",
+			func() string {
+				return "/gowok/not-found.tmp"
+			},
+			func(t *testing.T, input string, r *httptest.ResponseRecorder) {
+				header := r.Header()
+				must.Equal(t, "text/plain", header.Get("Content-Type"))
+				must.Equal(t, "", header.Get("Content-Disposition"))
+
+				must.Equal(t, http.StatusNotFound, r.Result().StatusCode)
+			},
+		},
+	}
+
+	for _, c := range cases {
+		t.Run(c.Name, func(t *testing.T) {
+			rraw := httptest.NewRecorder()
+			r := New(rraw)
+			file := c.Input()
+			r.Download(file)
+			c.Check(t, file, rraw)
 		})
 	}
 }

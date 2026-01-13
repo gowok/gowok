@@ -41,6 +41,11 @@ func (r *Response) ToHttp() http.ResponseWriter {
 }
 
 func (r *Response) Download(filepath string) {
+	if filepath == "" {
+		r.NotFound(fmt.Sprintf("file %s is not found", filepath))
+		return
+	}
+
 	f, err := os.Open(filepath)
 	if err != nil {
 		r.NotFound(fmt.Sprintf("file %s is not found", filepath))
@@ -49,8 +54,11 @@ func (r *Response) Download(filepath string) {
 	defer f.Close()
 
 	info, _ := f.Stat()
-	r.ToHttp().Header().Set("Content-Disposition", "attachment; filename="+info.Name())
-	r.ToHttp().Header().Set("Content-Type", "application/octet-stream")
+	r.Header(
+		"Content-Disposition", "attachment; filename="+info.Name(),
+		"Content-Type", "application/octet-stream",
+	)
+
 	_, err = io.Copy(r, f)
 	if err != nil {
 		return
