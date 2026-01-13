@@ -49,10 +49,28 @@ func (r *Response) Download(filepath string) {
 	defer f.Close()
 
 	info, _ := f.Stat()
-	r.Header().Set("Content-Disposition", "attachment; filename="+info.Name())
-	r.Header().Set("Content-Type", "application/octet-stream")
+	r.ToHttp().Header().Set("Content-Disposition", "attachment; filename="+info.Name())
+	r.ToHttp().Header().Set("Content-Type", "application/octet-stream")
 	_, err = io.Copy(r, f)
 	if err != nil {
 		return
 	}
+}
+
+func (r *Response) Header(kv ...string) *Response {
+	header := r.Response.Header()
+
+	if len(kv) < 2 {
+		return r
+	}
+
+	for i := 0; i <= len(kv)/2; i += 2 {
+		if kv[i] == "" {
+			continue
+		}
+
+		header.Set(kv[i], kv[i+1])
+	}
+
+	return r
 }
