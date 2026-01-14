@@ -41,7 +41,7 @@ jobs:
         run: go test -v ./... -coverprofile=cover.txt -covermode=atomic
 
       - name: Coverage
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: ./cover.txt
