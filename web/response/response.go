@@ -42,13 +42,13 @@ func (r *Response) ToHttp() http.ResponseWriter {
 
 func (r *Response) Download(filepath string) {
 	if filepath == "" {
-		r.NotFound(fmt.Sprintf("file %s is not found", filepath))
+		_ = r.NotFound(fmt.Sprintf("file %s is not found", filepath))
 		return
 	}
 
 	f, err := os.Open(filepath)
 	if err != nil {
-		r.NotFound(fmt.Sprintf("file %s is not found", filepath))
+		_ = r.NotFound(fmt.Sprintf("file %s is not found", filepath))
 		return
 	}
 	defer f.Close()
