@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+package api;
+option go_package="./grpc";
+
+service API {
+  rpc GetUsers(Null) returns (Null);
+}
+
+message Null {}

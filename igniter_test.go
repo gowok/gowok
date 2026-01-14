@@ -16,12 +16,16 @@ func GetTest(config string) (*Project, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer os.Remove(tempFile.Name())
+	defer func() {
+		_ = os.Remove(tempFile.Name())
+	}()
 
 	if _, err := tempFile.Write([]byte(config)); err != nil {
 		return nil, err
 	}
-	defer tempFile.Close()
+	defer func() {
+		_ = tempFile.Close()
+	}()
 
 	os.Args = []string{"cmd", "--config=" + tempFile.Name(), "--env-file="}
 	configure()

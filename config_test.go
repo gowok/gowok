@@ -49,11 +49,15 @@ func TestNewConfig(t *testing.T) {
 	t.Run("negative invalid config format", func(t *testing.T) {
 		tempFile, err := os.CreateTemp("", "TestNewConfig*.yaml")
 		should.Nil(t, err)
-		defer os.Remove(tempFile.Name())
+		defer func() {
+			_ = os.Remove(tempFile.Name())
+		}()
 
 		_, err = tempFile.Write([]byte("app: *"))
 		should.Nil(t, err)
-		defer tempFile.Close()
+		defer func() {
+			_ = tempFile.Close()
+		}()
 
 		c, cMap, err := newConfig(tempFile.Name(), "")
 		should.NotNil(t, err)

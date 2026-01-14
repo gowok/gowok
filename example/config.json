@@ -1,0 +1,6 @@
+{
+  "web": {
+    "enabled": true,
+    "host": ":8080"
+  }
+}

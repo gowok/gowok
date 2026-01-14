@@ -91,9 +91,11 @@ func TestDownload(t *testing.T) {
 				if err != nil {
 					panic(err)
 				}
-				defer tmpFile.Close()
+				defer func() {
+					_ = tmpFile.Close()
+				}()
 
-				fmt.Fprint(tmpFile, "123")
+				_, _ = fmt.Fprint(tmpFile, "123")
 
 				return tmpFile.Name()
 			},

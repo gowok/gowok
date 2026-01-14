@@ -51,7 +51,9 @@ func (r *Response) Download(filepath string) {
 		_ = r.NotFound(fmt.Sprintf("file %s is not found", filepath))
 		return
 	}
-	defer f.Close()
+	defer func() {
+		_ = f.Close()
+	}()
 
 	info, _ := f.Stat()
 	r.Header(
