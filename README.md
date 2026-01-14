@@ -1,5 +1,7 @@
 Gowok is a library that contains a lot of functions that help you to build [Go](https://go.dev) project.
 
+[![codecov](https://codecov.io/gh/gowok/gowok/graph/badge.svg?token=LNS4RWP8JT)](https://codecov.io/gh/gowok/gowok)
+
 It has some utilities like:
 * config loader,
 * project bootstrapper,
