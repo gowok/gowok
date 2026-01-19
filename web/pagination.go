@@ -43,7 +43,7 @@ func PaginationFromReq[T any](r *http.Request) Pagination[T] {
 	filterQ := req.Query("filter", "{}")
 	_ = json.Unmarshal([]byte(filterQ), &pagination.Filter)
 
-	pagination.Data = make([]T, pagination.PerPage)
+	pagination.Data = make([]T, 0)
 	return pagination
 }
 
