@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"math"
 	"net/http"
+	"strconv"
 
 	"github.com/ngamux/ngamux"
 )
@@ -28,16 +29,19 @@ func PaginationFromReq[T any](r *http.Request) Pagination[T] {
 		Filter:  map[string]any{},
 		Sort:    map[string]string{},
 	}
-	err := req.QueriesParser(&pagination)
-	_ = err
+	_ = req.QueriesParser(&pagination)
+
+	qPerPage := req.Query("per_page", "10")
+	pagination.PerPage, _ = strconv.Atoi(qPerPage)
+
+	qPage := req.Query("page", "10")
+	pagination.Page, _ = strconv.Atoi(qPage)
 
 	sortQ := req.Query("sort", "{}")
-	err = json.Unmarshal([]byte(sortQ), &pagination.Sort)
-	_ = err
+	_ = json.Unmarshal([]byte(sortQ), &pagination.Sort)
 
 	filterQ := req.Query("filter", "{}")
-	err = json.Unmarshal([]byte(filterQ), &pagination.Filter)
-	_ = err
+	_ = json.Unmarshal([]byte(filterQ), &pagination.Filter)
 
 	pagination.Data = make([]T, pagination.PerPage)
 	return pagination
