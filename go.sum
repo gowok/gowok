@@ -19,10 +19,10 @@ github.com/inconshreveable/mousetrap v1.1.0 h1:wN+x4NVGpMsO7ErUn/mUI3vEoE6Jt13X2
 github.com/inconshreveable/mousetrap v1.1.0/go.mod h1:vpF70FUmC8bwa3OWnCshd2FqLfsEA9PFc4w1p2J65bw=
 github.com/joho/godotenv v1.5.1 h1:7eLL/+HRGLY0ldzfGMeQkb7vMd0as4CfYvUVzLqw0N0=
 github.com/joho/godotenv v1.5.1/go.mod h1:f4LDr5Voq0i2e/R5DDNOoa2zzDfwtkZa6DnEwAbqwq4=
-github.com/ngamux/middleware v0.0.10 h1:MzcT/OndWJz1jWK04le48b9TXuRbu7iZyF62+/O/wyY=
-github.com/ngamux/middleware v0.0.10/go.mod h1:zHCQIrOy5eXHDGdS7dh+XNPLkzK8COlz/b0oiNJHppA=
-github.com/ngamux/ngamux v1.7.51 h1:+Megy3fGQZydNHBJfag/MSkWbHyx1npYz+VxZ3zEjPs=
-github.com/ngamux/ngamux v1.7.51/go.mod h1:k3L+ZyuNtVdKlXKL9Wjly/IcLC3yAz9lFZmUPcLPCBE=
+github.com/ngamux/middleware v0.0.11 h1:F07e/UzGjwox/bstYxoYacXWc3UZbe7ZLyTmxwxeeSk=
+github.com/ngamux/middleware v0.0.11/go.mod h1:td6n4yWc6dtRktXV82J6VQ9xcg1YG1tcIAb9B4GY4Ws=
+github.com/ngamux/ngamux v1.7.52 h1:2g/xJrEpZtEymKDW7QJVUYcCECSZJlR+oegluFe42wA=
+github.com/ngamux/ngamux v1.7.52/go.mod h1:k3L+ZyuNtVdKlXKL9Wjly/IcLC3yAz9lFZmUPcLPCBE=
 github.com/pelletier/go-toml/v2 v2.2.4 h1:mye9XuhQ6gvn5h28+VilKrrPoQVanw5PMw/TB0t5Ec4=
 github.com/pelletier/go-toml/v2 v2.2.4/go.mod h1:2gIqNv+qfxSVS7cM2xJQKtLSTLUE9V8t9Stt+h56mCY=
 github.com/russross/blackfriday/v2 v2.1.0/go.mod h1:+Rmxgy9KzJVeS9/2gXHxylqXiyQDYRxCVz55jmeOWTM=
