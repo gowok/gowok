@@ -1,9 +1,11 @@
 package web
 
 import (
+	"bytes"
 	"encoding/json"
 	"math"
 	"net/http"
+	"sync"
 
 	"github.com/ngamux/ngamux"
 )
@@ -20,6 +22,12 @@ type Pagination[T any] struct {
 	TotalRecord int `json:"total_record"`
 }
 
+var poolByte = sync.Pool{
+	New: func() any {
+		return &bytes.Buffer{}
+	},
+}
+
 func PaginationFromReq[T any](r *http.Request) Pagination[T] {
 	req := ngamux.Req(r)
 	pagination := Pagination[T]{
@@ -30,13 +38,20 @@ func PaginationFromReq[T any](r *http.Request) Pagination[T] {
 	}
 	_ = req.QueriesParser(&pagination)
 
-	sortQ := req.Query("sort", "{}")
-	_ = json.Unmarshal([]byte(sortQ), &pagination.Sort)
+	buf := poolByte.Get().(*bytes.Buffer)
+	defer func() {
+		buf.Reset()
+		poolByte.Put(buf)
+	}()
 
-	filterQ := req.Query("filter", "{}")
-	_ = json.Unmarshal([]byte(filterQ), &pagination.Filter)
+	buf.Write([]byte(req.Query("sort", "{}")))
+	_ = json.NewDecoder(buf).Decode(&pagination.Sort)
+
+	buf.Write([]byte(req.Query("filter", "{}")))
+	_ = json.NewDecoder(buf).Decode(&pagination.Filter)
 
 	pagination.Data = make([]T, 0)
+
 	return pagination
 }
 
