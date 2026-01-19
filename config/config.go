@@ -4,7 +4,6 @@ type Config struct {
 	Key      string          `json:"key,omitempty"`
 	Net      Net             `json:"net"`
 	Web      Web             `json:"web"`
-	Grpc     Grpc            `json:"grpc"`
 	Security Security        `json:"security"`
 	SQLs     map[string]SQL  `json:"sql,omitempty"`
 	Smtp     map[string]Smtp `json:"smtp,omitempty"`

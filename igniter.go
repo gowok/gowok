@@ -78,7 +78,7 @@ func configure(configs ...any) *Project {
 
 	SQL.configure(Config.SQLs)
 	if !Config.Forever {
-		Config.Forever = Config.Web.Enabled || Config.Grpc.Enabled
+		Config.Forever = Config.Web.Enabled || Config.Net.Enabled
 	}
 
 	_project(project)
@@ -93,10 +93,6 @@ func (p *Project) run() {
 		Health.Configure()
 	}
 
-	if Config.Grpc.Enabled {
-		go GRPC.configure()
-	}
-
 	if Config.Net.Enabled {
 		go Net.configure()
 	}
@@ -106,10 +102,6 @@ func (p *Project) run() {
 
 func stop() {
 	println()
-	if Config.Grpc.Enabled {
-		slog.Info("stopping GRPC")
-		GRPC.GracefulStop()
-	}
 	if Config.Web.Enabled {
 		slog.Info("stopping web")
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
