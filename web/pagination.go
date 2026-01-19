@@ -4,15 +4,14 @@ import (
 	"encoding/json"
 	"math"
 	"net/http"
-	"strconv"
 
 	"github.com/ngamux/ngamux"
 )
 
 type Pagination[T any] struct {
-	Filter map[string]any    `query:"filter" json:"filter"`
-	Fields []string          `query:"fields" json:"fields"`
-	Sort   map[string]string `query:"sort" json:"sort"`
+	Filter map[string]any    `json:"filter"`
+	Fields []string          `json:"fields"`
+	Sort   map[string]string `json:"sort"`
 
 	Data []T `json:"data"`
 
@@ -30,12 +29,6 @@ func PaginationFromReq[T any](r *http.Request) Pagination[T] {
 		Sort:    map[string]string{},
 	}
 	_ = req.QueriesParser(&pagination)
-
-	qPerPage := req.Query("per_page", "10")
-	pagination.PerPage, _ = strconv.Atoi(qPerPage)
-
-	qPage := req.Query("page", "10")
-	pagination.Page, _ = strconv.Atoi(qPage)
 
 	sortQ := req.Query("sort", "{}")
 	_ = json.Unmarshal([]byte(sortQ), &pagination.Sort)
