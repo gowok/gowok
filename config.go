@@ -1,7 +1,6 @@
 package gowok
 
 import (
-	"encoding/json"
 	"fmt"
 	"io"
 	"os"
@@ -9,6 +8,7 @@ import (
 
 	"github.com/gowok/fp/maps"
 	"github.com/gowok/gowok/config"
+	"github.com/gowok/gowok/json"
 	"github.com/joho/godotenv"
 	"github.com/pelletier/go-toml/v2"
 	"gopkg.in/yaml.v3"

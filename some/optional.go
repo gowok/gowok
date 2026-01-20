@@ -2,10 +2,10 @@ package some
 
 import (
 	"bytes"
-	"encoding/json"
 	"reflect"
 
 	"github.com/gowok/gowok/errors"
+	"github.com/gowok/gowok/json"
 )
 
 type Some[T any] struct {

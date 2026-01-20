@@ -1,11 +1,11 @@
 package errors
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
 
+	"github.com/gowok/gowok/json"
 	"github.com/ngamux/ngamux"
 )
 

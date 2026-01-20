@@ -1,13 +1,13 @@
 package gowok
 
 import (
-	"encoding/json"
 	"os"
 	"testing"
 	"time"
 
 	"github.com/gowok/fp/maps"
 	"github.com/gowok/gowok/config"
+	"github.com/gowok/gowok/json"
 	"github.com/gowok/gowok/some"
 	"github.com/gowok/should"
 )

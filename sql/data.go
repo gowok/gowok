@@ -2,7 +2,8 @@ package sql
 
 import (
 	"database/sql"
-	"encoding/json"
+
+	"github.com/gowok/gowok/json"
 )
 
 type Null[T any] struct {

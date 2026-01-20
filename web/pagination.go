@@ -2,11 +2,11 @@ package web
 
 import (
 	"bytes"
-	"encoding/json"
 	"math"
 	"net/http"
 	"sync"
 
+	"github.com/gowok/gowok/json"
 	"github.com/ngamux/ngamux"
 )
 
@@ -44,11 +44,8 @@ func PaginationFromReq[T any](r *http.Request) Pagination[T] {
 		poolByte.Put(buf)
 	}()
 
-	buf.Write([]byte(req.Query("sort", "{}")))
-	_ = json.NewDecoder(buf).Decode(&pagination.Sort)
-
-	buf.Write([]byte(req.Query("filter", "{}")))
-	_ = json.NewDecoder(buf).Decode(&pagination.Filter)
+	_ = json.Unmarshal([]byte(req.Query("sort", "{}")), &pagination.Sort)
+	_ = json.Unmarshal([]byte(req.Query("filter", "{}")), &pagination.Filter)
 
 	pagination.Data = make([]T, 0)
 
