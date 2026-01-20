@@ -8,7 +8,7 @@ require (
 	github.com/gowok/fp v0.2.1
 	github.com/gowok/should v0.0.0-20240831060519-d8ab7c7891fb
 	github.com/joho/godotenv v1.5.1
-	github.com/ngamux/middleware v0.0.11
+	github.com/ngamux/middleware v0.0.12
 	github.com/ngamux/ngamux v1.7.52
 	github.com/pelletier/go-toml/v2 v2.2.4
 	github.com/spf13/cobra v1.10.2

@@ -88,7 +88,7 @@ func (p *_web) configure() {
 	})
 	c.Pprof.IfPresent(func(ll config.WebPprof) {
 		if ll.Enabled {
-			mux.Use(pprof.New(c.GetPprof()))
+			mux.Use(pprof.New())
 		}
 	})
 

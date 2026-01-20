@@ -8,7 +8,6 @@ import (
 	"github.com/gowok/gowok/some"
 	"github.com/ngamux/middleware/cors"
 	"github.com/ngamux/middleware/log"
-	"github.com/ngamux/middleware/pprof"
 )
 
 type Web struct {
@@ -91,19 +90,6 @@ func (r Web) GetCors() cors.Config {
 	// if r.Cors.MaxAge != 0 {
 	// 	c.MaxAge = r.Cors.MaxAge
 	// }
-	return c
-}
-
-func (r Web) GetPprof() pprof.Config {
-	c := pprof.Config{}
-	cc, ok := r.Pprof.Get()
-	if !ok {
-		return c
-	}
-
-	if cc.Prefix != "" {
-		c.Prefix = cc.Prefix
-	}
 	return c
 }
 
