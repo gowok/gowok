@@ -16,6 +16,13 @@ import (
 	"github.com/ngamux/ngamux"
 )
 
+var (
+	webLogFatalln     = log.Fatalln
+	webListenAndServe = func(s *http.Server) error {
+		return s.ListenAndServe()
+	}
+)
+
 type _web struct {
 	*ngamux.HttpServeMux
 	Server   *http.Server
@@ -94,12 +101,12 @@ func (p *_web) configure() {
 
 	Web.Server = server
 
-	err := Web.Server.ListenAndServe()
+	err := webListenAndServe(Web.Server)
 	if err != nil {
 		if errors.Is(err, http.ErrServerClosed) {
 			return
 		}
-		log.Fatalln("web: failed to start: " + err.Error())
+		webLogFatalln("web: failed to start: " + err.Error())
 	}
 }
 
