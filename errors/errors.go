@@ -45,6 +45,10 @@ func New(text string, opts ...Option) Error {
 	return e
 }
 
+func (e Error) Code() int {
+	return e.code
+}
+
 func (e Error) Error() string {
 	return e.err.Error()
 }
