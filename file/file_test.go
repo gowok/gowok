@@ -153,8 +153,10 @@ func TestSaveBase64StringToFile(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			os.RemoveAll("tmp_test")
-			defer os.RemoveAll("tmp_test")
+			_ = os.RemoveAll("tmp_test")
+			defer func() {
+				_ = os.RemoveAll("tmp_test")
+			}()
 
 			if tc.setup != nil {
 				tc.setup()
