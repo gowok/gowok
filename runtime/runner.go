@@ -10,6 +10,8 @@ import (
 	"github.com/gowok/gowok/some"
 )
 
+var exit = os.Exit
+
 type Runtime struct {
 	numCPU           int
 	rLimitEnable     bool
@@ -66,7 +68,7 @@ func (r *Runtime) gracefulStopRun() {
 		<-r.gracefulStop
 
 		r.gracefulStopFunc.OrElse(func() {})()
-		os.Exit(0)
+		exit(0)
 	}()
 }
 
