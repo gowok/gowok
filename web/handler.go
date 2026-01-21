@@ -13,6 +13,9 @@ func Handler(handler func(ctx *Ctx) error) http.HandlerFunc {
 		if err != nil {
 			switch e := err.(type) {
 			case errors.Error:
+				if e.Code() != 0 {
+					ctx.Res().Status(e.Code())
+				}
 				ctx.Res().JSON(e)
 			default:
 				_ = ctx.Res().InternalServerError(err)
@@ -27,9 +30,10 @@ func HandlerSSE(handler func(ctx *CtxSse)) http.HandlerFunc {
 		w.Header().Set("Cache-Control", "no-cache")
 		w.Header().Set("Connection", "keep-alive")
 
-		ctx, err := NewCtxSse(NewCtx(r.Context(), w, r))
+		c := NewCtx(r.Context(), w, r)
+		ctx, err := NewCtxSse(c)
 		if err != nil {
-			_ = ctx.Res().InternalServerError(err)
+			_ = c.Res().InternalServerError(err)
 			return
 		}
 
