@@ -9,6 +9,9 @@ import (
 	"os"
 )
 
+var netListen = net.Listen
+var netLogFatalln = log.Fatalln
+
 type _net struct {
 	net.Listener
 	handler func(net.Conn)
@@ -25,9 +28,10 @@ func (p *_net) configure() {
 		_ = os.Remove(Config.Net.Address)
 	}
 
-	listen, err := net.Listen(Config.Net.Type, Config.Net.Address)
+	listen, err := netListen(Config.Net.Type, Config.Net.Address)
 	if err != nil {
-		log.Fatalln("net: failed to start: " + err.Error())
+		netLogFatalln("net: failed to start: " + err.Error())
+		return
 	}
 
 	p.Listener = listen
@@ -43,6 +47,7 @@ func (p *_net) configure() {
 		}
 		go p.handler(conn)
 	}
+	p.Listener = nil
 }
 
 func (p *_net) HandleFunc(handler func(net.Conn)) {
