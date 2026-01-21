@@ -74,7 +74,7 @@ func (r *Response) Header(kv ...string) *Response {
 		return r
 	}
 
-	for i := 0; i <= len(kv)/2; i += 2 {
+	for i := 0; i+1 < len(kv); i += 2 {
 		if kv[i] == "" {
 			continue
 		}
