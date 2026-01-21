@@ -97,6 +97,7 @@ func (r Web) GetViews() WebViews {
 	v := WebViews{
 		Enabled: r.Views.Enabled,
 		Layout:  r.Views.Layout,
+		Dir:     r.Views.Dir,
 	}
 	if !v.Enabled {
 		return v
