@@ -3,6 +3,7 @@ module github.com/gowok/gowok
 go 1.25
 
 require (
+	github.com/DATA-DOG/go-sqlmock v1.5.2
 	github.com/golang-must/must v1.0.0
 	github.com/google/uuid v1.6.0
 	github.com/gowok/fp v0.2.1
@@ -18,7 +19,9 @@ require (
 
 require (
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
+	github.com/kr/pretty v0.1.0 // indirect
 	github.com/spf13/pflag v1.0.9 // indirect
+	gopkg.in/check.v1 v1.0.0-20180628173108-788fd7840127 // indirect
 )
 
 // replace (
