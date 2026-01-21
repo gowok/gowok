@@ -45,6 +45,8 @@ func TestWeb_GetCors(t *testing.T) {
 		name                 string
 		web                  Web
 		expectedAllowOrigins string
+		expectedAllowHeaders string
+		expectedAllowMethods string
 	}{
 		{
 			name: "positive/cors is present and has allow origins",
@@ -60,12 +62,28 @@ func TestWeb_GetCors(t *testing.T) {
 			},
 			expectedAllowOrigins: "",
 		},
+		{
+			name: "positive/cors with AllowMethods and AllowHeaders",
+			web: Web{
+				Cors: some.Of(WebCors{
+					Enabled:      true,
+					AllowOrigins: "http://localhost",
+					AllowMethods: "GET,POST",
+					AllowHeaders: "X-Header",
+				}),
+			},
+			expectedAllowOrigins: "http://localhost",
+			expectedAllowHeaders: "X-Header",
+			expectedAllowMethods: "GET,POST",
+		},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			res := tc.web.GetCors()
 			must.Equal(t, tc.expectedAllowOrigins, res.AllowOrigins)
+			must.Equal(t, tc.expectedAllowMethods, res.AllowMethods)
+			must.Equal(t, tc.expectedAllowHeaders, res.AllowHeaders)
 		})
 	}
 }
