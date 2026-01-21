@@ -1,0 +1,20 @@
+mode: set
+github.com/gowok/gowok/logger/file.go:8.47,10.16 2 1
+github.com/gowok/gowok/logger/file.go:10.16,12.3 1 1
+github.com/gowok/gowok/logger/file.go:14.2,14.10 1 1
+github.com/gowok/gowok/logger/logger.go:9.49,10.16 1 1
+github.com/gowok/gowok/logger/logger.go:10.16,12.3 1 1
+github.com/gowok/gowok/logger/logger.go:20.67,21.32 1 1
+github.com/gowok/gowok/logger/logger.go:21.32,22.25 1 1
+github.com/gowok/gowok/logger/logger.go:22.25,24.4 1 1
+github.com/gowok/gowok/logger/logger.go:27.2,27.14 1 1
+github.com/gowok/gowok/logger/logger.go:30.68,34.32 3 1
+github.com/gowok/gowok/logger/logger.go:34.32,36.17 2 1
+github.com/gowok/gowok/logger/logger.go:36.17,38.4 1 1
+github.com/gowok/gowok/logger/logger.go:41.2,41.12 1 1
+github.com/gowok/gowok/logger/logger.go:44.61,45.32 1 1
+github.com/gowok/gowok/logger/logger.go:45.32,47.3 1 1
+github.com/gowok/gowok/logger/logger.go:49.2,49.10 1 1
+github.com/gowok/gowok/logger/logger.go:52.56,53.32 1 1
+github.com/gowok/gowok/logger/logger.go:53.32,55.3 1 1
+github.com/gowok/gowok/logger/logger.go:57.2,57.10 1 1
