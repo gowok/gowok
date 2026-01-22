@@ -107,7 +107,7 @@ func (o *Some[T]) UnmarshalJSON(b []byte) error {
 	return nil
 }
 
-func (o *Some[T]) MarshalJSON() ([]byte, error) {
+func (o Some[T]) MarshalJSON() ([]byte, error) {
 	if o.IsPresent() {
 		return json.Marshal(o.value)
 	}
