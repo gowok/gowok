@@ -1,6 +1,7 @@
 package gowok
 
 import (
+	"database/sql"
 	"errors"
 	"sync"
 	"testing"
@@ -82,6 +83,9 @@ func TestSQL_healthFunc(t *testing.T) {
 }
 
 func TestSQL_configure(t *testing.T) {
+	oldSqlOpen := sqlOpen
+	defer func() { sqlOpen = oldSqlOpen }()
+
 	t.Run("positive/nothing enabled", func(t *testing.T) {
 		p := &_sql{
 			sqls:    &sync.Map{},
@@ -104,5 +108,87 @@ func TestSQL_configure(t *testing.T) {
 			"default": {Enabled: true, Driver: "unknown"},
 		})
 		must.False(t, p.ConnNoDefault("default").IsPresent())
+	})
+
+	t.Run("positive/successful connection", func(t *testing.T) {
+		db, mock, _ := sqlmock.New(sqlmock.MonitorPingsOption(true))
+		defer func() { _ = db.Close() }()
+		mock.ExpectPing()
+
+		sqlOpen = func(driver, dsn string) (*sql.DB, error) {
+			return db, nil
+		}
+
+		p := &_sql{
+			sqls:    &sync.Map{},
+			drivers: map[string][]string{"test": {"test-driver"}},
+			plugin:  "sql",
+		}
+
+		p.configure(map[string]config.SQL{
+			"default": {Enabled: true, Driver: "test", DSN: "test-dsn"},
+		})
+
+		must.True(t, p.ConnNoDefault("default").IsPresent())
+		must.Nil(t, mock.ExpectationsWereMet())
+	})
+
+	t.Run("negative/open failure unknown driver", func(t *testing.T) {
+		sqlOpen = func(driver, dsn string) (*sql.DB, error) {
+			return nil, errors.New("sql: unknown driver \"test-driver\"")
+		}
+
+		p := &_sql{
+			sqls:    &sync.Map{},
+			drivers: map[string][]string{"test": {"test-driver"}},
+			plugin:  "sql",
+		}
+
+		p.configure(map[string]config.SQL{
+			"default": {Enabled: true, Driver: "test", DSN: "test-dsn"},
+		})
+
+		must.False(t, p.ConnNoDefault("default").IsPresent())
+	})
+
+	t.Run("negative/open failure other error", func(t *testing.T) {
+		sqlOpen = func(driver, dsn string) (*sql.DB, error) {
+			return nil, errors.New("other error")
+		}
+
+		p := &_sql{
+			sqls:    &sync.Map{},
+			drivers: map[string][]string{"test": {"test-driver"}},
+			plugin:  "sql",
+		}
+
+		p.configure(map[string]config.SQL{
+			"default": {Enabled: true, Driver: "test", DSN: "test-dsn"},
+		})
+
+		must.False(t, p.ConnNoDefault("default").IsPresent())
+	})
+
+	t.Run("negative/ping failure", func(t *testing.T) {
+		db, mock, _ := sqlmock.New(sqlmock.MonitorPingsOption(true))
+		defer func() { _ = db.Close() }()
+		mock.ExpectPing().WillReturnError(errors.New("ping error"))
+
+		sqlOpen = func(driver, dsn string) (*sql.DB, error) {
+			return db, nil
+		}
+
+		p := &_sql{
+			sqls:    &sync.Map{},
+			drivers: map[string][]string{"test": {"test-driver"}},
+			plugin:  "sql",
+		}
+
+		p.configure(map[string]config.SQL{
+			"default": {Enabled: true, Driver: "test", DSN: "test-dsn"},
+		})
+
+		must.False(t, p.ConnNoDefault("default").IsPresent())
+		must.Nil(t, mock.ExpectationsWereMet())
 	})
 }
