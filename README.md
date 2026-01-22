@@ -1,5 +1,6 @@
 Gowok is a library that contains a lot of functions that help you to build [Go](https://go.dev) project.
 
+[![Go Report Card](https://goreportcard.com/badge/github.com/gowok/gowok)](https://goreportcard.com/report/github.com/gowok/gowok)
 [![codecov](https://codecov.io/gh/gowok/gowok/graph/badge.svg?token=LNS4RWP8JT)](https://codecov.io/gh/gowok/gowok)
 
 It has some utilities like:
