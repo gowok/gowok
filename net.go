@@ -55,5 +55,7 @@ func (p *_net) HandleFunc(handler func(net.Conn)) {
 }
 
 func (p *_net) Shutdown() {
-	_ = p.Close()
+	if p.Listener != nil {
+		_ = p.Close()
+	}
 }

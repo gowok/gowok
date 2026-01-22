@@ -14,6 +14,10 @@ import (
 	"github.com/gowok/gowok/singleton"
 )
 
+var (
+	igniterLogFatalln = log.Fatalln
+)
+
 type ConfigureFunc func()
 
 type Project struct {
@@ -48,7 +52,8 @@ func configure(configs ...any) *Project {
 	if Flags().Config != "" {
 		_conf, _confRaw, err := newConfig(Flags().Config, Flags().EnvFile)
 		if err != nil {
-			log.Fatalln(err)
+			igniterLogFatalln(err)
+			return nil
 		}
 		conf = _conf
 		confRaw = _confRaw
@@ -59,7 +64,8 @@ func configure(configs ...any) *Project {
 		case string:
 			_conf, _confRaw, err := newConfig(c, "")
 			if err != nil {
-				log.Fatalln(err)
+				igniterLogFatalln(err)
+				return nil
 			}
 			conf = _conf
 			confRaw = _confRaw
