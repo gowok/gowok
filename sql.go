@@ -12,6 +12,10 @@ import (
 	"github.com/ngamux/ngamux"
 )
 
+var (
+	sqlOpen = sql.Open
+)
+
 type _sql struct {
 	sqls    *sync.Map
 	drivers map[string][]string
@@ -44,7 +48,7 @@ func (p *_sql) configure(config map[string]config.SQL) {
 			}
 
 			for _, driver := range drivers {
-				ddb, err := sql.Open(driver, dbC.DSN)
+				ddb, err := sqlOpen(driver, dbC.DSN)
 				if err != nil {
 					if strings.Contains(err.Error(), "unknown driver") {
 						continue
