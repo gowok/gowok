@@ -5,24 +5,17 @@ import (
 	"log/slog"
 	"os"
 
-	"github.com/gowok/gowok/some"
+	"github.com/gowok/fp/some"
 	"github.com/ngamux/middleware/cors"
 	"github.com/ngamux/middleware/log"
-	"github.com/ngamux/middleware/pprof"
 )
-
-type App struct {
-	Key  string `json:"key,omitempty"`
-	Web  Web    `json:"web,omitempty"`
-	Grpc Grpc   `json:"grpc,omitempty"`
-}
 
 type Web struct {
 	Enabled bool                `json:"enabled,omitempty"`
 	Host    string              `json:"host,omitempty"`
-	Log     some.Some[WebLog]   `json:"log,omitempty"`
-	Cors    some.Some[WebCors]  `json:"cors,omitempty"`
-	Pprof   some.Some[WebPprof] `json:"pprof,omitempty"`
+	Log     some.Some[WebLog]   `json:"log"`
+	Cors    some.Some[WebCors]  `json:"cors"`
+	Pprof   some.Some[WebPprof] `json:"pprof"`
 	Views   WebViews            `json:"views"`
 	Static  WebStatic           `json:"static"`
 }
@@ -100,23 +93,11 @@ func (r Web) GetCors() cors.Config {
 	return c
 }
 
-func (r Web) GetPprof() pprof.Config {
-	c := pprof.Config{}
-	cc, ok := r.Pprof.Get()
-	if !ok {
-		return c
-	}
-
-	if cc.Prefix != "" {
-		c.Prefix = cc.Prefix
-	}
-	return c
-}
-
 func (r Web) GetViews() WebViews {
 	v := WebViews{
 		Enabled: r.Views.Enabled,
 		Layout:  r.Views.Layout,
+		Dir:     r.Views.Dir,
 	}
 	if !v.Enabled {
 		return v

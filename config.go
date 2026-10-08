@@ -4,46 +4,30 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"path"
 
+	"github.com/gowok/fp/maps"
 	"github.com/gowok/gowok/config"
-	"github.com/gowok/gowok/maps"
+	"github.com/gowok/gowok/json"
 	"github.com/joho/godotenv"
 	"github.com/pelletier/go-toml/v2"
 	"gopkg.in/yaml.v3"
 )
 
-type Config struct {
-	App      config.App
-	Security config.Security        `json:"security,omitempty"`
-	SQLs     map[string]config.SQL  `json:"sql,omitempty"`
-	Http     map[string]config.Http `json:"http,omitempty"`
-	Smtp     map[string]config.Smtp `json:"smtp,omitempty"`
-	Others   map[string]any         `json:"others,omitempty"`
+var Config = &config.Config{}
 
-	EnvFile   string `json:"env_file,omitempty"`
-	IsTesting bool   `json:"is_testing,omitempty"`
-}
-
-func newConfigEmpty() (*Config, map[string]any) {
-	conf := &Config{
-		config.App{},
-		config.Security{},
-		make(map[string]config.SQL),
-		make(map[string]config.Http),
-		make(map[string]config.Smtp),
-		make(map[string]any),
-		"", false,
+func newConfigEmpty() (*config.Config, map[string]any) {
+	conf := &config.Config{
+		SQLs:   make(map[string]config.SQL),
+		Smtp:   make(map[string]config.Smtp),
+		Others: make(map[string]any),
 	}
 
-	confRaw, err := maps.FromStruct(conf)
-	if err != nil {
-		return conf, map[string]any{}
-	}
-
+	confRaw := maps.FromStruct(conf)
 	return conf, confRaw
 }
 
-func newConfig(pathConfig string, envFile string) (*Config, map[string]any, error) {
+func newConfig(pathConfig string, envFile string) (*config.Config, map[string]any, error) {
 	fiConfig, err := os.OpenFile(pathConfig, os.O_RDONLY, 0600)
 	if err != nil {
 		return nil, nil, err
@@ -63,12 +47,12 @@ func newConfig(pathConfig string, envFile string) (*Config, map[string]any, erro
 	cfgS := os.ExpandEnv(string(fiContent))
 	fiContent = []byte(cfgS)
 
-	confRaw, err := newConfigRaw(string(fiContent))
+	confRaw, err := newConfigRaw(path.Ext(fiConfig.Name()), string(fiContent))
 	if err != nil {
 		return nil, nil, err
 	}
 
-	conf := &Config{}
+	conf := &config.Config{}
 	err = maps.ToStruct(confRaw, conf)
 	if err != nil {
 		return nil, nil, fmt.Errorf("can't decode config file: %w", err)
@@ -77,17 +61,21 @@ func newConfig(pathConfig string, envFile string) (*Config, map[string]any, erro
 	return conf, confRaw, nil
 }
 
-func newConfigRaw(configString string) (map[string]any, error) {
+func newConfigRaw(filetype string, configString string) (map[string]any, error) {
 	confRaw := map[string]any{}
-	err := yaml.Unmarshal([]byte(configString), confRaw)
-	if err == nil {
-		return confRaw, nil
+	var err error
+
+	switch filetype {
+	case ".json":
+		err = json.Unmarshal([]byte(configString), &confRaw)
+	case ".yaml", ".yml":
+		err = yaml.Unmarshal([]byte(configString), &confRaw)
+	case ".toml":
+		err = toml.Unmarshal([]byte(configString), &confRaw)
+	}
+	if err != nil {
+		return nil, err
 	}
 
-	err = toml.Unmarshal([]byte(configString), &confRaw)
-	if err == nil {
-		return confRaw, nil
-	}
-
-	return nil, fmt.Errorf("can't decode config file: %w", err)
+	return confRaw, nil
 }

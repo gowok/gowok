@@ -7,7 +7,8 @@ import (
 // All runs all tasks
 func All(tasks ...func() (any, error)) ([]any, error) {
 	var wg sync.WaitGroup
-	results := make([]interface{}, 0)
+	var mu sync.Mutex
+	results := make([]any, 0)
 	var gerr error
 	var gerrOnce sync.Once
 
@@ -21,7 +22,9 @@ func All(tasks ...func() (any, error)) ([]any, error) {
 					gerr = err
 				})
 			} else {
+				mu.Lock()
 				results = append(results, data)
+				mu.Unlock()
 			}
 		}(task, &gerrOnce)
 	}

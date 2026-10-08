@@ -8,18 +8,18 @@ import (
 )
 
 type Model struct {
-	ID        uuid.UUID    `json:"id"`
-	CreatedAt time.Time    `json:"created_at"`
-	UpdatedAt sql.NullTime `json:"updated_at"`
-	DeletedAt sql.NullTime `json:"deleted_at"`
+	ID        uuid.UUID           `json:"id"`
+	CreatedAt time.Time           `json:"created_at"`
+	UpdatedAt sql.Null[time.Time] `json:"updated_at"`
+	DeletedAt sql.Null[time.Time] `json:"deleted_at"`
 }
 
 func ModelFromEntity(e *Entity) Model {
 	res := Model{
 		ID:        uuid.NullUUID{}.UUID,
 		CreatedAt: e.CreatedAt,
-		UpdatedAt: sql.NewNullTime(e.UpdatedAt),
-		DeletedAt: sql.NewNullTime(e.DeletedAt),
+		UpdatedAt: sql.NewNull(e.UpdatedAt),
+		DeletedAt: sql.NewNull(e.DeletedAt),
 	}
 
 	if id, err := uuid.Parse(e.ID); err == nil {
@@ -36,10 +36,10 @@ func (m Model) Entity() Entity {
 	}
 
 	if m.UpdatedAt.Valid {
-		res.UpdatedAt = &m.UpdatedAt.Time
+		res.UpdatedAt = &m.UpdatedAt.V
 	}
 	if m.DeletedAt.Valid {
-		res.DeletedAt = &m.DeletedAt.Time
+		res.DeletedAt = &m.DeletedAt.V
 	}
 
 	return res

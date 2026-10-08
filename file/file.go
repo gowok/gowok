@@ -53,7 +53,9 @@ func SaveBase64StringToFile(path string, fileNameWithoutType string, encodedBase
 		return "", err
 	}
 
-	defer fileCreated.Close()
+	defer func() {
+		_ = fileCreated.Close()
+	}()
 
 	_, err = io.Copy(fileCreated, fileBase64Decoded)
 	if err != nil {

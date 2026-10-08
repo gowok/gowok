@@ -1,5 +1,8 @@
 Gowok is a library that contains a lot of functions that help you to build [Go](https://go.dev) project.
 
+[![Go Report Card](https://goreportcard.com/badge/github.com/gowok/gowok)](https://goreportcard.com/report/github.com/gowok/gowok)
+[![codecov](https://codecov.io/gh/gowok/gowok/graph/badge.svg?token=LNS4RWP8JT)](https://codecov.io/gh/gowok/gowok)
+
 It has some utilities like:
 * config loader,
 * project bootstrapper,
@@ -22,7 +25,7 @@ package main
 import "github.com/gowok/gowok"
 
 func main() {
-	gowok.Get().Run()
+	gowok.Run()
 }
 ```
 
@@ -30,10 +33,9 @@ func main() {
 1. Create a YAML file named `config.yaml`.
 2. Then write this.
 ```yaml
-app:
-  web:
-    enabled: true
-    host: :8080
+web:
+  enabled: true
+  host: :8080
 ```
 
 ## Running the Project
@@ -67,6 +69,35 @@ It will show output like this:
 
 It means that your project already run.
 It can receive actual request and give response to it.
+
+# Apply Plugin
+gowok have multiple plugin to help you to build your project, please check [here](https://github.com/gowok/plugins) for available plugins.
+
+## How to use plugin
+example we want to use gorm
+
+we can import plugin gorm
+```go
+import "github.com/gowok/plugins/gorm"
+```
+
+after import plugin, we can configure it to main function or function you want to open database connection
+```go
+func main() {
+	gowok.Configures(
+		gorm.Configure(map[string]gorm.Opener{
+    	"postgres": driver.Open,
+    }),
+	)
+}
+```
+
+then you can use gorm example like this:
+```go
+db, _ := gorm.DB("postgres").Get()
+
+db.WithContext(ctx).First(&user)
+```
 
 # How to Contribute
 Feel free to raise an issue or lovely pull request 😊
