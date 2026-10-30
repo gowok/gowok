@@ -105,6 +105,51 @@ func TestStatus(t *testing.T) {
 			body:       []any{"accepted"},
 			wantBody:   "accepted",
 		},
+		{
+			name: "positive/MethodNotAllowed",
+			method: func(ctx Response, body ...any) error {
+				return ctx.MethodNotAllowed(body...)
+			},
+			wantStatus: http.StatusMethodNotAllowed,
+			body:       []any{"method not allowed"},
+			wantBody:   "method not allowed",
+		},
+		{
+			name: "positive/UnsupportedMediaType",
+			method: func(ctx Response, body ...any) error {
+				return ctx.UnsupportedMediaType(body...)
+			},
+			wantStatus: http.StatusUnsupportedMediaType,
+			body:       []any{"unsupported media type"},
+			wantBody:   "unsupported media type",
+		},
+		{
+			name: "positive/UnprocessableEntity",
+			method: func(ctx Response, body ...any) error {
+				return ctx.UnprocessableEntity(body...)
+			},
+			wantStatus: http.StatusUnprocessableEntity,
+			body:       []any{"unprocessable entity"},
+			wantBody:   "unprocessable entity",
+		},
+		{
+			name: "positive/TooManyRequests",
+			method: func(ctx Response, body ...any) error {
+				return ctx.TooManyRequests(body...)
+			},
+			wantStatus: http.StatusTooManyRequests,
+			body:       []any{"too many requests"},
+			wantBody:   "too many requests",
+		},
+		{
+			name: "positive/ServiceUnavailable",
+			method: func(ctx Response, body ...any) error {
+				return ctx.ServiceUnavailable(body...)
+			},
+			wantStatus: http.StatusServiceUnavailable,
+			body:       []any{"service unavailable"},
+			wantBody:   "service unavailable",
+		},
 	}
 
 	for _, tc := range testCases {

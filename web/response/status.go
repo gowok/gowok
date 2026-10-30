@@ -61,3 +61,33 @@ func (ctx Response) Accepted(body ...any) error {
 	ctx.bodyParse(res, body...)
 	return nil
 }
+
+func (ctx Response) MethodNotAllowed(body ...any) error {
+	res := ctx.Status(http.StatusMethodNotAllowed)
+	ctx.bodyParse(res, body...)
+	return nil
+}
+
+func (ctx Response) UnsupportedMediaType(body ...any) error {
+	res := ctx.Status(http.StatusUnsupportedMediaType)
+	ctx.bodyParse(res, body...)
+	return nil
+}
+
+func (ctx Response) UnprocessableEntity(body ...any) error {
+	res := ctx.Status(http.StatusUnprocessableEntity)
+	ctx.bodyParse(res, body...)
+	return nil
+}
+
+func (ctx Response) TooManyRequests(body ...any) error {
+	res := ctx.Status(http.StatusTooManyRequests)
+	ctx.bodyParse(res, body...)
+	return nil
+}
+
+func (ctx Response) ServiceUnavailable(body ...any) error {
+	res := ctx.Status(http.StatusServiceUnavailable)
+	ctx.bodyParse(res, body...)
+	return nil
+}
