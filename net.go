@@ -54,7 +54,7 @@ func (p *_net) run() {
 	}
 
 	for {
-		conn, err := p.Listener.Accept()
+		conn, err := p.Accept()
 		if err != nil {
 			if errors.Is(err, net.ErrClosed) {
 				break
