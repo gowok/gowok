@@ -24,7 +24,12 @@ func MimeToExtension(mime string) string {
 }
 
 func GetTypeFromBase64(base64encoded string) string {
-	_fileType := base64encoded[0:strings.Index(base64encoded, ";")]
+	semicolon := strings.Index(base64encoded, ";")
+	if semicolon < 0 {
+		return ""
+	}
+
+	_fileType := base64encoded[0:semicolon]
 	fileType := _fileType[strings.Index(_fileType, "/")+1:]
 	return fileType
 }

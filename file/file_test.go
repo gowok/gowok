@@ -59,6 +59,7 @@ func TestGetTypeFromBase64(t *testing.T) {
 		{"positive/jpeg", "data:image/jpeg;base64,...", "jpeg"},
 		{"positive/png", "data:image/png;base64,...", "png"},
 		{"positive/pdf", "data:application/pdf;base64,...", "pdf"},
+		{"negative/malformed", "not-a-data-uri", ""},
 	}
 
 	for _, tc := range testCases {
