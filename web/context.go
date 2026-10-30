@@ -17,7 +17,7 @@ type Ctx struct {
 	req *request.Request
 }
 
-func NewCtx(ctx context.Context, w http.ResponseWriter, r *http.Request) *Ctx {
+func NewCtx(w http.ResponseWriter, r *http.Request) *Ctx {
 	return &Ctx{
 		r.Context(),
 		response.New(w),

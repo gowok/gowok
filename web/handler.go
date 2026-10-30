@@ -8,7 +8,7 @@ import (
 
 func Handler(handler func(ctx *Ctx) error) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		ctx := NewCtx(r.Context(), w, r)
+		ctx := NewCtx(w, r)
 		err := handler(ctx)
 		if err != nil {
 			switch e := err.(type) {
@@ -30,7 +30,7 @@ func HandlerSSE(handler func(ctx *CtxSse)) http.HandlerFunc {
 		w.Header().Set("Cache-Control", "no-cache")
 		w.Header().Set("Connection", "keep-alive")
 
-		c := NewCtx(r.Context(), w, r)
+		c := NewCtx(w, r)
 		ctx, err := NewCtxSse(c)
 		if err != nil {
 			_ = c.Res().InternalServerError(err)

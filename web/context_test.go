@@ -14,7 +14,7 @@ func TestCtx(t *testing.T) {
 	t.Run("positive/NewCtx and getters", func(t *testing.T) {
 		w := httptest.NewRecorder()
 		r := httptest.NewRequest(http.MethodGet, "/", nil)
-		ctx := NewCtx(r.Context(), w, r)
+		ctx := NewCtx(w, r)
 
 		must.NotNil(t, ctx.Req())
 		must.NotNil(t, ctx.Res())
@@ -24,7 +24,7 @@ func TestCtx(t *testing.T) {
 	t.Run("positive/Write", func(t *testing.T) {
 		w := httptest.NewRecorder()
 		r := httptest.NewRequest(http.MethodGet, "/", nil)
-		ctx := NewCtx(r.Context(), w, r)
+		ctx := NewCtx(w, r)
 
 		content := []byte("hello")
 		n, err := ctx.Write(content)
@@ -36,7 +36,7 @@ func TestCtx(t *testing.T) {
 	t.Run("positive/Context manipulation", func(t *testing.T) {
 		w := httptest.NewRecorder()
 		r := httptest.NewRequest(http.MethodGet, "/", nil)
-		ctx := NewCtx(r.Context(), w, r)
+		ctx := NewCtx(w, r)
 
 		type key string
 		k := key("foo")
@@ -54,7 +54,7 @@ func TestCtx(t *testing.T) {
 
 		w := httptest.NewRecorder()
 		r := httptest.NewRequest(http.MethodGet, "/", nil).WithContext(ctxWithTimeout)
-		ctx := NewCtx(ctxWithTimeout, w, r)
+		ctx := NewCtx(w, r)
 
 		deadline, ok := ctx.Deadline()
 		must.True(t, ok)
@@ -69,7 +69,7 @@ func TestCtxSse(t *testing.T) {
 	t.Run("positive/NewCtxSse success", func(t *testing.T) {
 		w := httptest.NewRecorder()
 		r := httptest.NewRequest(http.MethodGet, "/", nil)
-		ctx := NewCtx(r.Context(), w, r)
+		ctx := NewCtx(w, r)
 
 		sse, err := NewCtxSse(ctx)
 		must.Nil(t, err)
@@ -79,7 +79,7 @@ func TestCtxSse(t *testing.T) {
 	t.Run("negative/NewCtxSse failure (no flusher)", func(t *testing.T) {
 		w := &mockResponseWriterNoFlusher{httptest.NewRecorder()}
 		r := httptest.NewRequest(http.MethodGet, "/", nil)
-		ctx := NewCtx(r.Context(), w, r)
+		ctx := NewCtx(w, r)
 
 		sse, err := NewCtxSse(ctx)
 		must.NotNil(t, err)
@@ -89,7 +89,7 @@ func TestCtxSse(t *testing.T) {
 	t.Run("positive/Publish, Emit, Flush", func(t *testing.T) {
 		w := httptest.NewRecorder()
 		r := httptest.NewRequest(http.MethodGet, "/", nil)
-		ctx := NewCtx(r.Context(), w, r)
+		ctx := NewCtx(w, r)
 
 		sse, _ := NewCtxSse(ctx)
 
