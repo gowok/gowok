@@ -55,7 +55,7 @@ func (r Web) GetLog() log.Config {
 	c := log.Config{
 		Handler: slog.NewTextHandler(io.Discard, nil),
 	}
-	if r.Log.IsPresent() {
+	if !r.Log.IsPresent() {
 		return c
 	}
 
