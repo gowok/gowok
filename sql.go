@@ -70,6 +70,8 @@ func (p *_sql) configure(config map[string]config.SQL) {
 					healthName += "-" + name
 				}
 				Health.Add(healthName, p.healthFunc(ddb))
+
+				break
 			}
 
 			if _, ok := p.sqls.Load(name); !ok {
