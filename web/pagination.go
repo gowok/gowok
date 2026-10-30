@@ -78,6 +78,28 @@ func (p Pagination[T]) TotalPage() float64 {
 	return math.Ceil(float64(p.TotalRecord) / float64(p.PerPage))
 }
 
+func (p Pagination[T]) HasNext() bool {
+	return p.PerPage > 0 && p.Page < int(p.TotalPage())
+}
+
+func (p Pagination[T]) HasPrev() bool {
+	return p.Page > 1
+}
+
+func (p Pagination[T]) NextPage() int {
+	if !p.HasNext() {
+		return p.Page
+	}
+	return p.Page + 1
+}
+
+func (p Pagination[T]) PrevPage() int {
+	if !p.HasPrev() {
+		return p.Page
+	}
+	return p.Page - 1
+}
+
 func (p Pagination[T]) MarshalJSON() ([]byte, error) {
 	res := map[string]any{
 		"page":         p.Page,

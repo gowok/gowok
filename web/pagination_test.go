@@ -161,6 +161,90 @@ func TestPagination_TotalPage(t *testing.T) {
 	}
 }
 
+func TestPagination_Navigation(t *testing.T) {
+	testCases := []struct {
+		name         string
+		page         int
+		perPage      int
+		totalRecord  int
+		wantHasNext  bool
+		wantHasPrev  bool
+		wantNextPage int
+		wantPrevPage int
+	}{
+		{
+			name:         "positive/first page",
+			page:         1,
+			perPage:      10,
+			totalRecord:  25,
+			wantHasNext:  true,
+			wantHasPrev:  false,
+			wantNextPage: 2,
+			wantPrevPage: 1,
+		},
+		{
+			name:         "positive/middle page",
+			page:         2,
+			perPage:      10,
+			totalRecord:  25,
+			wantHasNext:  true,
+			wantHasPrev:  true,
+			wantNextPage: 3,
+			wantPrevPage: 1,
+		},
+		{
+			name:         "positive/last page",
+			page:         3,
+			perPage:      10,
+			totalRecord:  25,
+			wantHasNext:  false,
+			wantHasPrev:  true,
+			wantNextPage: 3,
+			wantPrevPage: 2,
+		},
+		{
+			name:         "positive/exact last page",
+			page:         2,
+			perPage:      10,
+			totalRecord:  20,
+			wantHasNext:  false,
+			wantHasPrev:  true,
+			wantNextPage: 2,
+			wantPrevPage: 1,
+		},
+		{
+			name:         "negative/zero per_page",
+			page:         1,
+			perPage:      0,
+			totalRecord:  25,
+			wantHasNext:  false,
+			wantHasPrev:  false,
+			wantNextPage: 1,
+			wantPrevPage: 1,
+		},
+		{
+			name:         "negative/zero records",
+			page:         1,
+			perPage:      10,
+			totalRecord:  0,
+			wantHasNext:  false,
+			wantHasPrev:  false,
+			wantNextPage: 1,
+			wantPrevPage: 1,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			p := Pagination[int]{Page: tc.page, PerPage: tc.perPage, TotalRecord: tc.totalRecord}
+			must.Equal(t, tc.wantHasNext, p.HasNext())
+			must.Equal(t, tc.wantHasPrev, p.HasPrev())
+			must.Equal(t, tc.wantNextPage, p.NextPage())
+			must.Equal(t, tc.wantPrevPage, p.PrevPage())
+		})
+	}
+}
+
 func TestPagination_MarshalJSON(t *testing.T) {
 	t.Run("positive/marshal structured output", func(t *testing.T) {
 		p := Pagination[int]{
