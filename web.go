@@ -5,6 +5,7 @@ import (
 	"log"
 	"log/slog"
 	"net/http"
+	"strings"
 
 	"github.com/gowok/gowok/config"
 	"github.com/gowok/gowok/web"
@@ -76,9 +77,10 @@ func (p *_web) configure() {
 			return
 		}
 
+		prefix := strings.TrimSuffix(sc.Prefix, "/")
 		fs := http.FileServer(http.Dir(sc.Dir))
-		mux.HandleFunc(http.MethodGet, sc.Prefix, func(rw http.ResponseWriter, r *http.Request) {
-			http.StripPrefix(sc.Prefix, fs).ServeHTTP(rw, r)
+		mux.HandleFunc(http.MethodGet, prefix+"/", func(rw http.ResponseWriter, r *http.Request) {
+			http.StripPrefix(prefix, fs).ServeHTTP(rw, r)
 		})
 	}()
 
