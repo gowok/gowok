@@ -171,6 +171,7 @@ func TestWeb_Configure(t *testing.T) {
 			}
 
 			Web.configure()
+			Web.run()
 
 			must.Equal(t, tt.expectedFatal, fatalCalled)
 			must.Equal(t, tt.webConfig.Host, Web.Server.Addr)

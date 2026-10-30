@@ -100,10 +100,17 @@ func TestIgniter_Run(t *testing.T) {
 
 func TestIgniter_Stop(t *testing.T) {
 	oldLogFatalln := igniterLogFatalln
+	oldNetListen := netListen
+	oldNetLogFatalln := netLogFatalln
 	defer func() {
 		igniterLogFatalln = oldLogFatalln
+		netListen = oldNetListen
+		netLogFatalln = oldNetLogFatalln
 		resetIgniter()
 	}()
+
+	netListen = func(network, address string) (net.Listener, error) { return nil, errors.New("mock error") }
+	netLogFatalln = func(v ...any) {}
 
 	t.Run("positive/stop web and net", func(t *testing.T) {
 		resetIgniter()
@@ -128,7 +135,6 @@ func TestIgniter_Shutdown(t *testing.T) {
 	t.Run("positive/shutdown", func(t *testing.T) {
 		resetIgniter()
 		configure()
-		// Just making sure it doesn't panic
 		Shutdown()
 	})
 }

@@ -30,7 +30,8 @@ func TestNet(t *testing.T) {
 			done <- struct{}{}
 		})
 
-		go Net.configure()
+		Net.configure()
+		go Net.run()
 
 		for i := 0; i < 100; i++ {
 			if Net.Listener != nil {
