@@ -60,7 +60,7 @@ func PaginationFromPagination[T, U any](input Pagination[U]) Pagination[T] {
 		Sort:        input.Sort,
 		TotalRecord: input.TotalRecord,
 		Fields:      input.Fields,
-		Data:        make([]T, len(input.Data)),
+		Data:        make([]T, 0, len(input.Data)),
 	}
 
 	return pagination

@@ -85,7 +85,8 @@ func TestPagination_PaginationFromPagination(t *testing.T) {
 		must.Equal(t, input.Sort, output.Sort)
 		must.Equal(t, input.TotalRecord, output.TotalRecord)
 		must.Equal(t, input.Fields, output.Fields)
-		must.Equal(t, len(input.Data), len(output.Data))
+		must.Equal(t, 0, len(output.Data))
+		must.Equal(t, len(input.Data), cap(output.Data))
 	})
 }
 
