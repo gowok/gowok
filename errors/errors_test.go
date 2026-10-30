@@ -2,6 +2,7 @@ package errors
 
 import (
 	"encoding/json"
+	stderrors "errors"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -99,6 +100,51 @@ func TestError_WriteResponse(t *testing.T) {
 			must.Equal(t, tc.expectedBody, rw.Body.String())
 		})
 	}
+}
+
+func TestWrap(t *testing.T) {
+	t.Run("positive/wrap plain error", func(t *testing.T) {
+		inner := stderrors.New("inner error")
+		err := Wrap(inner)
+
+		must.Equal(t, "inner error", err.Error())
+		must.Equal(t, 0, err.Code())
+		must.True(t, stderrors.Is(err, inner))
+		must.Equal(t, inner, err.Unwrap())
+	})
+
+	t.Run("positive/wrap with code", func(t *testing.T) {
+		err := Wrap(stderrors.New("not found"), WithCode(http.StatusNotFound))
+
+		must.Equal(t, "not found", err.Error())
+		must.Equal(t, http.StatusNotFound, err.Code())
+	})
+
+	t.Run("positive/wrap preserves code from inner Error", func(t *testing.T) {
+		inner := New("forbidden", WithCode(http.StatusForbidden))
+		err := Wrap(inner)
+
+		must.Equal(t, http.StatusForbidden, err.Code())
+		must.True(t, stderrors.Is(err, inner))
+	})
+
+	t.Run("positive/wrap option overrides preserved code", func(t *testing.T) {
+		inner := New("forbidden", WithCode(http.StatusForbidden))
+		err := Wrap(inner, WithCode(http.StatusUnauthorized))
+
+		must.Equal(t, http.StatusUnauthorized, err.Code())
+	})
+
+	t.Run("positive/wrap nil error does not panic", func(t *testing.T) {
+		err := Wrap(nil)
+
+		must.Equal(t, "", err.Error())
+		must.Equal(t, 0, err.Code())
+	})
+
+	t.Run("positive/unwrap returns underlying error", func(t *testing.T) {
+		must.Equal(t, "standalone", New("standalone").Unwrap().Error())
+	})
 }
 
 func TestDynamicErrors(t *testing.T) {

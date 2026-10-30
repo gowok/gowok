@@ -45,12 +45,36 @@ func New(text string, opts ...Option) Error {
 	return e
 }
 
+func Wrap(err error, opts ...Option) Error {
+	if err == nil {
+		return Error{err, 0}
+	}
+
+	e := Error{err: err}
+	var inner Error
+	if errors.As(err, &inner) {
+		e.code = inner.code
+	}
+	for _, o := range opts {
+		o(&e)
+	}
+	return e
+}
+
 func (e Error) Code() int {
 	return e.code
 }
 
 func (e Error) Error() string {
+	if e.err == nil {
+		return ""
+	}
+
 	return e.err.Error()
+}
+
+func (e Error) Unwrap() error {
+	return e.err
 }
 
 func (e Error) WriteResponse(rw http.ResponseWriter) {
