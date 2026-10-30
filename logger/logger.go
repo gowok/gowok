@@ -42,17 +42,19 @@ func (h *handler) Handle(ctx context.Context, r slog.Record) error {
 }
 
 func (h *handler) WithAttrs(attrs []slog.Attr) slog.Handler {
+	handlers := make([]slog.Handler, len(h.handlers))
 	for i, hh := range h.handlers {
-		h.handlers[i] = hh.WithAttrs(attrs)
+		handlers[i] = hh.WithAttrs(attrs)
 	}
 
-	return h
+	return &handler{handlers: handlers}
 }
 
 func (h *handler) WithGroup(group string) slog.Handler {
+	handlers := make([]slog.Handler, len(h.handlers))
 	for i, hh := range h.handlers {
-		h.handlers[i] = hh.WithGroup(group)
+		handlers[i] = hh.WithGroup(group)
 	}
 
-	return h
+	return &handler{handlers: handlers}
 }

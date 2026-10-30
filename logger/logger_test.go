@@ -1,9 +1,11 @@
 package logger
 
 import (
+	"bytes"
 	"context"
 	"errors"
 	"log/slog"
+	"strings"
 	"testing"
 
 	"github.com/golang-must/must"
@@ -25,6 +27,17 @@ type testHandler struct {
 	enabled bool
 	handled bool
 	err     error
+}
+
+func TestHandlerWithAttrsDoesNotMutate(t *testing.T) {
+	var buf bytes.Buffer
+	l := slog.New(&handler{handlers: []slog.Handler{slog.NewTextHandler(&buf, nil)}})
+
+	l.With("leak", "yes").Info("with-attrs")
+
+	buf.Reset()
+	l.Info("plain")
+	must.False(t, strings.Contains(buf.String(), "leak=yes"))
 }
 
 func TestConfigure(t *testing.T) {
@@ -87,11 +100,15 @@ func TestHandler(t *testing.T) {
 			},
 		},
 		{
-			name:     "positive/WithAttrs and WithGroup return the handler",
+			name:     "positive/WithAttrs and WithGroup return an independent handler",
 			handlers: []slog.Handler{&testHandler{}},
 			check: func(t *testing.T, h slog.Handler) {
-				must.Equal(t, h, h.WithAttrs(nil))
-				must.Equal(t, h, h.WithGroup("test"))
+				if h.WithAttrs(nil) == h {
+					t.Fatal("WithAttrs returned the receiver")
+				}
+				if h.WithGroup("test") == h {
+					t.Fatal("WithGroup returned the receiver")
+				}
 			},
 		},
 	}
