@@ -91,7 +91,7 @@ func (ctx *CtxSse) Emit(event string, message []byte) error {
 }
 
 func (ctx *CtxSse) PublishRaw(format string, a ...any) error {
-	_, _ = fmt.Fprintf(ctx.res, format, a...)
+	_, err := fmt.Fprintf(ctx.res, format, a...)
 	(*ctx.flusher).Flush()
-	return nil
+	return err
 }

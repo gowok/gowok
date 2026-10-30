@@ -2,6 +2,7 @@ package web
 
 import (
 	"context"
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -109,4 +110,34 @@ func TestCtxSse(t *testing.T) {
 
 		sse.Flush()
 	})
+
+	t.Run("negative/Publish returns write error", func(t *testing.T) {
+		w := &mockResponseWriterFailWrite{}
+		r := httptest.NewRequest(http.MethodGet, "/", nil)
+		sse, err := NewCtxSse(NewCtx(w, r))
+		must.Nil(t, err)
+
+		err = sse.Publish([]byte("hello"))
+		must.NotNil(t, err)
+		must.Equal(t, "write failed", err.Error())
+	})
 }
+
+type mockResponseWriterFailWrite struct {
+	header http.Header
+}
+
+func (m *mockResponseWriterFailWrite) Header() http.Header {
+	if m.header == nil {
+		m.header = http.Header{}
+	}
+	return m.header
+}
+
+func (m *mockResponseWriterFailWrite) Write([]byte) (int, error) {
+	return 0, errors.New("write failed")
+}
+
+func (m *mockResponseWriterFailWrite) WriteHeader(int) {}
+
+func (m *mockResponseWriterFailWrite) Flush() {}
