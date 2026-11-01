@@ -2,34 +2,31 @@ package async
 
 import (
 	"sync"
+
+	"github.com/gowok/fp/slices"
 )
 
 // All runs all tasks
 func All(tasks ...func() (any, error)) ([]any, error) {
-	var wg sync.WaitGroup
 	var mu sync.Mutex
 	results := make([]any, 0)
 	var gerr error
 	var gerrOnce sync.Once
 
-	for _, task := range tasks {
-		wg.Add(1)
-		go func(t func() (any, error), eo *sync.Once) {
-			defer wg.Done()
-			data, err := t()
-			if err != nil {
-				gerrOnce.Do(func() {
-					gerr = err
-				})
-			} else {
-				mu.Lock()
-				results = append(results, data)
-				mu.Unlock()
-			}
-		}(task, &gerrOnce)
-	}
+	slices.GoForEach(tasks, func(task func() (any, error), _ int) {
+		data, err := task()
+		if err != nil {
+			gerrOnce.Do(func() {
+				gerr = err
+			})
+			return
+		}
 
-	wg.Wait()
+		mu.Lock()
+		results = append(results, data)
+		mu.Unlock()
+	})
+
 	if gerr != nil {
 		return nil, gerr
 	}

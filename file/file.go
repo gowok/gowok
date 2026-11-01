@@ -6,6 +6,9 @@ import (
 	"io"
 	"os"
 	"strings"
+
+	"github.com/gowok/fp/maps"
+	"github.com/gowok/fp/slices"
 )
 
 func ExtentionToMime(extension string) string {
@@ -13,14 +16,14 @@ func ExtentionToMime(extension string) string {
 }
 
 func MimeToExtension(mime string) string {
-	var foundMime string
-	for k, v := range MimeTypes {
-		if v == mime {
-			foundMime = k
-		}
+	ext, ok := slices.Find(maps.Keys(MimeTypes), func(k string, _ int) bool {
+		return MimeTypes[k] == mime
+	})
+	if !ok {
+		return ""
 	}
 
-	return foundMime
+	return ext
 }
 
 func GetTypeFromBase64(base64encoded string) string {
