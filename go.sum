@@ -5,8 +5,8 @@ github.com/golang-must/must v1.0.0 h1:CRVPmPY30XORfNfYF5sHWB/6DFao1f580tliVUupzw
 github.com/golang-must/must v1.0.0/go.mod h1:+Li9TJt2jPOdGvIbcwqNSSDxjmA6PWs6QWxuqGDO1HQ=
 github.com/google/uuid v1.6.0 h1:NIvaJDMOsjHA8n1jAhLSgzrAzy1Hgr+hNrb57e+94F0=
 github.com/google/uuid v1.6.0/go.mod h1:TIyPZe4MgqvfeYDBFedMoGGpEw/LqOeaOT+nhxU+yHo=
-github.com/gowok/fp v0.2.2 h1:4G8L7/xdG3UhCKAHOVBHyvKSIsS13QmH4DohTzXXYvg=
-github.com/gowok/fp v0.2.2/go.mod h1:QgTV8c1/cRilMpWjPxtk3AbYV3NU54BivUTeM3GGWvQ=
+github.com/gowok/fp v0.3.3 h1:k7QoCkaman5LaXLf6xvTB8sYKo33Dqx1ZBMgTnig5X4=
+github.com/gowok/fp v0.3.3/go.mod h1:QgTV8c1/cRilMpWjPxtk3AbYV3NU54BivUTeM3GGWvQ=
 github.com/inconshreveable/mousetrap v1.1.0 h1:wN+x4NVGpMsO7ErUn/mUI3vEoE6Jt13X2s0bqwp9tc8=
 github.com/inconshreveable/mousetrap v1.1.0/go.mod h1:vpF70FUmC8bwa3OWnCshd2FqLfsEA9PFc4w1p2J65bw=
 github.com/joho/godotenv v1.5.1 h1:7eLL/+HRGLY0ldzfGMeQkb7vMd0as4CfYvUVzLqw0N0=
