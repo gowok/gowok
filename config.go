@@ -5,6 +5,7 @@ import (
 	"io"
 	"os"
 	"path"
+	"strings"
 
 	"github.com/gowok/fp/maps"
 	"github.com/gowok/gowok/config"
@@ -65,13 +66,15 @@ func newConfigRaw(filetype string, configString string) (map[string]any, error) 
 	confRaw := map[string]any{}
 	var err error
 
-	switch filetype {
+	switch strings.ToLower(filetype) {
 	case ".json":
 		err = json.Unmarshal([]byte(configString), &confRaw)
 	case ".yaml", ".yml":
 		err = yaml.Unmarshal([]byte(configString), &confRaw)
 	case ".toml":
 		err = toml.Unmarshal([]byte(configString), &confRaw)
+	default:
+		return nil, fmt.Errorf("unsupported config file type: %q", filetype)
 	}
 	if err != nil {
 		return nil, err

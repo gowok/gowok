@@ -121,6 +121,25 @@ func TestNewConfigRaw(t *testing.T) {
 			content:  `key = value`,
 			wantErr:  true,
 		},
+		{
+			name:     "negative/unsupported filetype",
+			filetype: ".conf",
+			content:  "key: value",
+			wantErr:  true,
+		},
+		{
+			name:     "negative/empty filetype",
+			filetype: "",
+			content:  "key: value",
+			wantErr:  true,
+		},
+		{
+			name:      "positive/uppercase filetype",
+			filetype:  ".YAML",
+			content:   "key: value",
+			wantKey:   "key",
+			wantValue: "value",
+		},
 	}
 
 	for _, tt := range tests {
