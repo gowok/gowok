@@ -55,6 +55,11 @@ func TestError_MarshalJSON(t *testing.T) {
 			err:      New("error with code", WithCode(404)),
 			expected: `{"code":404,"error":"error with code"}`,
 		},
+		{
+			name:     "positive/marshal nil-wrapped error",
+			err:      Wrap(nil),
+			expected: `{"error":""}`,
+		},
 	}
 
 	for _, tc := range testCases {

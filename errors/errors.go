@@ -83,7 +83,7 @@ func (e Error) WriteResponse(rw http.ResponseWriter) {
 
 func (e Error) MarshalJSON() ([]byte, error) {
 	res := ngamux.Map{
-		"error": e.err.Error(),
+		"error": e.Error(),
 	}
 	if e.code != 0 {
 		res["code"] = e.code
