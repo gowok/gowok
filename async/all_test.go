@@ -3,6 +3,7 @@ package async
 import (
 	"errors"
 	"testing"
+	"time"
 
 	"github.com/golang-must/must"
 )
@@ -81,5 +82,25 @@ func TestAll(t *testing.T) {
 
 			must.Equal(t, tc.expectedLen, len(results))
 		})
+	}
+}
+
+func TestAll_PreservesOrder(t *testing.T) {
+	const n = 8
+
+	tasks := make([]func() (any, error), 0, n)
+	for i := 0; i < n; i++ {
+		i := i
+		tasks = append(tasks, func() (any, error) {
+			time.Sleep(time.Duration(n-i) * 5 * time.Millisecond)
+			return i, nil
+		})
+	}
+
+	results, err := All(tasks...)
+	must.Nil(t, err)
+	must.Equal(t, n, len(results))
+	for i, result := range results {
+		must.Equal(t, i, result.(int))
 	}
 }

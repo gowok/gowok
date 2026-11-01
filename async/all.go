@@ -6,14 +6,13 @@ import (
 	"github.com/gowok/fp/slices"
 )
 
-// All runs all tasks
+// All runs all tasks and returns their results in the same order as tasks.
 func All(tasks ...func() (any, error)) ([]any, error) {
-	var mu sync.Mutex
-	results := make([]any, 0)
+	results := make([]any, len(tasks))
 	var gerr error
 	var gerrOnce sync.Once
 
-	slices.GoForEach(tasks, func(task func() (any, error), _ int) {
+	slices.GoForEach(tasks, func(task func() (any, error), i int) {
 		data, err := task()
 		if err != nil {
 			gerrOnce.Do(func() {
@@ -22,9 +21,7 @@ func All(tasks ...func() (any, error)) ([]any, error) {
 			return
 		}
 
-		mu.Lock()
-		results = append(results, data)
-		mu.Unlock()
+		results[i] = data
 	})
 
 	if gerr != nil {
