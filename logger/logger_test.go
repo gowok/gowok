@@ -31,7 +31,7 @@ type testHandler struct {
 
 func TestHandlerWithAttrsDoesNotMutate(t *testing.T) {
 	var buf bytes.Buffer
-	l := slog.New(&handler{handlers: []slog.Handler{slog.NewTextHandler(&buf, nil)}})
+	l := slog.New(newHandler(slog.NewTextHandler(&buf, nil)))
 
 	l.With("leak", "yes").Info("with-attrs")
 
@@ -115,7 +115,7 @@ func TestHandler(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			h := &handler{handlers: tc.handlers}
+			h := newHandler(tc.handlers...)
 			tc.check(t, h)
 		})
 	}

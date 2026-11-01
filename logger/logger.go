@@ -10,13 +10,17 @@ import (
 
 func Configure(handlers ...slog.Handler) func() {
 	return func() {
-		slog.SetDefault(slog.New(&handler{handlers: handlers}))
+		slog.SetDefault(slog.New(newHandler(handlers...)))
 	}
 }
 
 type handler struct {
-	mux      sync.Mutex
+	mut      *sync.Mutex
 	handlers []slog.Handler
+}
+
+func newHandler(handlers ...slog.Handler) *handler {
+	return &handler{mut: &sync.Mutex{}, handlers: handlers}
 }
 
 func (h *handler) Enabled(ctx context.Context, l slog.Level) bool {
@@ -26,8 +30,8 @@ func (h *handler) Enabled(ctx context.Context, l slog.Level) bool {
 }
 
 func (h *handler) Handle(ctx context.Context, r slog.Record) error {
-	h.mux.Lock()
-	defer h.mux.Unlock()
+	h.mut.Lock()
+	defer h.mut.Unlock()
 
 	for _, hh := range h.handlers {
 		err := hh.Handle(ctx, r)
@@ -44,7 +48,7 @@ func (h *handler) WithAttrs(attrs []slog.Attr) slog.Handler {
 		return hh.WithAttrs(attrs)
 	})
 
-	return &handler{handlers: handlers}
+	return &handler{mut: h.mut, handlers: handlers}
 }
 
 func (h *handler) WithGroup(group string) slog.Handler {
@@ -52,5 +56,5 @@ func (h *handler) WithGroup(group string) slog.Handler {
 		return hh.WithGroup(group)
 	})
 
-	return &handler{handlers: handlers}
+	return &handler{mut: h.mut, handlers: handlers}
 }
