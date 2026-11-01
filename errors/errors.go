@@ -91,6 +91,11 @@ func (e Error) MarshalJSON() ([]byte, error) {
 	return json.Marshal(res)
 }
 
+func IsCode(err error, code int) bool {
+	var e Error
+	return errors.As(err, &e) && e.Code() == code
+}
+
 type Option func(*Error)
 
 func WithCode(code int) Option {

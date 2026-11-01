@@ -152,6 +152,58 @@ func TestWrap(t *testing.T) {
 	})
 }
 
+func TestIsCode(t *testing.T) {
+	testCases := []struct {
+		name     string
+		err      error
+		code     int
+		expected bool
+	}{
+		{
+			name:     "negative/nil error",
+			err:      nil,
+			code:     http.StatusNotFound,
+			expected: false,
+		},
+		{
+			name:     "negative/plain error",
+			err:      stderrors.New("plain"),
+			code:     http.StatusNotFound,
+			expected: false,
+		},
+		{
+			name:     "positive/matching code",
+			err:      New("not found", WithCode(http.StatusNotFound)),
+			code:     http.StatusNotFound,
+			expected: true,
+		},
+		{
+			name:     "negative/non-matching code",
+			err:      New("not found", WithCode(http.StatusNotFound)),
+			code:     http.StatusBadRequest,
+			expected: false,
+		},
+		{
+			name:     "positive/nested wrap inherits code",
+			err:      Wrap(Wrap(New("forbidden", WithCode(http.StatusForbidden)))),
+			code:     http.StatusForbidden,
+			expected: true,
+		},
+		{
+			name:     "positive/wrapped nil matches zero code",
+			err:      Wrap(nil),
+			code:     0,
+			expected: true,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			must.Equal(t, tc.expected, IsCode(tc.err, tc.code))
+		})
+	}
+}
+
 func TestDynamicErrors(t *testing.T) {
 	t.Run("ErrConfigDecoding", func(t *testing.T) {
 		inner := New("inner error")
