@@ -41,6 +41,16 @@ func TestAll(t *testing.T) {
 			expectError: false,
 		},
 		{
+			name: "positive/nil task is skipped",
+			tasks: []func() (any, error){
+				func() (any, error) { return "result1", nil },
+				nil,
+				func() (any, error) { return "result3", nil },
+			},
+			expectedLen: 3,
+			expectError: false,
+		},
+		{
 			name: "negative/single task with error",
 			tasks: []func() (any, error){
 				func() (any, error) { return nil, errors.New("task failed") },
@@ -83,6 +93,19 @@ func TestAll(t *testing.T) {
 			must.Equal(t, tc.expectedLen, len(results))
 		})
 	}
+}
+
+func TestAll_NilTaskKeepsIndexAlignment(t *testing.T) {
+	value := func(v any) func() (any, error) {
+		return func() (any, error) { return v, nil }
+	}
+
+	results, err := All(value(1), nil, value(3))
+	must.Nil(t, err)
+	must.Equal(t, 3, len(results))
+	must.Equal(t, 1, results[0].(int))
+	must.Nil(t, results[1])
+	must.Equal(t, 3, results[2].(int))
 }
 
 func TestAll_PreservesOrder(t *testing.T) {
