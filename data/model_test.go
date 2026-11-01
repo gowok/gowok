@@ -127,6 +127,17 @@ func TestModel_Entity(t *testing.T) {
 	}
 }
 
+func TestModel_Entity_ZeroID(t *testing.T) {
+	now := time.Now()
+
+	m := ModelFromEntity(&Entity{ID: "", CreatedAt: now})
+	must.Equal(t, uuid.Nil, m.ID)
+
+	res := m.Entity()
+	must.Equal(t, "", res.ID)
+	must.Equal(t, now, res.CreatedAt)
+}
+
 func TestModel_BeforeCreateID_UUID(t *testing.T) {
 	testCases := []struct {
 		name      string

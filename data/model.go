@@ -16,7 +16,7 @@ type Model struct {
 
 func ModelFromEntity(e *Entity) Model {
 	res := Model{
-		ID:        uuid.NullUUID{}.UUID,
+		ID:        uuid.Nil,
 		CreatedAt: e.CreatedAt,
 		UpdatedAt: sql.NewNull(e.UpdatedAt),
 		DeletedAt: sql.NewNull(e.DeletedAt),
@@ -31,8 +31,11 @@ func ModelFromEntity(e *Entity) Model {
 
 func (m Model) Entity() Entity {
 	res := Entity{
-		ID:        m.ID.String(),
 		CreatedAt: m.CreatedAt,
+	}
+
+	if m.ID != uuid.Nil {
+		res.ID = m.ID.String()
 	}
 
 	if m.UpdatedAt.Valid {
@@ -46,7 +49,7 @@ func (m Model) Entity() Entity {
 }
 
 func (m *Model) BeforeCreateID_UUID() error {
-	if m.ID == (uuid.NullUUID{}).UUID {
+	if m.ID == uuid.Nil {
 		id, err := uuid.NewV7()
 		if err != nil {
 			return err
