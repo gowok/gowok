@@ -1,10 +1,33 @@
 package runtime
 
 import (
+	"sync"
 	"testing"
 
 	"github.com/golang-must/must"
 )
+
+func TestWithRunFuncAppends(t *testing.T) {
+	var mu sync.Mutex
+	called := 0
+	r := &Runtime{}
+
+	WithRunFunc(func() {
+		mu.Lock()
+		defer mu.Unlock()
+		called++
+	})(r)
+	WithRunFunc(func() {
+		mu.Lock()
+		defer mu.Unlock()
+		called++
+	})(r)
+
+	must.Equal(t, 2, len(r.runFns))
+
+	r.Run(false)
+	must.Equal(t, 2, called)
+}
 
 func TestOptions(t *testing.T) {
 	testCases := []struct {

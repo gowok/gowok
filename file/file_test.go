@@ -15,6 +15,7 @@ func TestExtentionToMime(t *testing.T) {
 		{".jpg", "image/jpeg"},
 		{".png", "image/png"},
 		{".pdf", "application/pdf"},
+		{".avi", "video/x-msvideo"},
 		{".invalid", ""},
 	}
 
@@ -33,6 +34,7 @@ func TestMimeToExtension(t *testing.T) {
 		{"image/jpeg", ".jpg"},
 		{"image/png", ".png"},
 		{"application/pdf", ".pdf"},
+		{"video/x-msvideo", ".avi"},
 		{"invalid/mime", ""},
 	}
 

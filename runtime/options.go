@@ -6,7 +6,7 @@ type option func(*Runtime)
 
 func WithRunFunc(runFunc func()) option {
 	return func(runner *Runtime) {
-		runner.runFns = []func(){runFunc}
+		runner.runFns = append(runner.runFns, runFunc)
 	}
 }
 

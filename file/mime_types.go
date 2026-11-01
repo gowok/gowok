@@ -2,7 +2,7 @@ package file
 
 var MimeTypes = map[string]string{
 	".au":     "audio/basic",
-	".avi":    "video/msvideo, video/avi, video/x-msvideo",
+	".avi":    "video/x-msvideo",
 	".bmp":    "image/bmp",
 	".bz2":    "application/x-bzip2",
 	".css":    "text/css",
