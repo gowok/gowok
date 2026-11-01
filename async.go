@@ -11,3 +11,7 @@ var Async = &_async{}
 func (p *_async) All(tasks ...func() (any, error)) ([]any, error) {
 	return async.All(tasks...)
 }
+
+func (p *_async) AllResults(tasks ...func() (any, error)) ([]any, error) {
+	return async.AllResults(tasks...)
+}

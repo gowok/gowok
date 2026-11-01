@@ -127,3 +127,81 @@ func TestAll_PreservesOrder(t *testing.T) {
 		must.Equal(t, i, result.(int))
 	}
 }
+
+func TestAllResults(t *testing.T) {
+	testCases := []struct {
+		name        string
+		tasks       []func() (any, error)
+		expectError bool
+		expectNil   []int
+	}{
+		{
+			name: "positive/all succeed",
+			tasks: []func() (any, error){
+				func() (any, error) { return "a", nil },
+				func() (any, error) { return 2, nil },
+			},
+			expectError: false,
+		},
+		{
+			name:        "positive/empty tasks",
+			tasks:       []func() (any, error){},
+			expectError: false,
+		},
+		{
+			name: "negative/one of many fails keeps the rest",
+			tasks: []func() (any, error){
+				func() (any, error) { return "a", nil },
+				func() (any, error) { return nil, errors.New("task failed") },
+				func() (any, error) { return "c", nil },
+			},
+			expectError: true,
+			expectNil:   []int{1},
+		},
+		{
+			name: "positive/nil task is skipped",
+			tasks: []func() (any, error){
+				func() (any, error) { return "a", nil },
+				nil,
+			},
+			expectError: false,
+			expectNil:   []int{1},
+		},
+		{
+			name: "negative/all fail",
+			tasks: []func() (any, error){
+				func() (any, error) { return nil, errors.New("error 1") },
+				func() (any, error) { return nil, errors.New("error 2") },
+			},
+			expectError: true,
+			expectNil:   []int{0, 1},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			results, err := AllResults(tc.tasks...)
+
+			if tc.expectError {
+				must.NotNil(t, err)
+			} else {
+				must.Nil(t, err)
+			}
+
+			must.NotNil(t, results)
+			must.Equal(t, len(tc.tasks), len(results))
+
+			nilIndexes := map[int]bool{}
+			for _, i := range tc.expectNil {
+				nilIndexes[i] = true
+			}
+			for i, result := range results {
+				if nilIndexes[i] {
+					must.Nil(t, result)
+					continue
+				}
+				must.NotNil(t, result)
+			}
+		})
+	}
+}
