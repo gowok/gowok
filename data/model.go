@@ -48,6 +48,10 @@ func (m Model) Entity() Entity {
 	return res
 }
 
+func (m Model) IsDeleted() bool {
+	return m.DeletedAt.Valid
+}
+
 func (m *Model) BeforeCreateID_UUID() error {
 	if m.ID == uuid.Nil {
 		id, err := uuid.NewV7()

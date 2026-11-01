@@ -138,6 +138,23 @@ func TestModel_Entity_ZeroID(t *testing.T) {
 	must.Equal(t, now, res.CreatedAt)
 }
 
+func TestIsDeleted(t *testing.T) {
+	now := time.Now()
+
+	t.Run("positive/entity deleted", func(t *testing.T) {
+		must.True(t, Entity{DeletedAt: &now}.IsDeleted())
+	})
+	t.Run("positive/entity not deleted", func(t *testing.T) {
+		must.False(t, Entity{}.IsDeleted())
+	})
+	t.Run("positive/model deleted", func(t *testing.T) {
+		must.True(t, Model{DeletedAt: sql.NewNull(&now)}.IsDeleted())
+	})
+	t.Run("positive/model not deleted", func(t *testing.T) {
+		must.False(t, Model{}.IsDeleted())
+	})
+}
+
 func TestModel_BeforeCreateID_UUID(t *testing.T) {
 	testCases := []struct {
 		name      string

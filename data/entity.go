@@ -9,6 +9,10 @@ type Entity struct {
 	DeletedAt *time.Time `json:"deleted_at,omitempty"`
 }
 
+func (e Entity) IsDeleted() bool {
+	return e.DeletedAt != nil
+}
+
 type Health struct {
 	Status    string            `json:"status"`
 	Databases map[string]string `json:"databases,omitempty"`
