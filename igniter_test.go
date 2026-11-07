@@ -1,8 +1,9 @@
 package gowok
 
 import (
-	"bytes"
 	"errors"
+	"io"
+	"log/slog"
 	"net"
 	"net/http"
 	"os"
@@ -45,17 +46,33 @@ func TestIgniter_Configure(t *testing.T) {
 		must.NotNil(t, p)
 	})
 
+	t.Run("positive/default logger is json", func(t *testing.T) {
+		resetIgniter()
+		oldLogger := slog.Default()
+		defer slog.SetDefault(oldLogger)
+		configure()
+		_, ok := slog.Default().Handler().(*slog.JSONHandler)
+		must.True(t, ok)
+	})
+
 	t.Run("negative/invalid file path", func(t *testing.T) {
 		resetIgniter()
+		oldLogger := slog.Default()
 		oldStdout := os.Stdout
-		r, w, _ := os.Pipe()
+		r, w, err := os.Pipe()
+		must.Nil(t, err)
 		os.Stdout = w
-		configure("non-existent-file.yaml")
-		w.Close()
-		os.Stdout = oldStdout
-		var logBuf bytes.Buffer
-		logBuf.ReadFrom(r)
-		must.True(t, strings.Contains(logBuf.String(), `"level":"ERROR"`))
+		defer func() {
+			os.Stdout = oldStdout
+			slog.SetDefault(oldLogger)
+		}()
+
+		must.Nil(t, configure("non-existent-file.yaml"))
+
+		must.Nil(t, w.Close())
+		out, err := io.ReadAll(r)
+		must.Nil(t, err)
+		must.True(t, strings.Contains(string(out), `"level":"ERROR"`))
 	})
 }
 

@@ -50,6 +50,14 @@ func TestPagination_PaginationFromReq(t *testing.T) {
 			wantSort:    map[string]string{},
 			wantFilter:  map[string]any{},
 		},
+		{
+			name:        "negative/invalid page and per_page",
+			url:         "/?page=abc&per_page=xyz",
+			wantPage:    1,
+			wantPerPage: 10,
+			wantSort:    map[string]string{},
+			wantFilter:  map[string]any{},
+		},
 	}
 
 	for _, tc := range testCases {
