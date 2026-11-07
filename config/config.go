@@ -1,7 +1,7 @@
 package config
 
 type Config struct {
-	Key      string          `json:"key,omitempty"`
+	ENV      string          `json:"env"`
 	Net      Net             `json:"net"`
 	Web      Web             `json:"web"`
 	Security Security        `json:"security"`
