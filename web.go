@@ -2,7 +2,6 @@ package gowok
 
 import (
 	"errors"
-	"log"
 	"log/slog"
 	"net/http"
 	"strings"
@@ -18,7 +17,6 @@ import (
 )
 
 var (
-	webLogFatalln     = log.Fatalln
 	webListenAndServe = func(s *http.Server) error {
 		return s.ListenAndServe()
 	}
@@ -110,7 +108,7 @@ func (p *_web) run() {
 		if errors.Is(err, http.ErrServerClosed) {
 			return
 		}
-		webLogFatalln("web: failed to start: " + err.Error())
+		slog.Error("web: failed to start", "error", err)
 	}
 }
 

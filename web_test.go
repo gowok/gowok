@@ -1,9 +1,12 @@
 package gowok
 
 import (
+	"bytes"
 	"errors"
+	"log/slog"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 
 	"github.com/golang-must/must"
@@ -103,12 +106,12 @@ func TestWebRequest_New(t *testing.T) {
 func TestWeb_Configure(t *testing.T) {
 	oldMux := Web.HttpServeMux
 	oldConfig := Config
-	oldLogFatalln := webLogFatalln
+	oldLogger := slog.Default()
 	oldListenAndServe := webListenAndServe
 	defer func() {
 		Web.HttpServeMux = oldMux
 		Config = oldConfig
-		webLogFatalln = oldLogFatalln
+		slog.SetDefault(oldLogger)
 		webListenAndServe = oldListenAndServe
 	}()
 
@@ -162,10 +165,8 @@ func TestWeb_Configure(t *testing.T) {
 			Web.HttpServeMux = ngamux.NewHttpServeMux()
 			Config = &config.Config{Web: tt.webConfig}
 
-			fatalCalled := false
-			webLogFatalln = func(v ...any) {
-				fatalCalled = true
-			}
+			var logBuf bytes.Buffer
+			slog.SetDefault(slog.New(slog.NewTextHandler(&logBuf, nil)))
 			webListenAndServe = func(s *http.Server) error {
 				return tt.mockListenErr
 			}
@@ -173,7 +174,7 @@ func TestWeb_Configure(t *testing.T) {
 			Web.configure()
 			Web.run()
 
-			must.Equal(t, tt.expectedFatal, fatalCalled)
+			must.Equal(t, tt.expectedFatal, strings.Contains(logBuf.String(), "level=ERROR"))
 			must.Equal(t, tt.webConfig.Host, Web.Server.Addr)
 		})
 	}

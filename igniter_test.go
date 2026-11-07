@@ -60,19 +60,16 @@ func TestIgniter_Configure(t *testing.T) {
 func TestIgniter_Run(t *testing.T) {
 	oldListenAndServe := webListenAndServe
 	oldNetListen := netListen
-	oldWebLogFatalln := webLogFatalln
 	oldNetLogFatalln := netLogFatalln
 	defer func() {
 		webListenAndServe = oldListenAndServe
 		netListen = oldNetListen
-		webLogFatalln = oldWebLogFatalln
 		netLogFatalln = oldNetLogFatalln
 		resetIgniter()
 	}()
 
 	webListenAndServe = func(s *http.Server) error { return http.ErrServerClosed }
 	netListen = func(network, address string) (net.Listener, error) { return nil, errors.New("mock error") }
-	webLogFatalln = func(v ...any) {}
 	netLogFatalln = func(v ...any) {}
 
 	t.Run("positive/run web and net", func(t *testing.T) {
@@ -144,12 +141,9 @@ func TestIgniter_RunPublic(t *testing.T) {
 
 	t.Run("positive/run", func(t *testing.T) {
 		resetIgniter()
-		oldWebLogFatalln := webLogFatalln
 		oldNetLogFatalln := netLogFatalln
-		webLogFatalln = func(v ...any) {}
 		netLogFatalln = func(v ...any) {}
 		defer func() {
-			webLogFatalln = oldWebLogFatalln
 			netLogFatalln = oldNetLogFatalln
 		}()
 
