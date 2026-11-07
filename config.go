@@ -29,10 +29,11 @@ func newConfigEmpty() (*config.Config, map[string]any) {
 }
 
 func newConfig(pathConfig string, envFile string) (*config.Config, map[string]any, error) {
-	fiConfig, err := os.OpenFile(pathConfig, os.O_RDONLY, 0600)
+	fiConfig, err := os.Open(pathConfig)
 	if err != nil {
 		return nil, nil, err
 	}
+	defer fiConfig.Close()
 
 	fiContent, err := io.ReadAll(fiConfig)
 	if err != nil {
