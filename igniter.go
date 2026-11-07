@@ -3,7 +3,6 @@ package gowok
 import (
 	"context"
 	"flag"
-	"log"
 	"log/slog"
 	"os"
 	"sync"
@@ -13,10 +12,6 @@ import (
 	"github.com/gowok/gowok/config"
 	"github.com/gowok/gowok/runtime"
 	"github.com/gowok/gowok/singleton"
-)
-
-var (
-	igniterLogFatalln = log.Fatalln
 )
 
 type ConfigureFunc func()
@@ -53,7 +48,7 @@ func configure(configs ...any) *Project {
 	if Flags().Config != "" {
 		_conf, _confRaw, err := newConfig(Flags().Config, Flags().EnvFile)
 		if err != nil {
-			igniterLogFatalln(err)
+			slog.Error("config: failed to load", "error", err)
 			return nil
 		}
 		conf = _conf
@@ -65,7 +60,7 @@ func configure(configs ...any) *Project {
 		case string:
 			_conf, _confRaw, err := newConfig(c, "")
 			if err != nil {
-				igniterLogFatalln(err)
+				slog.Error("config: failed to load", "error", err)
 				return nil
 			}
 			conf = _conf

@@ -2,15 +2,12 @@ package gowok
 
 import (
 	"errors"
-	"fmt"
-	"log"
 	"log/slog"
 	"net"
 	"os"
 )
 
 var netListen = net.Listen
-var netLogFatalln = log.Fatalln
 
 type _net struct {
 	net.Listener
@@ -28,7 +25,7 @@ func (p *_net) configure() {
 
 	listen, err := netListen(Config.Net.Type, Config.Net.Address)
 	if err != nil {
-		netLogFatalln("net: failed to start: " + err.Error())
+		slog.Error("net: failed to start", "error", err)
 		return
 	}
 
@@ -49,7 +46,7 @@ func (p *_net) run() {
 	slog.Info("starting net")
 
 	if p.Listener == nil {
-		netLogFatalln("net: failed to start: bad configurations")
+		slog.Error("net: failed to start", "error", "bad configurations")
 		return
 	}
 
@@ -60,7 +57,7 @@ func (p *_net) run() {
 				break
 			}
 
-			fmt.Println("net: failed to process: " + err.Error())
+			slog.Error("net: failed to process", "error", err)
 			continue
 		}
 		go p.handler(conn)

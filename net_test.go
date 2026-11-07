@@ -1,9 +1,12 @@
 package gowok
 
 import (
+	"bytes"
 	"errors"
+	"log/slog"
 	"net"
 	"os"
+	"strings"
 	"testing"
 	"time"
 
@@ -79,6 +82,9 @@ func TestNet(t *testing.T) {
 		}
 
 		must.NotNil(t, Net.Listener)
+		if Net.Listener == nil {
+			return
+		}
 		must.Equal(t, "unix", Net.Listener.Addr().Network())
 		must.Equal(t, socketPath, Net.Listener.Addr().String())
 
@@ -91,19 +97,14 @@ func TestNet(t *testing.T) {
 		}
 	})
 	t.Run("negative/configure failure", func(t *testing.T) {
-		oldFatalln := netLogFatalln
-		defer func() { netLogFatalln = oldFatalln }()
-
-		fatalCalled := false
-		netLogFatalln = func(v ...any) {
-			fatalCalled = true
-		}
+		var logBuf bytes.Buffer
+		slog.SetDefault(slog.New(slog.NewTextHandler(&logBuf, nil)))
 
 		Config.Net.Type = "invalid"
 		Config.Net.Address = "invalid"
 
 		Net.configure()
-		must.True(t, fatalCalled)
+		must.True(t, strings.Contains(logBuf.String(), "level=ERROR"))
 	})
 	t.Run("negative/Accept failure", func(t *testing.T) {
 		oldListen := netListen

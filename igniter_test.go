@@ -1,9 +1,12 @@
 package gowok
 
 import (
+	"bytes"
 	"errors"
 	"net"
 	"net/http"
+	"os"
+	"strings"
 	"testing"
 	"time"
 
@@ -26,11 +29,7 @@ func resetIgniter() {
 }
 
 func TestIgniter_Configure(t *testing.T) {
-	oldLogFatalln := igniterLogFatalln
-	defer func() {
-		igniterLogFatalln = oldLogFatalln
-		resetIgniter()
-	}()
+	defer resetIgniter()
 
 	t.Run("positive/basic configuration", func(t *testing.T) {
 		resetIgniter()
@@ -48,29 +47,29 @@ func TestIgniter_Configure(t *testing.T) {
 
 	t.Run("negative/invalid file path", func(t *testing.T) {
 		resetIgniter()
-		fatalCalled := false
-		igniterLogFatalln = func(v ...any) {
-			fatalCalled = true
-		}
+		oldStdout := os.Stdout
+		r, w, _ := os.Pipe()
+		os.Stdout = w
 		configure("non-existent-file.yaml")
-		must.True(t, fatalCalled)
+		w.Close()
+		os.Stdout = oldStdout
+		var logBuf bytes.Buffer
+		logBuf.ReadFrom(r)
+		must.True(t, strings.Contains(logBuf.String(), `"level":"ERROR"`))
 	})
 }
 
 func TestIgniter_Run(t *testing.T) {
 	oldListenAndServe := webListenAndServe
 	oldNetListen := netListen
-	oldNetLogFatalln := netLogFatalln
 	defer func() {
 		webListenAndServe = oldListenAndServe
 		netListen = oldNetListen
-		netLogFatalln = oldNetLogFatalln
 		resetIgniter()
 	}()
 
 	webListenAndServe = func(s *http.Server) error { return http.ErrServerClosed }
 	netListen = func(network, address string) (net.Listener, error) { return nil, errors.New("mock error") }
-	netLogFatalln = func(v ...any) {}
 
 	t.Run("positive/run web and net", func(t *testing.T) {
 		resetIgniter()
@@ -96,18 +95,13 @@ func TestIgniter_Run(t *testing.T) {
 }
 
 func TestIgniter_Stop(t *testing.T) {
-	oldLogFatalln := igniterLogFatalln
 	oldNetListen := netListen
-	oldNetLogFatalln := netLogFatalln
 	defer func() {
-		igniterLogFatalln = oldLogFatalln
 		netListen = oldNetListen
-		netLogFatalln = oldNetLogFatalln
 		resetIgniter()
 	}()
 
 	netListen = func(network, address string) (net.Listener, error) { return nil, errors.New("mock error") }
-	netLogFatalln = func(v ...any) {}
 
 	t.Run("positive/stop web and net", func(t *testing.T) {
 		resetIgniter()
@@ -141,11 +135,6 @@ func TestIgniter_RunPublic(t *testing.T) {
 
 	t.Run("positive/run", func(t *testing.T) {
 		resetIgniter()
-		oldNetLogFatalln := netLogFatalln
-		netLogFatalln = func(v ...any) {}
-		defer func() {
-			netLogFatalln = oldNetLogFatalln
-		}()
 
 		Config.Forever = false
 		Run(config.Config{Key: "test"})

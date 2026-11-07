@@ -24,7 +24,6 @@ func (p *_cmd) Wrap(c *cobra.Command) *cobra.Command {
 type flags struct {
 	Config  string
 	EnvFile string
-	Help    bool
 }
 
 var _flags = singleton.New(func() *flags {
