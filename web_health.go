@@ -42,10 +42,7 @@ func (p *_health) Configure() {
 }
 
 func (p *_health) Add(name string, healthFunc func() any) {
-	switch {
-	case name == "":
-		return
-	case healthFunc == nil:
+	if name == "" || healthFunc == nil {
 		return
 	}
 

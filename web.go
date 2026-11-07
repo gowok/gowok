@@ -5,6 +5,7 @@ import (
 	"log/slog"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/gowok/gowok/config"
 	"github.com/gowok/gowok/web"
@@ -65,8 +66,10 @@ func (p *_web) configure() {
 
 	mux := Web.HttpServeMux
 	server := &http.Server{
-		Addr:    c.Host,
-		Handler: mux,
+		Addr:              c.Host,
+		Handler:           mux,
+		ReadHeaderTimeout: 10 * time.Second,
+		IdleTimeout:       120 * time.Second,
 	}
 
 	func() {
