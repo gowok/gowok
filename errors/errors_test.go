@@ -216,3 +216,115 @@ func TestDynamicErrors(t *testing.T) {
 		must.Equal(t, "database not configured", err.Error())
 	})
 }
+
+func TestError_Details(t *testing.T) {
+	t.Run("positive/with details", func(t *testing.T) {
+		err := New("validation failed", WithDetails(map[string]any{
+			"email": "is required",
+		}))
+
+		must.Equal(t, map[string]any{"email": "is required"}, err.Details())
+	})
+
+	t.Run("positive/with field pairs", func(t *testing.T) {
+		err := New("validation failed", WithField(
+			"email", "is required",
+			"name", "must be at least 3 characters",
+		))
+
+		must.Equal(t, map[string]any{
+			"email": "is required",
+			"name":  "must be at least 3 characters",
+		}, err.Details())
+	})
+
+	t.Run("positive/duplicate keys keep the last value", func(t *testing.T) {
+		err := New("validation failed", WithField("email", "first", "email", "last"))
+
+		must.Equal(t, map[string]any{"email": "last"}, err.Details())
+	})
+
+	t.Run("negative/odd trailing argument is ignored", func(t *testing.T) {
+		err := New("validation failed", WithField("email", "is required", "name"))
+
+		must.Equal(t, map[string]any{"email": "is required"}, err.Details())
+	})
+
+	t.Run("negative/non-string keys are skipped", func(t *testing.T) {
+		err := New("validation failed", WithField("email", "is required", 42, "ignored", "name", "too short"))
+
+		must.Equal(t, map[string]any{
+			"email": "is required",
+			"name":  "too short",
+		}, err.Details())
+	})
+
+	t.Run("positive/details returns a copy", func(t *testing.T) {
+		err := New("validation failed", WithField("email", "is required"))
+
+		details := err.Details()
+		details["email"] = "changed"
+		details["extra"] = true
+
+		must.Equal(t, map[string]any{"email": "is required"}, err.Details())
+	})
+
+	t.Run("positive/empty details are omitted", func(t *testing.T) {
+		err := New("validation failed", WithDetails(nil))
+		must.Nil(t, err.Details())
+
+		b, marshalErr := err.MarshalJSON()
+		must.Nil(t, marshalErr)
+
+		var decoded map[string]any
+		must.Nil(t, json.Unmarshal(b, &decoded))
+		must.Equal(t, map[string]any{"error": "validation failed"}, decoded)
+	})
+}
+
+func TestError_DetailsMarshalJSON(t *testing.T) {
+	err := New("validation failed",
+		WithCode(http.StatusUnprocessableEntity),
+		WithField("email", "is required", "name", "too short"),
+	)
+
+	b, marshalErr := err.MarshalJSON()
+	must.Nil(t, marshalErr)
+
+	var decoded map[string]any
+	must.Nil(t, json.Unmarshal(b, &decoded))
+	must.Equal(t, map[string]any{
+		"error": "validation failed",
+		"code":  float64(http.StatusUnprocessableEntity),
+		"details": map[string]any{
+			"email": "is required",
+			"name":  "too short",
+		},
+	}, decoded)
+}
+
+func TestError_WrapDetails(t *testing.T) {
+	t.Run("positive/wrap preserves and merges details", func(t *testing.T) {
+		inner := New("validation failed",
+			WithCode(http.StatusBadRequest),
+			WithDetails(map[string]any{"email": "is required", "name": "too short"}),
+		)
+
+		err := Wrap(inner, WithField("email", "is invalid", "age", "must be positive"))
+
+		must.Equal(t, http.StatusBadRequest, err.Code())
+		must.Equal(t, map[string]any{
+			"email": "is invalid",
+			"name":  "too short",
+			"age":   "must be positive",
+		}, err.Details())
+	})
+
+	t.Run("positive/with details replaces wrapped details", func(t *testing.T) {
+		inner := New("validation failed", WithDetails(map[string]any{"email": "is required"}))
+
+		err := Wrap(inner, WithDetails(map[string]any{"name": "too short"}))
+
+		must.Equal(t, map[string]any{"name": "too short"}, err.Details())
+	})
+}

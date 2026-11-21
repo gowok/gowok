@@ -33,12 +33,13 @@ var (
 )
 
 type Error struct {
-	err  error
-	code int
+	err     error
+	code    int
+	details map[string]any
 }
 
 func New(text string, opts ...Option) Error {
-	e := Error{errors.New(text), 0}
+	e := Error{err: errors.New(text)}
 	for _, o := range opts {
 		o(&e)
 	}
@@ -47,13 +48,14 @@ func New(text string, opts ...Option) Error {
 
 func Wrap(err error, opts ...Option) Error {
 	if err == nil {
-		return Error{err, 0}
+		return Error{}
 	}
 
 	e := Error{err: err}
 	var inner Error
 	if errors.As(err, &inner) {
 		e.code = inner.code
+		e.details = copyDetails(inner.details)
 	}
 	for _, o := range opts {
 		o(&e)
@@ -63,6 +65,10 @@ func Wrap(err error, opts ...Option) Error {
 
 func (e Error) Code() int {
 	return e.code
+}
+
+func (e Error) Details() map[string]any {
+	return copyDetails(e.details)
 }
 
 func (e Error) Error() string {
@@ -77,6 +83,15 @@ func (e Error) Unwrap() error {
 	return e.err
 }
 
+func (e Error) Is(target error) bool {
+	t, ok := target.(Error)
+	if !ok {
+		return false
+	}
+
+	return e.err == t.err && e.code == t.code
+}
+
 func (e Error) WriteResponse(rw http.ResponseWriter) {
 	ngamux.Res(rw).Status(e.code).Text(e.Error())
 }
@@ -87,6 +102,9 @@ func (e Error) MarshalJSON() ([]byte, error) {
 	}
 	if e.code != 0 {
 		res["code"] = e.code
+	}
+	if len(e.details) > 0 {
+		res["details"] = e.details
 	}
 	return json.Marshal(res)
 }
@@ -102,4 +120,40 @@ func WithCode(code int) Option {
 	return func(err *Error) {
 		err.code = code
 	}
+}
+
+func WithDetails(details map[string]any) Option {
+	return func(err *Error) {
+		err.details = copyDetails(details)
+	}
+}
+
+func WithField(key string, value any, more ...any) Option {
+	return func(err *Error) {
+		if err.details == nil {
+			err.details = make(map[string]any)
+		}
+
+		err.details[key] = value
+		for i := 0; i+1 < len(more); i += 2 {
+			fieldKey, ok := more[i].(string)
+			if !ok {
+				continue
+			}
+			err.details[fieldKey] = more[i+1]
+		}
+	}
+}
+
+func copyDetails(details map[string]any) map[string]any {
+	if len(details) == 0 {
+		return nil
+	}
+
+	result := make(map[string]any, len(details))
+	for key, value := range details {
+		result[key] = value
+	}
+
+	return result
 }
