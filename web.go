@@ -140,6 +140,11 @@ func (p *_web) configure() {
 			mux.Use(authBearerMiddleware(ab))
 		}
 	})
+	c.AuthBasic.IfPresent(func(ab config.WebAuthBasic) {
+		if ab.Enabled {
+			mux.Use(authBasicMiddleware(ab))
+		}
+	})
 
 	Web.Server = server
 }
@@ -193,9 +198,7 @@ func authBearerMiddleware(c config.WebAuthBearer) ngamux.MiddlewareFunc {
 			}
 
 			if c.Realm != "" {
-				challenge := "Bearer"
-				challenge += " realm=" + strconv.Quote(c.Realm)
-				rw.Header().Set("WWW-Authenticate", challenge)
+				rw.Header().Set("WWW-Authenticate", "Bearer realm="+strconv.Quote(c.Realm))
 			}
 			ngamux.Res(rw).Status(http.StatusUnauthorized).JSON(ngamux.Map{
 				"error": "unauthorized",
@@ -225,9 +228,61 @@ func authBearerMiddleware(c config.WebAuthBearer) ngamux.MiddlewareFunc {
 	}
 }
 
+func authBasicMiddleware(c config.WebAuthBasic) ngamux.MiddlewareFunc {
+	basic := auth.Basic(auth.BasicConfig{
+		Realm: c.Realm,
+		Authorizer: func(username string, password string) bool {
+			ab, ok := Config.Web.AuthBasic.Get()
+			if !ok || ab.Authorizer == nil {
+				return false
+			}
+
+			return ab.Authorizer(username, password)
+		},
+		ErrorHandler: func(rw http.ResponseWriter, err error) {
+			ab, ok := Config.Web.AuthBasic.Get()
+			if ok && ab.ErrorHandler != nil {
+				ab.ErrorHandler(rw, err)
+				return
+			}
+
+			if c.Realm != "" {
+				rw.Header().Set("WWW-Authenticate", "Basic realm="+strconv.Quote(c.Realm))
+			}
+			ngamux.Res(rw).Status(http.StatusUnauthorized).JSON(ngamux.Map{
+				"error": "unauthorized",
+			})
+		},
+	})
+
+	if len(c.Exclude) == 0 {
+		return basic
+	}
+
+	excluded := make(map[string]struct{}, len(c.Exclude))
+	for _, p := range c.Exclude {
+		excluded[p] = struct{}{}
+	}
+
+	return func(next http.HandlerFunc) http.HandlerFunc {
+		handler := basic(next)
+		return func(rw http.ResponseWriter, r *http.Request) {
+			if _, ok := excluded[r.URL.Path]; ok {
+				next(rw, r)
+				return
+			}
+
+			handler(rw, r)
+		}
+	}
+}
+
 func (p *_web) run() {
 	if ab, ok := Config.Web.AuthBearer.Get(); ok && ab.Enabled && ab.Authorizer == nil {
 		slog.Warn("web: auth_bearer enabled without an Authorizer; all requests will be rejected")
+	}
+	if ab, ok := Config.Web.AuthBasic.Get(); ok && ab.Enabled && ab.Authorizer == nil {
+		slog.Warn("web: auth_basic enabled without an Authorizer; all requests will be rejected")
 	}
 
 	slog.Info("starting web", "host", Config.Web.Host)
@@ -282,5 +337,24 @@ func WebConfigureAuthBearer(input WebConfigureAuthBearerInput) ConfigureFunc {
 		ab.Authorizer = input.Authorizer
 		ab.ErrorHandler = input.ErrorHandler
 		Config.Web.AuthBearer = some.Of(ab)
+	}
+}
+
+type WebConfigureAuthBasicInput struct {
+	Authorizer   func(username string, password string) bool
+	ErrorHandler func(rw http.ResponseWriter, err error)
+}
+
+func WebConfigureAuthBasic(input WebConfigureAuthBasicInput) ConfigureFunc {
+	return func(context.Context) {
+		ab, ok := Config.Web.AuthBasic.Get()
+		if !ok {
+			slog.Warn("web: auth_basic is not configured; authorizer not applied")
+			return
+		}
+
+		ab.Authorizer = input.Authorizer
+		ab.ErrorHandler = input.ErrorHandler
+		Config.Web.AuthBasic = some.Of(ab)
 	}
 }

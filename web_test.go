@@ -645,6 +645,217 @@ func TestWeb_AuthBearerConfigures(t *testing.T) {
 	must.Equal(t, http.StatusUnauthorized, do("wrong").Code)
 }
 
+func TestWeb_AuthBasic(t *testing.T) {
+	oldMux := Web.HttpServeMux
+	oldConfig := Config
+	oldServer := Web.Server
+	defer func() {
+		Web.HttpServeMux = oldMux
+		Config = oldConfig
+		Web.Server = oldServer
+	}()
+
+	Web.HttpServeMux = ngamux.NewHttpServeMux()
+	Config = &config.Config{
+		Web: config.Web{
+			Host: ":8080",
+			AuthBasic: some.Of(config.WebAuthBasic{
+				Enabled: true,
+				Exclude: []string{"/health"},
+				Authorizer: func(username, password string) bool {
+					return username == "admin" && password == "secret"
+				},
+			}),
+		},
+	}
+	Web.configure()
+
+	Web.Get("/private", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	})
+	Web.Get("/health", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	})
+
+	do := func(path string, creds ...string) *httptest.ResponseRecorder {
+		w := httptest.NewRecorder()
+		r := httptest.NewRequest(http.MethodGet, path, nil)
+		if len(creds) == 2 {
+			r.SetBasicAuth(creds[0], creds[1])
+		}
+		Web.ServeHTTP(w, r)
+		return w
+	}
+
+	testCases := []struct {
+		name     string
+		path     string
+		creds    []string
+		wantCode int
+	}{
+		{
+			name:     "positive/valid credentials",
+			path:     "/private",
+			creds:    []string{"admin", "secret"},
+			wantCode: http.StatusOK,
+		},
+		{
+			name:     "negative/invalid credentials",
+			path:     "/private",
+			creds:    []string{"admin", "wrong"},
+			wantCode: http.StatusUnauthorized,
+		},
+		{
+			name:     "negative/missing credentials",
+			path:     "/private",
+			wantCode: http.StatusUnauthorized,
+		},
+		{
+			name:     "positive/excluded path",
+			path:     "/health",
+			wantCode: http.StatusOK,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			w := do(tc.path, tc.creds...)
+			must.Equal(t, tc.wantCode, w.Code)
+		})
+	}
+}
+
+func TestWeb_AuthBasicWithoutAuthorizer(t *testing.T) {
+	oldMux := Web.HttpServeMux
+	oldConfig := Config
+	oldServer := Web.Server
+	defer func() {
+		Web.HttpServeMux = oldMux
+		Config = oldConfig
+		Web.Server = oldServer
+	}()
+
+	Web.HttpServeMux = ngamux.NewHttpServeMux()
+	Config = &config.Config{
+		Web: config.Web{
+			Host:      ":8080",
+			AuthBasic: some.Of(config.WebAuthBasic{Enabled: true}),
+		},
+	}
+	Web.configure()
+
+	Web.Get("/private", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	})
+
+	w := httptest.NewRecorder()
+	r := httptest.NewRequest(http.MethodGet, "/private", nil)
+	r.SetBasicAuth("root", "root")
+	Web.ServeHTTP(w, r)
+
+	must.Equal(t, http.StatusUnauthorized, w.Code)
+}
+
+func TestWeb_AuthBasicRealm(t *testing.T) {
+	oldMux := Web.HttpServeMux
+	oldConfig := Config
+	oldServer := Web.Server
+	defer func() {
+		Web.HttpServeMux = oldMux
+		Config = oldConfig
+		Web.Server = oldServer
+	}()
+
+	Web.HttpServeMux = ngamux.NewHttpServeMux()
+	Config = &config.Config{
+		Web: config.Web{
+			Host: ":8080",
+			AuthBasic: some.Of(config.WebAuthBasic{
+				Enabled: true,
+				Realm:   "gowok api",
+			}),
+		},
+	}
+	Web.configure()
+
+	Web.Get("/private", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	})
+
+	w := httptest.NewRecorder()
+	r := httptest.NewRequest(http.MethodGet, "/private", nil)
+	Web.ServeHTTP(w, r)
+
+	must.Equal(t, http.StatusUnauthorized, w.Code)
+	must.Equal(t, `Basic realm="gowok api"`, w.Header().Get("WWW-Authenticate"))
+}
+
+func TestWeb_AuthBasicConfigures(t *testing.T) {
+	resetIgniter()
+	defer resetIgniter()
+
+	p := configure(config.Config{Web: config.Web{
+		Enabled:   true,
+		Host:      ":8080",
+		AuthBasic: some.Of(config.WebAuthBasic{Enabled: true}),
+	}})
+	must.NotNil(t, p)
+
+	Configures(WebConfigureAuthBasic(WebConfigureAuthBasicInput{
+		Authorizer: func(username, password string) bool {
+			return username == "from-configures" && password == "secret"
+		},
+		ErrorHandler: func(rw http.ResponseWriter, err error) {
+			rw.WriteHeader(http.StatusUnauthorized)
+		},
+	}))
+
+	Web.Get("/private", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	})
+
+	do := func(username, password string) *httptest.ResponseRecorder {
+		w := httptest.NewRecorder()
+		r := httptest.NewRequest(http.MethodGet, "/private", nil)
+		r.SetBasicAuth(username, password)
+		Web.ServeHTTP(w, r)
+		return w
+	}
+
+	must.Equal(t, http.StatusOK, do("from-configures", "secret").Code)
+	must.Equal(t, http.StatusUnauthorized, do("from-configures", "wrong").Code)
+}
+
+func TestWebConfigureAuthBasic(t *testing.T) {
+	oldConfig := Config
+	defer func() { Config = oldConfig }()
+
+	Config = &config.Config{Web: config.Web{
+		AuthBasic: some.Of(config.WebAuthBasic{Enabled: true}),
+	}}
+
+	WebConfigureAuthBasic(WebConfigureAuthBasicInput{
+		Authorizer: func(username, password string) bool {
+			return username == password
+		},
+		ErrorHandler: func(rw http.ResponseWriter, err error) {
+			rw.WriteHeader(http.StatusUnauthorized)
+		},
+	})(context.Background())
+
+	ab, ok := Config.Web.AuthBasic.Get()
+	must.True(t, ok)
+	must.NotNil(t, ab.Authorizer)
+	must.NotNil(t, ab.ErrorHandler)
+
+	WebConfigureAuthBasic(WebConfigureAuthBasicInput{})(context.Background())
+
+	ab, ok = Config.Web.AuthBasic.Get()
+	must.True(t, ok)
+	must.Nil(t, ab.Authorizer)
+	must.Nil(t, ab.ErrorHandler)
+}
+
 func TestWebConfigureAuthBearer(t *testing.T) {
 	oldConfig := Config
 	defer func() { Config = oldConfig }()

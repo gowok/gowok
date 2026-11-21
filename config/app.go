@@ -22,8 +22,17 @@ type Web struct {
 	RequestID  some.Some[WebRequestID]  `json:"request_id"`
 	Timeout    some.Some[WebTimeout]    `json:"timeout"`
 	AuthBearer some.Some[WebAuthBearer] `json:"auth_bearer"`
+	AuthBasic  some.Some[WebAuthBasic]  `json:"auth_basic"`
 	Views      WebViews                 `json:"views"`
 	Static     WebStatic                `json:"static"`
+}
+
+type WebAuthBasic struct {
+	Enabled      bool                                        `json:"enabled,omitempty"`
+	Realm        string                                      `json:"realm,omitempty"`
+	Exclude      []string                                    `json:"exclude,omitempty"`
+	Authorizer   func(username string, password string) bool `json:"-"`
+	ErrorHandler func(rw http.ResponseWriter, err error)     `json:"-"`
 }
 
 type WebAuthBearer struct {

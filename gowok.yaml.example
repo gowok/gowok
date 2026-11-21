@@ -16,7 +16,10 @@ app:
       duration: 30s
     auth_bearer:
       enabled: true
-      # realm: gowok   # optional; omit for a bare Bearer challenge
+      exclude:
+        - /health
+    auth_basic:
+      enabled: false
       exclude:
         - /health
     rate_limit:
