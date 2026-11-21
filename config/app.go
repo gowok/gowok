@@ -21,10 +21,19 @@ type Web struct {
 	RateLimit  some.Some[WebRateLimit]  `json:"rate_limit"`
 	RequestID  some.Some[WebRequestID]  `json:"request_id"`
 	Timeout    some.Some[WebTimeout]    `json:"timeout"`
+	Compress   some.Some[WebCompress]   `json:"compress"`
 	AuthBearer some.Some[WebAuthBearer] `json:"auth_bearer"`
 	AuthBasic  some.Some[WebAuthBasic]  `json:"auth_basic"`
 	Views      WebViews                 `json:"views"`
 	Static     WebStatic                `json:"static"`
+}
+
+type WebCompress struct {
+	Enabled      bool     `json:"enabled,omitempty"`
+	Level        int      `json:"level,omitempty"`
+	BrotliLevel  int      `json:"brotli_level,omitempty"`
+	ZstdLevel    int      `json:"zstd_level,omitempty"`
+	ContentTypes []string `json:"content_types,omitempty"`
 }
 
 type WebAuthBasic struct {

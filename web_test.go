@@ -2,8 +2,10 @@ package gowok
 
 import (
 	"bytes"
+	"compress/gzip"
 	"context"
 	"errors"
+	"io"
 	"log/slog"
 	"net/http"
 	"net/http/httptest"
@@ -384,6 +386,84 @@ func TestWeb_Timeout(t *testing.T) {
 		Web.ServeHTTP(w, r)
 
 		must.False(t, hasDeadline)
+	})
+}
+
+func TestWeb_Compress(t *testing.T) {
+	oldMux := Web.HttpServeMux
+	oldConfig := Config
+	oldServer := Web.Server
+	defer func() {
+		Web.HttpServeMux = oldMux
+		Config = oldConfig
+		Web.Server = oldServer
+	}()
+
+	setup := func(enabled bool) {
+		Web.HttpServeMux = ngamux.NewHttpServeMux()
+		Config = &config.Config{Web: config.Web{
+			Host:     ":8080",
+			Compress: some.Of(config.WebCompress{Enabled: enabled}),
+		}}
+		Web.configure()
+
+		Web.Get("/json", func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Set("Content-Type", "application/json")
+			_, _ = w.Write([]byte(`{"ok":true}`))
+		})
+		Web.Get("/empty", func(w http.ResponseWriter, r *http.Request) {
+			w.WriteHeader(http.StatusNoContent)
+		})
+	}
+
+	do := func(path, acceptEncoding string) *httptest.ResponseRecorder {
+		w := httptest.NewRecorder()
+		r := httptest.NewRequest(http.MethodGet, path, nil)
+		if acceptEncoding != "" {
+			r.Header.Set("Accept-Encoding", acceptEncoding)
+		}
+		Web.ServeHTTP(w, r)
+		return w
+	}
+
+	t.Run("positive/gzip", func(t *testing.T) {
+		setup(true)
+		w := do("/json", "gzip")
+
+		must.Equal(t, "gzip", w.Header().Get("Content-Encoding"))
+		must.True(t, strings.Contains(w.Header().Get("Vary"), "Accept-Encoding"))
+
+		reader, err := gzip.NewReader(w.Body)
+		must.Nil(t, err)
+		defer func() { _ = reader.Close() }()
+
+		body, err := io.ReadAll(reader)
+		must.Nil(t, err)
+		must.Equal(t, `{"ok":true}`, string(body))
+	})
+
+	t.Run("positive/no accept encoding", func(t *testing.T) {
+		setup(true)
+		w := do("/json", "")
+
+		must.Equal(t, "", w.Header().Get("Content-Encoding"))
+		must.Equal(t, `{"ok":true}`, w.Body.String())
+	})
+
+	t.Run("negative/disabled", func(t *testing.T) {
+		setup(false)
+		w := do("/json", "gzip")
+
+		must.Equal(t, "", w.Header().Get("Content-Encoding"))
+		must.Equal(t, `{"ok":true}`, w.Body.String())
+	})
+
+	t.Run("negative/no content body", func(t *testing.T) {
+		setup(true)
+		w := do("/empty", "gzip")
+
+		must.Equal(t, http.StatusNoContent, w.Code)
+		must.Equal(t, "", w.Header().Get("Content-Encoding"))
 	})
 }
 

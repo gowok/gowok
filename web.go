@@ -15,6 +15,7 @@ import (
 	"github.com/gowok/gowok/web/request"
 	"github.com/gowok/gowok/web/response"
 	"github.com/ngamux/middleware/auth"
+	"github.com/ngamux/middleware/compress"
 	"github.com/ngamux/middleware/cors"
 	middlewareLog "github.com/ngamux/middleware/log"
 	"github.com/ngamux/middleware/pprof"
@@ -106,6 +107,16 @@ func (p *_web) configure() {
 		mux.Use(requestid.New(requestid.WithKeyHeader(func() string {
 			return header
 		})))
+	})
+	c.Compress.IfPresent(func(cc config.WebCompress) {
+		if cc.Enabled {
+			mux.Use(compress.New(compress.Config{
+				Level:        cc.Level,
+				BrotliLevel:  cc.BrotliLevel,
+				ZstdLevel:    cc.ZstdLevel,
+				ContentTypes: cc.ContentTypes,
+			}))
+		}
 	})
 	c.Timeout.IfPresent(func(t config.WebTimeout) {
 		if t.Enabled {

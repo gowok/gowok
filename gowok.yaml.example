@@ -11,6 +11,8 @@ app:
     request_id:
       enabled: true
       header: X-Request-ID
+    compress:
+      enabled: true
     timeout:
       enabled: true
       duration: 30s
