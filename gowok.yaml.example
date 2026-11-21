@@ -8,6 +8,9 @@ app:
       allow_origins: '*'
     pprof:
       enabled: true
+    request_id:
+      enabled: true
+      header: X-Request-ID
     rate_limit:
       enabled: true
       requests: 60

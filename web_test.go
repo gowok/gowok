@@ -236,3 +236,85 @@ func TestWeb_RateLimit(t *testing.T) {
 
 	must.Equal(t, 1, handled)
 }
+
+func TestWeb_RequestID(t *testing.T) {
+	oldMux := Web.HttpServeMux
+	oldConfig := Config
+	oldServer := Web.Server
+	defer func() {
+		Web.HttpServeMux = oldMux
+		Config = oldConfig
+		Web.Server = oldServer
+	}()
+
+	Web.HttpServeMux = ngamux.NewHttpServeMux()
+	Config = &config.Config{Web: config.Web{
+		Host:      ":8080",
+		RequestID: some.Of(config.WebRequestID{Enabled: true}),
+	}}
+
+	Web.configure()
+
+	seenID := ""
+	Web.Get("/request-id", func(w http.ResponseWriter, r *http.Request) {
+		seenID = r.Header.Get("X-Request-ID")
+		w.WriteHeader(http.StatusOK)
+	})
+
+	do := func(path string, header ...string) *httptest.ResponseRecorder {
+		w := httptest.NewRecorder()
+		r := httptest.NewRequest(http.MethodGet, path, nil)
+		if len(header) == 2 {
+			r.Header.Set(header[0], header[1])
+		}
+		Web.ServeHTTP(w, r)
+		return w
+	}
+
+	t.Run("positive/generates request id", func(t *testing.T) {
+		w := do("/request-id")
+
+		must.Equal(t, http.StatusOK, w.Code)
+		must.NotEqual(t, "", w.Header().Get("X-Request-ID"))
+		must.Equal(t, w.Header().Get("X-Request-ID"), seenID)
+	})
+
+	t.Run("positive/keeps incoming request id", func(t *testing.T) {
+		w := do("/request-id", "X-Request-ID", "request-123")
+
+		must.Equal(t, "request-123", w.Header().Get("X-Request-ID"))
+		must.Equal(t, "request-123", seenID)
+	})
+}
+
+func TestWeb_RequestIDCustomHeader(t *testing.T) {
+	oldMux := Web.HttpServeMux
+	oldConfig := Config
+	oldServer := Web.Server
+	defer func() {
+		Web.HttpServeMux = oldMux
+		Config = oldConfig
+		Web.Server = oldServer
+	}()
+
+	Web.HttpServeMux = ngamux.NewHttpServeMux()
+	Config = &config.Config{Web: config.Web{
+		Host:      ":8080",
+		RequestID: some.Of(config.WebRequestID{Enabled: true, Header: "X-Trace-ID"}),
+	}}
+
+	Web.configure()
+
+	seenID := ""
+	Web.Get("/test", func(w http.ResponseWriter, r *http.Request) {
+		seenID = r.Header.Get("X-Trace-ID")
+		w.WriteHeader(http.StatusOK)
+	})
+
+	w := httptest.NewRecorder()
+	r := httptest.NewRequest(http.MethodGet, "/test", nil)
+	Web.ServeHTTP(w, r)
+
+	must.NotEqual(t, "", w.Header().Get("X-Trace-ID"))
+	must.Equal(t, w.Header().Get("X-Trace-ID"), seenID)
+}

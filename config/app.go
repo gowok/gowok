@@ -18,8 +18,14 @@ type Web struct {
 	Cors      some.Some[WebCors]      `json:"cors"`
 	Pprof     some.Some[WebPprof]     `json:"pprof"`
 	RateLimit some.Some[WebRateLimit] `json:"rate_limit"`
+	RequestID some.Some[WebRequestID] `json:"request_id"`
 	Views     WebViews                `json:"views"`
 	Static    WebStatic               `json:"static"`
+}
+
+type WebRequestID struct {
+	Enabled bool   `json:"enabled,omitempty"`
+	Header  string `json:"header,omitempty"`
 }
 
 type WebRateLimit struct {

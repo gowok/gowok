@@ -15,6 +15,7 @@ import (
 	middlewareLog "github.com/ngamux/middleware/log"
 	"github.com/ngamux/middleware/pprof"
 	"github.com/ngamux/middleware/ratelimit"
+	"github.com/ngamux/middleware/requestid"
 	"github.com/ngamux/ngamux"
 )
 
@@ -86,6 +87,21 @@ func (p *_web) configure() {
 		})
 	}()
 
+	c.RequestID.IfPresent(func(rid config.WebRequestID) {
+		if !rid.Enabled {
+			return
+		}
+
+		if rid.Header == "" {
+			mux.Use(requestid.New())
+			return
+		}
+
+		header := rid.Header
+		mux.Use(requestid.New(requestid.WithKeyHeader(func() string {
+			return header
+		})))
+	})
 	c.Log.IfPresent(func(ll config.WebLog) {
 		if ll.Enabled {
 			mux.Use(middlewareLog.New())
