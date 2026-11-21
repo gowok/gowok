@@ -2,6 +2,7 @@ package gowok
 
 import (
 	"os"
+	"path/filepath"
 	"testing"
 	"time"
 
@@ -154,4 +155,72 @@ func TestNewConfigRaw(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestDiscoverConfig(t *testing.T) {
+	oldFiles := configFiles
+	defer func() { configFiles = oldFiles }()
+
+	write := func(t *testing.T, dir, name string) string {
+		t.Helper()
+		filePath := filepath.Join(dir, name)
+		must.Nil(t, os.MkdirAll(filepath.Dir(filePath), 0755))
+		must.Nil(t, os.WriteFile(filePath, []byte(""), 0644))
+		return filePath
+	}
+
+	t.Run("negative/no candidates", func(t *testing.T) {
+		ConfigFiles()
+		must.Equal(t, "", configFilesDiscover(t.TempDir()))
+	})
+
+	t.Run("negative/no matching candidate", func(t *testing.T) {
+		ConfigFiles("gowok.yaml")
+		must.Equal(t, "", configFilesDiscover(t.TempDir()))
+	})
+
+	t.Run("positive/custom candidate", func(t *testing.T) {
+		dir := t.TempDir()
+		expected := write(t, dir, "app.yaml")
+		ConfigFiles("app.yaml")
+
+		must.Equal(t, expected, configFilesDiscover(dir))
+	})
+
+	t.Run("positive/uses candidate order", func(t *testing.T) {
+		dir := t.TempDir()
+		expected := write(t, dir, "app.local.yaml")
+		write(t, dir, "app.yaml")
+		ConfigFiles("app.local.yaml", "app.yaml")
+
+		must.Equal(t, expected, configFilesDiscover(dir))
+	})
+
+	t.Run("positive/supports nested path", func(t *testing.T) {
+		dir := t.TempDir()
+		expected := write(t, dir, "config/app.yaml")
+		ConfigFiles("config/app.yaml")
+
+		must.Equal(t, expected, configFilesDiscover(dir))
+	})
+
+	t.Run("positive/supports absolute path", func(t *testing.T) {
+		dir := t.TempDir()
+		expected := write(t, dir, "app.yaml")
+		ConfigFiles(expected)
+
+		must.Equal(t, expected, configFilesDiscover(t.TempDir()))
+	})
+
+	t.Run("negative/ignores directories", func(t *testing.T) {
+		dir := t.TempDir()
+		must.Nil(t, os.Mkdir(filepath.Join(dir, "app.yaml"), 0755))
+		ConfigFiles("app.yaml")
+
+		must.Equal(t, "", configFilesDiscover(dir))
+	})
+}
+
+func TestRunningUnderTest(t *testing.T) {
+	must.True(t, runningUnderTest())
 }

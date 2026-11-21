@@ -45,8 +45,15 @@ func configure(configs ...any) *Project {
 	}
 
 	conf, confRaw := newConfigEmpty()
-	if Flags().Config != "" {
-		_conf, _confRaw, err := newConfig(Flags().Config, Flags().EnvFile)
+	configPath := Flags().Config
+	if configPath == "" && !runningUnderTest() {
+		configPath = configFilesDiscover(".")
+		if configPath != "" {
+			slog.Info("config: discovered", "file", configPath)
+		}
+	}
+	if configPath != "" {
+		_conf, _confRaw, err := newConfig(configPath, Flags().EnvFile)
 		if err != nil {
 			slog.Error("config: failed to load", "error", err)
 			return nil

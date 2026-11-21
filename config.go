@@ -5,6 +5,7 @@ import (
 	"io"
 	"os"
 	"path"
+	"path/filepath"
 	"strings"
 
 	"github.com/gowok/fp/maps"
@@ -14,6 +15,35 @@ import (
 	"github.com/pelletier/go-toml/v2"
 	"gopkg.in/yaml.v3"
 )
+
+var configFiles []string
+
+func ConfigFiles(files ...string) *Project {
+	configFiles = append([]string(nil), files...)
+	p := _project()
+	return *p
+}
+
+func configFilesDiscover(dir string) string {
+	for _, name := range configFiles {
+		filePath := name
+		if !filepath.IsAbs(filePath) {
+			filePath = filepath.Join(dir, filePath)
+		}
+
+		info, err := os.Stat(filePath)
+		if err != nil || info.IsDir() {
+			continue
+		}
+		return filePath
+	}
+
+	return ""
+}
+
+func runningUnderTest() bool {
+	return strings.Contains(filepath.Base(os.Args[0]), ".test")
+}
 
 var Config = &config.Config{}
 
