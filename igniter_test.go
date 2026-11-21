@@ -40,9 +40,11 @@ func TestIgniter_Configure(t *testing.T) {
 
 	t.Run("positive/from config struct", func(t *testing.T) {
 		resetIgniter()
-		c := config.Config{Key: "test-key"}
+		c := config.Config{
+			ENV: "prod",
+		}
 		p := configure(c)
-		must.Equal(t, "test-key", Config.Key)
+		must.Equal(t, "prod", Config.ENV)
 		must.NotNil(t, p)
 	})
 
@@ -154,8 +156,8 @@ func TestIgniter_RunPublic(t *testing.T) {
 		resetIgniter()
 
 		Config.Forever = false
-		Run(config.Config{Key: "test"})
-		must.Equal(t, "test", Config.Key)
+		Run(config.Config{ENV: "prod"})
+		must.Equal(t, "prod", Config.ENV)
 		time.Sleep(10 * time.Millisecond)
 	})
 }
