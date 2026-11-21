@@ -1,6 +1,7 @@
 package runtime
 
 import (
+	"context"
 	"os"
 	"os/signal"
 	"runtime"
@@ -18,14 +19,19 @@ type Runtime struct {
 	runFns           []func()
 	gracefulStop     chan os.Signal
 	gracefulStopFunc some.Some[func()]
+	ctx              context.Context
+	cancel           context.CancelFunc
 }
 
 func New(opts ...option) *Runtime {
+	ctx, cancel := context.WithCancel(context.Background())
 	runner := &Runtime{
 		numCPU:           runtime.NumCPU(),
 		runFns:           []func(){func() {}},
 		gracefulStop:     make(chan os.Signal, 1),
 		gracefulStopFunc: some.Empty[func()](),
+		ctx:              ctx,
+		cancel:           cancel,
 	}
 
 	for _, opt := range opts {
@@ -36,11 +42,27 @@ func New(opts ...option) *Runtime {
 	return runner
 }
 
+func (r Runtime) Context() context.Context {
+	if r.ctx == nil {
+		return context.Background()
+	}
+
+	return r.ctx
+}
+
+func (r *Runtime) Cancel() {
+	if r.cancel != nil {
+		r.cancel()
+	}
+}
+
 func (r *Runtime) AddRunFunc(runFunc func()) {
 	r.runFns = append(r.runFns, runFunc)
 }
 
 func (r Runtime) Run(forever ...bool) {
+	defer r.Cancel()
+
 	if r.runFns == nil {
 		return
 	}
@@ -67,6 +89,7 @@ func (r *Runtime) gracefulStopRun() {
 	func() {
 		<-r.gracefulStop
 
+		r.Cancel()
 		r.gracefulStopFunc.OrElse(func() {})()
 		exit(0)
 	}()

@@ -1,12 +1,61 @@
 package runtime
 
 import (
+	"context"
+	"errors"
 	"os"
 	"sync"
 	"testing"
 
 	"github.com/golang-must/must"
 )
+
+func TestRuntime_Context(t *testing.T) {
+	t.Run("positive/new runtime has a live context", func(t *testing.T) {
+		r := New()
+
+		ctx := r.Context()
+		must.NotNil(t, ctx)
+		must.True(t, ctx.Err() == nil)
+	})
+
+	t.Run("positive/zero value returns a usable context", func(t *testing.T) {
+		r := &Runtime{}
+
+		ctx := r.Context()
+		must.NotNil(t, ctx)
+		must.Nil(t, ctx.Err())
+	})
+}
+
+func TestRuntime_Cancel(t *testing.T) {
+	t.Run("positive/cancel closes context", func(t *testing.T) {
+		r := New()
+
+		r.Cancel()
+		must.True(t, errors.Is(r.Context().Err(), context.Canceled))
+	})
+
+	t.Run("positive/cancel is idempotent", func(t *testing.T) {
+		r := New()
+
+		r.Cancel()
+		r.Cancel()
+	})
+
+	t.Run("negative/zero value does not panic", func(t *testing.T) {
+		r := &Runtime{}
+		r.Cancel()
+	})
+
+	t.Run("positive/run cancels context after returning", func(t *testing.T) {
+		r := New()
+		r.runFns = []func(){}
+
+		r.Run(false)
+		must.True(t, errors.Is(r.Context().Err(), context.Canceled))
+	})
+}
 
 func TestRuntime(t *testing.T) {
 	testCases := []struct {

@@ -1,6 +1,7 @@
 package gowok
 
 import (
+	"context"
 	"errors"
 	"io"
 	"log/slog"
@@ -168,7 +169,7 @@ func TestIgniter_Configures(t *testing.T) {
 	t.Run("positive/configures", func(t *testing.T) {
 		resetIgniter()
 		called := false
-		p := Configures(func() {
+		p := Configures(func(context.Context) {
 			called = true
 		})
 		must.NotNil(t, p)
