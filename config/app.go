@@ -3,6 +3,7 @@ package config
 import (
 	"io"
 	"log/slog"
+	"net/http"
 	"os"
 	"time"
 
@@ -12,16 +13,27 @@ import (
 )
 
 type Web struct {
-	Enabled   bool                    `json:"enabled,omitempty"`
-	Host      string                  `json:"host,omitempty"`
-	Log       some.Some[WebLog]       `json:"log"`
-	Cors      some.Some[WebCors]      `json:"cors"`
-	Pprof     some.Some[WebPprof]     `json:"pprof"`
-	RateLimit some.Some[WebRateLimit] `json:"rate_limit"`
-	RequestID some.Some[WebRequestID] `json:"request_id"`
-	Timeout   some.Some[WebTimeout]   `json:"timeout"`
-	Views     WebViews                `json:"views"`
-	Static    WebStatic               `json:"static"`
+	Enabled    bool                     `json:"enabled,omitempty"`
+	Host       string                   `json:"host,omitempty"`
+	Log        some.Some[WebLog]        `json:"log"`
+	Cors       some.Some[WebCors]       `json:"cors"`
+	Pprof      some.Some[WebPprof]      `json:"pprof"`
+	RateLimit  some.Some[WebRateLimit]  `json:"rate_limit"`
+	RequestID  some.Some[WebRequestID]  `json:"request_id"`
+	Timeout    some.Some[WebTimeout]    `json:"timeout"`
+	AuthBearer some.Some[WebAuthBearer] `json:"auth_bearer"`
+	Views      WebViews                 `json:"views"`
+	Static     WebStatic                `json:"static"`
+}
+
+type WebAuthBearer struct {
+	Enabled      bool                                    `json:"enabled,omitempty"`
+	Header       string                                  `json:"header,omitempty"`
+	ContextKey   string                                  `json:"context_key,omitempty"`
+	Realm        string                                  `json:"realm,omitempty"`
+	Exclude      []string                                `json:"exclude,omitempty"`
+	Authorizer   func(token string) (any, error)         `json:"-"`
+	ErrorHandler func(rw http.ResponseWriter, err error) `json:"-"`
 }
 
 type WebRequestID struct {

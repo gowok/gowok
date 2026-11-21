@@ -386,3 +386,291 @@ func TestWeb_Timeout(t *testing.T) {
 		must.False(t, hasDeadline)
 	})
 }
+
+func TestWeb_AuthBearer(t *testing.T) {
+	oldMux := Web.HttpServeMux
+	oldConfig := Config
+	oldServer := Web.Server
+	defer func() {
+		Web.HttpServeMux = oldMux
+		Config = oldConfig
+		Web.Server = oldServer
+	}()
+
+	Web.HttpServeMux = ngamux.NewHttpServeMux()
+	Config = &config.Config{
+		Web: config.Web{
+			Host: ":8080",
+			AuthBearer: some.Of(config.WebAuthBearer{
+				Enabled: true,
+				Exclude: []string{"/health"},
+				Realm:   "gowok",
+				Authorizer: func(token string) (any, error) {
+					if token != "secret-token" {
+						return nil, errors.New("invalid token")
+					}
+					return token, nil
+				},
+			}),
+		},
+	}
+	Web.configure()
+
+	var gotToken any
+	Web.Get("/private", func(w http.ResponseWriter, r *http.Request) {
+		gotToken = r.Context().Value("token")
+		w.WriteHeader(http.StatusOK)
+	})
+	Web.Get("/health", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	})
+
+	do := func(path string, header ...string) *httptest.ResponseRecorder {
+		w := httptest.NewRecorder()
+		r := httptest.NewRequest(http.MethodGet, path, nil)
+		if len(header) == 2 {
+			r.Header.Set(header[0], header[1])
+		}
+		Web.ServeHTTP(w, r)
+		return w
+	}
+
+	testCases := []struct {
+		name      string
+		path      string
+		header    []string
+		wantCode  int
+		wantToken any
+	}{
+		{
+			name:      "positive/raw token",
+			path:      "/private",
+			header:    []string{"Authorization", "secret-token"},
+			wantCode:  http.StatusOK,
+			wantToken: "secret-token",
+		},
+		{
+			name:      "positive/bearer token",
+			path:      "/private",
+			header:    []string{"Authorization", "Bearer secret-token"},
+			wantCode:  http.StatusOK,
+			wantToken: "secret-token",
+		},
+		{
+			name:      "positive/bearer prefix is case insensitive",
+			path:      "/private",
+			header:    []string{"Authorization", "bEaReR secret-token"},
+			wantCode:  http.StatusOK,
+			wantToken: "secret-token",
+		},
+		{
+			name:     "negative/invalid token",
+			path:     "/private",
+			header:   []string{"Authorization", "wrong-token"},
+			wantCode: http.StatusUnauthorized,
+		},
+		{
+			name:     "negative/missing token",
+			path:     "/private",
+			wantCode: http.StatusUnauthorized,
+		},
+		{
+			name:     "positive/excluded path",
+			path:     "/health",
+			wantCode: http.StatusOK,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			gotToken = nil
+			w := do(tc.path, tc.header...)
+
+			must.Equal(t, tc.wantCode, w.Code)
+			if tc.wantToken != nil {
+				must.Equal(t, tc.wantToken, gotToken)
+			}
+			if tc.wantCode == http.StatusUnauthorized {
+				must.Equal(t, "Bearer realm=\"gowok\"", w.Header().Get("WWW-Authenticate"))
+			}
+		})
+	}
+}
+
+func TestWeb_AuthBearerWithoutAuthorizer(t *testing.T) {
+	oldMux := Web.HttpServeMux
+	oldConfig := Config
+	oldServer := Web.Server
+	defer func() {
+		Web.HttpServeMux = oldMux
+		Config = oldConfig
+		Web.Server = oldServer
+	}()
+
+	Web.HttpServeMux = ngamux.NewHttpServeMux()
+	Config = &config.Config{
+		Web: config.Web{
+			Host:       ":8080",
+			AuthBearer: some.Of(config.WebAuthBearer{Enabled: true}),
+		},
+	}
+	Web.configure()
+
+	Web.Get("/private", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	})
+
+	w := httptest.NewRecorder()
+	r := httptest.NewRequest(http.MethodGet, "/private", nil)
+	r.Header.Set("Authorization", "Bearer any-token")
+	Web.ServeHTTP(w, r)
+
+	must.Equal(t, http.StatusUnauthorized, w.Code)
+}
+
+func TestWeb_AuthBearerRealm(t *testing.T) {
+	oldMux := Web.HttpServeMux
+	oldConfig := Config
+	oldServer := Web.Server
+	defer func() {
+		Web.HttpServeMux = oldMux
+		Config = oldConfig
+		Web.Server = oldServer
+	}()
+
+	Web.HttpServeMux = ngamux.NewHttpServeMux()
+	Config = &config.Config{
+		Web: config.Web{
+			Host: ":8080",
+			AuthBearer: some.Of(config.WebAuthBearer{
+				Enabled: true,
+				Realm:   "gowok api",
+			}),
+		},
+	}
+	Web.configure()
+
+	Web.Get("/private", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	})
+
+	w := httptest.NewRecorder()
+	r := httptest.NewRequest(http.MethodGet, "/private", nil)
+	Web.ServeHTTP(w, r)
+
+	must.Equal(t, http.StatusUnauthorized, w.Code)
+	must.Equal(t, `Bearer realm="gowok api"`, w.Header().Get("WWW-Authenticate"))
+}
+
+func TestWeb_AuthBearerCustomHeader(t *testing.T) {
+	oldMux := Web.HttpServeMux
+	oldConfig := Config
+	oldServer := Web.Server
+	defer func() {
+		Web.HttpServeMux = oldMux
+		Config = oldConfig
+		Web.Server = oldServer
+	}()
+
+	Web.HttpServeMux = ngamux.NewHttpServeMux()
+	Config = &config.Config{
+		Web: config.Web{
+			Host: ":8080",
+			AuthBearer: some.Of(config.WebAuthBearer{
+				Enabled:    true,
+				Header:     "X-API-Token",
+				ContextKey: "api_token",
+				Authorizer: func(token string) (any, error) {
+					if token != "api-token" {
+						return nil, errors.New("invalid token")
+					}
+					return token, nil
+				},
+			}),
+		},
+	}
+	Web.configure()
+
+	var gotToken any
+	Web.Get("/private", func(w http.ResponseWriter, r *http.Request) {
+		gotToken = r.Context().Value("api_token")
+		w.WriteHeader(http.StatusOK)
+	})
+
+	w := httptest.NewRecorder()
+	r := httptest.NewRequest(http.MethodGet, "/private", nil)
+	r.Header.Set("X-API-Token", "api-token")
+	Web.ServeHTTP(w, r)
+
+	must.Equal(t, http.StatusOK, w.Code)
+	must.Equal(t, "api-token", gotToken)
+}
+
+func TestWeb_AuthBearerConfigures(t *testing.T) {
+	resetIgniter()
+	defer resetIgniter()
+
+	p := configure(config.Config{Web: config.Web{
+		Enabled:    true,
+		Host:       ":8080",
+		AuthBearer: some.Of(config.WebAuthBearer{Enabled: true}),
+	}})
+	must.NotNil(t, p)
+
+	Configures(WebConfigureAuthBearer(WebConfigureAuthBearerInput{
+		Authorizer: func(token string) (any, error) {
+			if token != "from-configures" {
+				return nil, errors.New("invalid token")
+			}
+			return token, nil
+		},
+		ErrorHandler: func(rw http.ResponseWriter, err error) {
+			rw.WriteHeader(http.StatusUnauthorized)
+		},
+	}))
+
+	Web.Get("/private", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	})
+
+	do := func(token string) *httptest.ResponseRecorder {
+		w := httptest.NewRecorder()
+		r := httptest.NewRequest(http.MethodGet, "/private", nil)
+		r.Header.Set("Authorization", "Bearer "+token)
+		Web.ServeHTTP(w, r)
+		return w
+	}
+
+	must.Equal(t, http.StatusOK, do("from-configures").Code)
+	must.Equal(t, http.StatusUnauthorized, do("wrong").Code)
+}
+
+func TestWebConfigureAuthBearer(t *testing.T) {
+	oldConfig := Config
+	defer func() { Config = oldConfig }()
+
+	Config = &config.Config{Web: config.Web{
+		AuthBearer: some.Of(config.WebAuthBearer{Enabled: true}),
+	}}
+
+	WebConfigureAuthBearer(WebConfigureAuthBearerInput{
+		Authorizer: func(token string) (any, error) {
+			return token, nil
+		},
+		ErrorHandler: func(rw http.ResponseWriter, err error) {
+			rw.WriteHeader(http.StatusUnauthorized)
+		},
+	})(context.Background())
+
+	ab, ok := Config.Web.AuthBearer.Get()
+	must.True(t, ok)
+	must.NotNil(t, ab.Authorizer)
+	must.NotNil(t, ab.ErrorHandler)
+
+	WebConfigureAuthBearer(WebConfigureAuthBearerInput{})(context.Background())
+
+	ab, ok = Config.Web.AuthBearer.Get()
+	must.True(t, ok)
+	must.Nil(t, ab.Authorizer)
+	must.Nil(t, ab.ErrorHandler)
+}

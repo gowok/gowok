@@ -14,6 +14,11 @@ app:
     timeout:
       enabled: true
       duration: 30s
+    auth_bearer:
+      enabled: true
+      # realm: gowok   # optional; omit for a bare Bearer challenge
+      exclude:
+        - /health
     rate_limit:
       enabled: true
       requests: 60
@@ -68,4 +73,3 @@ smtp:
     user: admin
     password: iqueo3u8ur83uqe89u3q89eu
     from: no-reply@gowok.com
-

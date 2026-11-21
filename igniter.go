@@ -93,13 +93,16 @@ func configure(configs ...any) *Project {
 	wg := sync.WaitGroup{}
 	if Config.Web.Enabled {
 		wg.Go(Web.configure)
-		Health.Configure()
 	}
 
 	if Config.Net.Enabled {
 		wg.Go(Net.configure)
 	}
 	wg.Wait()
+
+	if Config.Web.Enabled {
+		Health.Configure()
+	}
 
 	_project(project)
 	return project

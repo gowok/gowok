@@ -1,16 +1,20 @@
 package gowok
 
 import (
+	"context"
 	"errors"
 	"log/slog"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 
+	"github.com/gowok/fp/some"
 	"github.com/gowok/gowok/config"
 	"github.com/gowok/gowok/web"
 	"github.com/gowok/gowok/web/request"
 	"github.com/gowok/gowok/web/response"
+	"github.com/ngamux/middleware/auth"
 	"github.com/ngamux/middleware/cors"
 	middlewareLog "github.com/ngamux/middleware/log"
 	"github.com/ngamux/middleware/pprof"
@@ -131,6 +135,12 @@ func (p *_web) configure() {
 		}
 	})
 
+	c.AuthBearer.IfPresent(func(ab config.WebAuthBearer) {
+		if ab.Enabled {
+			mux.Use(authBearerMiddleware(ab))
+		}
+	})
+
 	Web.Server = server
 }
 
@@ -163,7 +173,63 @@ func rateLimitMiddleware(rl config.WebRateLimit) ngamux.MiddlewareFunc {
 	}
 }
 
+func authBearerMiddleware(c config.WebAuthBearer) ngamux.MiddlewareFunc {
+	bearer := auth.Bearer(auth.BearerConfig{
+		Header:     c.Header,
+		ContextKey: c.ContextKey,
+		Authorizer: func(token string) (any, error) {
+			ab, ok := Config.Web.AuthBearer.Get()
+			if !ok || ab.Authorizer == nil {
+				return nil, errors.New("auth bearer: authorizer is not configured")
+			}
+
+			return ab.Authorizer(token)
+		},
+		ErrorHandler: func(rw http.ResponseWriter, err error) {
+			ab, ok := Config.Web.AuthBearer.Get()
+			if ok && ab.ErrorHandler != nil {
+				ab.ErrorHandler(rw, err)
+				return
+			}
+
+			if c.Realm != "" {
+				challenge := "Bearer"
+				challenge += " realm=" + strconv.Quote(c.Realm)
+				rw.Header().Set("WWW-Authenticate", challenge)
+			}
+			ngamux.Res(rw).Status(http.StatusUnauthorized).JSON(ngamux.Map{
+				"error": "unauthorized",
+			})
+		},
+	})
+
+	if len(c.Exclude) == 0 {
+		return bearer
+	}
+
+	excluded := make(map[string]struct{}, len(c.Exclude))
+	for _, p := range c.Exclude {
+		excluded[p] = struct{}{}
+	}
+
+	return func(next http.HandlerFunc) http.HandlerFunc {
+		handler := bearer(next)
+		return func(rw http.ResponseWriter, r *http.Request) {
+			if _, ok := excluded[r.URL.Path]; ok {
+				next(rw, r)
+				return
+			}
+
+			handler(rw, r)
+		}
+	}
+}
+
 func (p *_web) run() {
+	if ab, ok := Config.Web.AuthBearer.Get(); ok && ab.Enabled && ab.Authorizer == nil {
+		slog.Warn("web: auth_bearer enabled without an Authorizer; all requests will be rejected")
+	}
+
 	slog.Info("starting web", "host", Config.Web.Host)
 	err := webListenAndServe(Web.Server)
 	if err != nil {
@@ -198,4 +264,23 @@ func (p *_webResponse) New(w http.ResponseWriter) *response.Response {
 
 func (p *_webRequest) New(r *http.Request) *request.Request {
 	return request.New(r)
+}
+
+type WebConfigureAuthBearerInput struct {
+	Authorizer   func(token string) (any, error)
+	ErrorHandler func(rw http.ResponseWriter, err error)
+}
+
+func WebConfigureAuthBearer(input WebConfigureAuthBearerInput) ConfigureFunc {
+	return func(context.Context) {
+		ab, ok := Config.Web.AuthBearer.Get()
+		if !ok {
+			slog.Warn("web: auth_bearer is not configured; authorizer not applied")
+			return
+		}
+
+		ab.Authorizer = input.Authorizer
+		ab.ErrorHandler = input.ErrorHandler
+		Config.Web.AuthBearer = some.Of(ab)
+	}
 }
