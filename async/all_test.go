@@ -1,7 +1,9 @@
 package async
 
 import (
+	"context"
 	"errors"
+	"sync"
 	"sync/atomic"
 	"testing"
 	"time"
@@ -477,4 +479,182 @@ func TestAllLimit_LimitOneRunsOneAtATime(t *testing.T) {
 		seen[result.(int)] = true
 	}
 	must.Equal(t, n, len(seen))
+}
+
+func TestAllContext(t *testing.T) {
+	t.Run("positive/all succeed and keep order", func(t *testing.T) {
+		tasks := []func(context.Context) (any, error){
+			func(context.Context) (any, error) { return "a", nil },
+			func(context.Context) (any, error) { return 2, nil },
+			func(context.Context) (any, error) { return true, nil },
+		}
+
+		results, err := AllContext(context.Background(), tasks...)
+		must.Nil(t, err)
+		must.Equal(t, 3, len(results))
+		must.Equal(t, "a", results[0])
+		must.Equal(t, 2, results[1])
+		must.Equal(t, true, results[2])
+	})
+
+	t.Run("negative/task error", func(t *testing.T) {
+		tasks := []func(context.Context) (any, error){
+			func(context.Context) (any, error) { return nil, errors.New("failed") },
+		}
+
+		results, err := AllContext(context.Background(), tasks...)
+		must.NotNil(t, err)
+		must.Nil(t, results)
+	})
+
+	t.Run("negative/cancelled before start skips tasks", func(t *testing.T) {
+		ctx, cancel := context.WithCancel(context.Background())
+		cancel()
+
+		var calls atomic.Int32
+		tasks := []func(context.Context) (any, error){
+			func(context.Context) (any, error) { calls.Add(1); return 1, nil },
+			func(context.Context) (any, error) { calls.Add(1); return 2, nil },
+		}
+
+		results, err := AllContext(ctx, tasks...)
+		must.True(t, errors.Is(err, context.Canceled))
+		must.Nil(t, results)
+		must.Equal(t, int32(0), calls.Load())
+	})
+
+	t.Run("positive/nil task keeps index alignment", func(t *testing.T) {
+		value := func(v any) func(context.Context) (any, error) {
+			return func(context.Context) (any, error) { return v, nil }
+		}
+
+		results, err := AllContext(context.Background(), value(1), nil, value(3))
+		must.Nil(t, err)
+		must.Equal(t, 3, len(results))
+		must.Equal(t, 1, results[0])
+		must.Nil(t, results[1])
+		must.Equal(t, 3, results[2])
+	})
+}
+
+func TestAllLimitContext(t *testing.T) {
+	t.Run("negative/cancelled while running skips queued tasks", func(t *testing.T) {
+		ctx, cancel := context.WithCancel(context.Background())
+
+		started := make(chan struct{})
+		var once sync.Once
+		var calls atomic.Int32
+
+		blocker := func(ctx context.Context) (any, error) {
+			calls.Add(1)
+			once.Do(func() { close(started) })
+			<-ctx.Done()
+			return nil, ctx.Err()
+		}
+		tasks := []func(context.Context) (any, error){blocker, blocker, blocker}
+
+		done := make(chan error, 1)
+		go func() {
+			_, err := AllLimitContext(ctx, 1, tasks...)
+			done <- err
+		}()
+
+		<-started
+		cancel()
+
+		err := <-done
+		must.True(t, errors.Is(err, context.Canceled))
+		must.Equal(t, int32(1), calls.Load())
+	})
+
+	t.Run("positive/bounded concurrency", func(t *testing.T) {
+		const (
+			limit = 3
+			n     = 12
+		)
+
+		var current, peak atomic.Int32
+		tasks := make([]func(context.Context) (any, error), 0, n)
+		for range n {
+			tasks = append(tasks, func(context.Context) (any, error) {
+				running := current.Add(1)
+				for {
+					seen := peak.Load()
+					if running <= seen || peak.CompareAndSwap(seen, running) {
+						break
+					}
+				}
+				time.Sleep(5 * time.Millisecond)
+				current.Add(-1)
+				return nil, nil
+			})
+		}
+
+		results, err := AllLimitContext(context.Background(), limit, tasks...)
+		must.Nil(t, err)
+		must.Equal(t, n, len(results))
+		must.True(t, peak.Load() <= limit)
+		must.True(t, peak.Load() > 1)
+	})
+
+	t.Run("positive/limit larger than tasks", func(t *testing.T) {
+		tasks := []func(context.Context) (any, error){
+			func(context.Context) (any, error) { return "a", nil },
+			func(context.Context) (any, error) { return "b", nil },
+		}
+
+		results, err := AllLimitContext(context.Background(), 100, tasks...)
+		must.Nil(t, err)
+		must.Equal(t, []any{"a", "b"}, results)
+	})
+}
+
+func TestAllResultsContext(t *testing.T) {
+	t.Run("negative/cancelled keeps partial results", func(t *testing.T) {
+		ctx, cancel := context.WithCancel(context.Background())
+		cancel()
+
+		var calls atomic.Int32
+		tasks := []func(context.Context) (any, error){
+			func(context.Context) (any, error) { calls.Add(1); return "a", nil },
+			func(context.Context) (any, error) { calls.Add(1); return "b", nil },
+		}
+
+		results, err := AllResultsContext(ctx, tasks...)
+		must.True(t, errors.Is(err, context.Canceled))
+		must.Equal(t, 2, len(results))
+		must.Nil(t, results[0])
+		must.Nil(t, results[1])
+		must.Equal(t, int32(0), calls.Load())
+	})
+
+	t.Run("negative/task error keeps successful results", func(t *testing.T) {
+		tasks := []func(context.Context) (any, error){
+			func(context.Context) (any, error) { return "a", nil },
+			func(context.Context) (any, error) { return nil, errors.New("failed") },
+			func(context.Context) (any, error) { return "c", nil },
+		}
+
+		results, err := AllResultsContext(context.Background(), tasks...)
+		must.NotNil(t, err)
+		must.Equal(t, 3, len(results))
+		must.Equal(t, "a", results[0])
+		must.Nil(t, results[1])
+		must.Equal(t, "c", results[2])
+	})
+}
+
+func TestAllLimitResultsContext(t *testing.T) {
+	tasks := []func(context.Context) (any, error){
+		func(context.Context) (any, error) { return 1, nil },
+		nil,
+		func(context.Context) (any, error) { return 3, nil },
+	}
+
+	results, err := AllLimitResultsContext(context.Background(), 2, tasks...)
+	must.Nil(t, err)
+	must.Equal(t, 3, len(results))
+	must.Equal(t, 1, results[0])
+	must.Nil(t, results[1])
+	must.Equal(t, 3, results[2])
 }
