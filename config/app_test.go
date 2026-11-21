@@ -2,6 +2,7 @@ package config
 
 import (
 	"testing"
+	"time"
 
 	"github.com/golang-must/must"
 	"github.com/gowok/fp/some"
@@ -163,6 +164,41 @@ func TestWeb_GetStatic(t *testing.T) {
 			res := tc.web.GetStatic()
 			must.Equal(t, tc.expectedDir, res.Dir)
 			must.Equal(t, tc.expectedPrefix, res.Prefix)
+		})
+	}
+}
+
+func TestWebRateLimit_GetWindow(t *testing.T) {
+	testCases := []struct {
+		name     string
+		cfg      WebRateLimit
+		expected time.Duration
+	}{
+		{
+			name:     "positive/custom window",
+			cfg:      WebRateLimit{Window: "30s"},
+			expected: 30 * time.Second,
+		},
+		{
+			name:     "positive/empty window uses default",
+			cfg:      WebRateLimit{},
+			expected: time.Minute,
+		},
+		{
+			name:     "negative/invalid window uses default",
+			cfg:      WebRateLimit{Window: "invalid"},
+			expected: time.Minute,
+		},
+		{
+			name:     "negative/non-positive window uses default",
+			cfg:      WebRateLimit{Window: "-1m"},
+			expected: time.Minute,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			must.Equal(t, tc.expected, tc.cfg.GetWindow())
 		})
 	}
 }

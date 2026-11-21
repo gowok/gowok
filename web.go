@@ -14,6 +14,7 @@ import (
 	"github.com/ngamux/middleware/cors"
 	middlewareLog "github.com/ngamux/middleware/log"
 	"github.com/ngamux/middleware/pprof"
+	"github.com/ngamux/middleware/ratelimit"
 	"github.com/ngamux/ngamux"
 )
 
@@ -100,8 +101,42 @@ func (p *_web) configure() {
 			mux.Use(pprof.New())
 		}
 	})
+	c.RateLimit.IfPresent(func(rl config.WebRateLimit) {
+		if rl.Enabled {
+			mux.Use(rateLimitMiddleware(rl))
+		}
+	})
 
 	Web.Server = server
+}
+
+func rateLimitMiddleware(rl config.WebRateLimit) ngamux.MiddlewareFunc {
+	limited := ratelimit.New(ratelimit.Config{
+		Requests: rl.Requests,
+		Window:   rl.GetWindow(),
+		Burst:    rl.Burst,
+	})
+
+	if len(rl.Exclude) == 0 {
+		return limited
+	}
+
+	excluded := make(map[string]struct{}, len(rl.Exclude))
+	for _, p := range rl.Exclude {
+		excluded[p] = struct{}{}
+	}
+
+	return func(next http.HandlerFunc) http.HandlerFunc {
+		handler := limited(next)
+		return func(rw http.ResponseWriter, r *http.Request) {
+			if _, ok := excluded[r.URL.Path]; ok {
+				next(rw, r)
+				return
+			}
+
+			handler(rw, r)
+		}
+	}
 }
 
 func (p *_web) run() {

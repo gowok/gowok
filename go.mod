@@ -1,6 +1,6 @@
 module github.com/gowok/gowok
 
-go 1.25
+go 1.26
 
 require (
 	github.com/DATA-DOG/go-sqlmock v1.5.2
@@ -8,8 +8,8 @@ require (
 	github.com/google/uuid v1.6.0
 	github.com/gowok/fp v0.3.3
 	github.com/joho/godotenv v1.5.1
-	github.com/ngamux/middleware v0.0.12
-	github.com/ngamux/ngamux v1.7.52
+	github.com/ngamux/middleware v0.1.2
+	github.com/ngamux/ngamux v1.7.53
 	github.com/pelletier/go-toml/v2 v2.2.4
 	github.com/spf13/cobra v1.10.2
 	golang.org/x/crypto v0.47.0

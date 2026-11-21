@@ -8,6 +8,13 @@ app:
       allow_origins: '*'
     pprof:
       enabled: true
+    rate_limit:
+      enabled: true
+      requests: 60
+      window: 1m
+      burst: 60
+      exclude:
+        - /health
     views:
       enabled: true
       layout: layout

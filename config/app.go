@@ -4,6 +4,7 @@ import (
 	"io"
 	"log/slog"
 	"os"
+	"time"
 
 	"github.com/gowok/fp/some"
 	"github.com/ngamux/middleware/cors"
@@ -11,13 +12,37 @@ import (
 )
 
 type Web struct {
-	Enabled bool                `json:"enabled,omitempty"`
-	Host    string              `json:"host,omitempty"`
-	Log     some.Some[WebLog]   `json:"log"`
-	Cors    some.Some[WebCors]  `json:"cors"`
-	Pprof   some.Some[WebPprof] `json:"pprof"`
-	Views   WebViews            `json:"views"`
-	Static  WebStatic           `json:"static"`
+	Enabled   bool                    `json:"enabled,omitempty"`
+	Host      string                  `json:"host,omitempty"`
+	Log       some.Some[WebLog]       `json:"log"`
+	Cors      some.Some[WebCors]      `json:"cors"`
+	Pprof     some.Some[WebPprof]     `json:"pprof"`
+	RateLimit some.Some[WebRateLimit] `json:"rate_limit"`
+	Views     WebViews                `json:"views"`
+	Static    WebStatic               `json:"static"`
+}
+
+type WebRateLimit struct {
+	Enabled  bool     `json:"enabled,omitempty"`
+	Requests int      `json:"requests,omitempty"`
+	Window   string   `json:"window,omitempty"`
+	Burst    int      `json:"burst,omitempty"`
+	Exclude  []string `json:"exclude,omitempty"`
+}
+
+const defaultRateLimitWindow = time.Minute
+
+func (r WebRateLimit) GetWindow() time.Duration {
+	if r.Window == "" {
+		return defaultRateLimitWindow
+	}
+
+	window, err := time.ParseDuration(r.Window)
+	if err != nil || window <= 0 {
+		return defaultRateLimitWindow
+	}
+
+	return window
 }
 
 type WebLog struct {

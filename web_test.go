@@ -13,6 +13,7 @@ import (
 	"github.com/gowok/fp/some"
 	"github.com/gowok/gowok/config"
 	"github.com/gowok/gowok/web"
+	"github.com/ngamux/middleware/ratelimit"
 	"github.com/ngamux/ngamux"
 )
 
@@ -178,4 +179,60 @@ func TestWeb_Configure(t *testing.T) {
 			must.Equal(t, tt.webConfig.Host, Web.Server.Addr)
 		})
 	}
+}
+
+func TestWeb_RateLimit(t *testing.T) {
+	oldMux := Web.HttpServeMux
+	oldConfig := Config
+	oldServer := Web.Server
+	defer func() {
+		Web.HttpServeMux = oldMux
+		Config = oldConfig
+		Web.Server = oldServer
+	}()
+
+	Web.HttpServeMux = ngamux.NewHttpServeMux()
+	Config = &config.Config{Web: config.Web{
+		Host: ":8080",
+		RateLimit: some.Of(config.WebRateLimit{
+			Enabled:  true,
+			Requests: 1,
+			Window:   "1m",
+			Burst:    1,
+			Exclude:  []string{"/health"},
+		}),
+	}}
+
+	Web.configure()
+
+	handled := 0
+	Web.Get("/test", func(w http.ResponseWriter, r *http.Request) {
+		handled++
+		w.WriteHeader(http.StatusOK)
+	})
+	Web.Get("/health", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	})
+
+	do := func(path string) *httptest.ResponseRecorder {
+		w := httptest.NewRecorder()
+		r := httptest.NewRequest(http.MethodGet, path, nil)
+		Web.ServeHTTP(w, r)
+		return w
+	}
+
+	first := do("/test")
+	must.Equal(t, http.StatusOK, first.Code)
+	must.Equal(t, "1", first.Header().Get(ratelimit.HeaderLimit))
+	must.Equal(t, "0", first.Header().Get(ratelimit.HeaderRemaining))
+
+	second := do("/test")
+	must.Equal(t, http.StatusTooManyRequests, second.Code)
+	must.NotEqual(t, "", second.Header().Get(ratelimit.HeaderRetryAfter))
+
+	health := do("/health")
+	must.Equal(t, http.StatusOK, health.Code)
+	must.Equal(t, "", health.Header().Get(ratelimit.HeaderLimit))
+
+	must.Equal(t, 1, handled)
 }
