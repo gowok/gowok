@@ -11,6 +11,9 @@ app:
     request_id:
       enabled: true
       header: X-Request-ID
+    timeout:
+      enabled: true
+      duration: 30s
     rate_limit:
       enabled: true
       requests: 60

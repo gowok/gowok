@@ -202,3 +202,38 @@ func TestWebRateLimit_GetWindow(t *testing.T) {
 		})
 	}
 }
+
+func TestWebTimeout_GetDuration(t *testing.T) {
+	testCases := []struct {
+		name     string
+		cfg      WebTimeout
+		expected time.Duration
+	}{
+		{
+			name:     "positive/custom duration",
+			cfg:      WebTimeout{Duration: "5s"},
+			expected: 5 * time.Second,
+		},
+		{
+			name:     "positive/empty duration uses middleware default",
+			cfg:      WebTimeout{},
+			expected: 0,
+		},
+		{
+			name:     "negative/invalid duration uses middleware default",
+			cfg:      WebTimeout{Duration: "invalid"},
+			expected: 0,
+		},
+		{
+			name:     "negative/non-positive duration uses middleware default",
+			cfg:      WebTimeout{Duration: "-5s"},
+			expected: 0,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			must.Equal(t, tc.expected, tc.cfg.GetDuration())
+		})
+	}
+}

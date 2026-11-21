@@ -19,6 +19,7 @@ type Web struct {
 	Pprof     some.Some[WebPprof]     `json:"pprof"`
 	RateLimit some.Some[WebRateLimit] `json:"rate_limit"`
 	RequestID some.Some[WebRequestID] `json:"request_id"`
+	Timeout   some.Some[WebTimeout]   `json:"timeout"`
 	Views     WebViews                `json:"views"`
 	Static    WebStatic               `json:"static"`
 }
@@ -26,6 +27,24 @@ type Web struct {
 type WebRequestID struct {
 	Enabled bool   `json:"enabled,omitempty"`
 	Header  string `json:"header,omitempty"`
+}
+
+type WebTimeout struct {
+	Enabled  bool   `json:"enabled,omitempty"`
+	Duration string `json:"duration,omitempty"`
+}
+
+func (r WebTimeout) GetDuration() time.Duration {
+	if r.Duration == "" {
+		return 0
+	}
+
+	duration, err := time.ParseDuration(r.Duration)
+	if err != nil || duration <= 0 {
+		return 0
+	}
+
+	return duration
 }
 
 type WebRateLimit struct {

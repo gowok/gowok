@@ -2,12 +2,14 @@ package gowok
 
 import (
 	"bytes"
+	"context"
 	"errors"
 	"log/slog"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/golang-must/must"
 	"github.com/gowok/fp/some"
@@ -317,4 +319,70 @@ func TestWeb_RequestIDCustomHeader(t *testing.T) {
 
 	must.NotEqual(t, "", w.Header().Get("X-Trace-ID"))
 	must.Equal(t, w.Header().Get("X-Trace-ID"), seenID)
+}
+
+func TestWeb_Timeout(t *testing.T) {
+	oldMux := Web.HttpServeMux
+	oldConfig := Config
+	oldServer := Web.Server
+	defer func() {
+		Web.HttpServeMux = oldMux
+		Config = oldConfig
+		Web.Server = oldServer
+	}()
+
+	t.Run("positive/request gets deadline", func(t *testing.T) {
+		Web.HttpServeMux = ngamux.NewHttpServeMux()
+		Config = &config.Config{Web: config.Web{
+			Host:    ":8080",
+			Timeout: some.Of(config.WebTimeout{Enabled: true, Duration: "20ms"}),
+		}}
+		Web.configure()
+
+		var deadline time.Duration
+		var ctxErr error
+		handlerDone := make(chan struct{})
+		Web.Get("/test", func(w http.ResponseWriter, r *http.Request) {
+			defer close(handlerDone)
+
+			d, ok := r.Context().Deadline()
+			must.True(t, ok)
+			deadline = time.Until(d)
+
+			<-r.Context().Done()
+			ctxErr = r.Context().Err()
+			w.WriteHeader(http.StatusOK)
+		})
+
+		w := httptest.NewRecorder()
+		r := httptest.NewRequest(http.MethodGet, "/test", nil)
+		Web.ServeHTTP(w, r)
+		<-handlerDone
+
+		must.True(t, deadline <= 20*time.Millisecond)
+		must.True(t, errors.Is(ctxErr, context.DeadlineExceeded))
+		must.Equal(t, http.StatusServiceUnavailable, w.Code)
+		must.True(t, strings.Contains(w.Body.String(), "request timeout"))
+	})
+
+	t.Run("negative/disabled", func(t *testing.T) {
+		Web.HttpServeMux = ngamux.NewHttpServeMux()
+		Config = &config.Config{Web: config.Web{
+			Host:    ":8080",
+			Timeout: some.Of(config.WebTimeout{Enabled: false, Duration: "20ms"}),
+		}}
+		Web.configure()
+
+		var hasDeadline bool
+		Web.Get("/test", func(w http.ResponseWriter, r *http.Request) {
+			_, hasDeadline = r.Context().Deadline()
+			w.WriteHeader(http.StatusOK)
+		})
+
+		w := httptest.NewRecorder()
+		r := httptest.NewRequest(http.MethodGet, "/test", nil)
+		Web.ServeHTTP(w, r)
+
+		must.False(t, hasDeadline)
+	})
 }

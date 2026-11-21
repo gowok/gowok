@@ -16,6 +16,7 @@ import (
 	"github.com/ngamux/middleware/pprof"
 	"github.com/ngamux/middleware/ratelimit"
 	"github.com/ngamux/middleware/requestid"
+	"github.com/ngamux/middleware/timeout"
 	"github.com/ngamux/ngamux"
 )
 
@@ -101,6 +102,13 @@ func (p *_web) configure() {
 		mux.Use(requestid.New(requestid.WithKeyHeader(func() string {
 			return header
 		})))
+	})
+	c.Timeout.IfPresent(func(t config.WebTimeout) {
+		if t.Enabled {
+			mux.Use(timeout.New(timeout.Config{
+				Timeout: t.GetDuration(),
+			}))
+		}
 	})
 	c.Log.IfPresent(func(ll config.WebLog) {
 		if ll.Enabled {
