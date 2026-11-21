@@ -192,3 +192,39 @@ func TestSQL_configure(t *testing.T) {
 		must.Nil(t, mock.ExpectationsWereMet())
 	})
 }
+
+func TestSQL_configurePool(t *testing.T) {
+	oldSqlOpen := sqlOpen
+	defer func() { sqlOpen = oldSqlOpen }()
+
+	db, mock, err := sqlmock.New(sqlmock.MonitorPingsOption(true))
+	must.Nil(t, err)
+	defer func() { _ = db.Close() }()
+	mock.ExpectPing()
+
+	sqlOpen = func(driver, dsn string) (*sql.DB, error) {
+		return db, nil
+	}
+
+	p := &_sql{
+		sqls:    &sync.Map{},
+		drivers: map[string][]string{"test": {"test-driver"}},
+		plugin:  "sql",
+	}
+	p.configure(map[string]config.SQL{
+		"default": {
+			Enabled:         true,
+			Driver:          "test",
+			DSN:             "test-dsn",
+			MaxOpenConns:    7,
+			MaxIdleConns:    3,
+			ConnMaxLifetime: "5m",
+			ConnMaxIdleTime: "1m",
+		},
+	})
+
+	conn := p.ConnNoDefault("default")
+	must.True(t, conn.IsPresent())
+	must.Equal(t, 7, conn.OrElse(nil).Stats().MaxOpenConnections)
+	must.Nil(t, mock.ExpectationsWereMet())
+}

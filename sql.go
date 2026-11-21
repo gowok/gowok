@@ -63,6 +63,8 @@ func (p *_sql) configure(config map[string]config.SQL) {
 					return nil, nil
 				}
 
+				applySQLPool(ddb, dbC)
+
 				p.sqls.Store(name, ddb)
 
 				healthName := "sql"
@@ -86,6 +88,21 @@ func (p *_sql) configure(config map[string]config.SQL) {
 	if err != nil {
 		slog.Warn("failed to connect", "plugin", p.plugin, "error", err)
 		return
+	}
+}
+
+func applySQLPool(db *sql.DB, c config.SQL) {
+	if c.MaxOpenConns > 0 {
+		db.SetMaxOpenConns(c.MaxOpenConns)
+	}
+	if c.MaxIdleConns > 0 {
+		db.SetMaxIdleConns(c.MaxIdleConns)
+	}
+	if d := c.GetConnMaxLifetime(); d > 0 {
+		db.SetConnMaxLifetime(d)
+	}
+	if d := c.GetConnMaxIdleTime(); d > 0 {
+		db.SetConnMaxIdleTime(d)
 	}
 }
 
