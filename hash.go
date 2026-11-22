@@ -3,6 +3,7 @@ package gowok
 import (
 	"crypto/rand"
 	"crypto/sha512"
+	"crypto/subtle"
 	"encoding/base64"
 
 	"golang.org/x/crypto/pbkdf2"
@@ -44,19 +45,13 @@ func (p *_hash) Password(raw string, salt ...string) Password {
 	}
 }
 
-func equal(cipherText, newCipherText string) bool {
-	x, _ := base64.StdEncoding.DecodeString(cipherText)
-	diff := uint64(len(x)) ^ uint64(len(newCipherText))
-
-	for i := 0; i < len(x) && i < len(newCipherText); i++ {
-		diff |= uint64(x[i]) ^ uint64(newCipherText[i])
+func (p *_hash) PasswordVerify(raw, hashed, salt string) bool {
+	stored, err := base64.StdEncoding.DecodeString(hashed)
+	if err != nil {
+		return false
 	}
 
-	return diff == 0
-}
-
-func (p *_hash) PasswordVerify(raw, hashed, salt string) bool {
 	dk := pbkdf2.Key([]byte(raw), []byte(salt), iter, keyLen, sha512.New)
 
-	return equal(hashed, string(dk))
+	return subtle.ConstantTimeCompare(stored, dk) == 1
 }
