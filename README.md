@@ -8,6 +8,7 @@ It has some utilities like:
 * project bootstrapper,
 * HTTP response builder,
 * nil safety,
+* retry with backoff,
 * password hash, and so on.
 
 # Getting Started
