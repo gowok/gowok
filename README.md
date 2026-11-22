@@ -9,6 +9,7 @@ It has some utilities like:
 * HTTP response builder,
 * nil safety,
 * retry with backoff,
+* testing helpers,
 * password hash, and so on.
 
 # Getting Started
