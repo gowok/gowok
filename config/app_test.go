@@ -237,3 +237,23 @@ func TestWebTimeout_GetDuration(t *testing.T) {
 		})
 	}
 }
+
+func TestWebIdempotency_GetTTL(t *testing.T) {
+	testCases := []struct {
+		name     string
+		value    string
+		expected time.Duration
+	}{
+		{name: "positive/empty", value: "", expected: 0},
+		{name: "positive/seconds", value: "30s", expected: 30 * time.Second},
+		{name: "positive/hours", value: "2h", expected: 2 * time.Hour},
+		{name: "negative/invalid", value: "soon", expected: 0},
+		{name: "negative/zero", value: "0s", expected: 0},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			must.Equal(t, tc.expected, WebIdempotency{TTL: tc.value}.GetTTL())
+		})
+	}
+}

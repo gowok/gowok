@@ -9,23 +9,52 @@ import (
 
 	"github.com/gowok/fp/some"
 	"github.com/ngamux/middleware/cors"
+	"github.com/ngamux/middleware/idempotency"
 	"github.com/ngamux/middleware/log"
 )
 
 type Web struct {
-	Enabled    bool                     `json:"enabled,omitempty"`
-	Host       string                   `json:"host,omitempty"`
-	Log        some.Some[WebLog]        `json:"log"`
-	Cors       some.Some[WebCors]       `json:"cors"`
-	Pprof      some.Some[WebPprof]      `json:"pprof"`
-	RateLimit  some.Some[WebRateLimit]  `json:"rate_limit"`
-	RequestID  some.Some[WebRequestID]  `json:"request_id"`
-	Timeout    some.Some[WebTimeout]    `json:"timeout"`
-	Compress   some.Some[WebCompress]   `json:"compress"`
-	AuthBearer some.Some[WebAuthBearer] `json:"auth_bearer"`
-	AuthBasic  some.Some[WebAuthBasic]  `json:"auth_basic"`
-	Views      WebViews                 `json:"views"`
-	Static     WebStatic                `json:"static"`
+	Enabled     bool                      `json:"enabled,omitempty"`
+	Host        string                    `json:"host,omitempty"`
+	Log         some.Some[WebLog]         `json:"log"`
+	Cors        some.Some[WebCors]        `json:"cors"`
+	Pprof       some.Some[WebPprof]       `json:"pprof"`
+	RateLimit   some.Some[WebRateLimit]   `json:"rate_limit"`
+	RequestID   some.Some[WebRequestID]   `json:"request_id"`
+	Timeout     some.Some[WebTimeout]     `json:"timeout"`
+	Compress    some.Some[WebCompress]    `json:"compress"`
+	AuthBearer  some.Some[WebAuthBearer]  `json:"auth_bearer"`
+	AuthBasic   some.Some[WebAuthBasic]   `json:"auth_basic"`
+	BodyLimit   some.Some[WebBodyLimit]   `json:"body_limit"`
+	RealIP      some.Some[WebRealIP]      `json:"real_ip"`
+	Idempotency some.Some[WebIdempotency] `json:"idempotency"`
+	Views       WebViews                  `json:"views"`
+	Static      WebStatic                 `json:"static"`
+}
+
+type WebBodyLimit struct {
+	Enabled      bool                                                     `json:"enabled,omitempty"`
+	Limit        int64                                                    `json:"limit,omitempty"`
+	ErrorHandler func(rw http.ResponseWriter, r *http.Request, err error) `json:"-"`
+}
+
+type WebRealIP struct {
+	Enabled        bool     `json:"enabled,omitempty"`
+	TrustedProxies []string `json:"trusted_proxies,omitempty"`
+}
+
+type WebIdempotency struct {
+	Enabled      bool                                                     `json:"enabled,omitempty"`
+	Header       string                                                   `json:"header,omitempty"`
+	TTL          string                                                   `json:"ttl,omitempty"`
+	Methods      []string                                                 `json:"methods,omitempty"`
+	Required     bool                                                     `json:"required,omitempty"`
+	Store        idempotency.Store                                        `json:"-"`
+	ErrorHandler func(rw http.ResponseWriter, r *http.Request, err error) `json:"-"`
+}
+
+func (r WebIdempotency) GetTTL() time.Duration {
+	return parseDuration(r.TTL)
 }
 
 type WebCompress struct {
@@ -50,6 +79,8 @@ type WebAuthBearer struct {
 	ContextKey   string                                  `json:"context_key,omitempty"`
 	Realm        string                                  `json:"realm,omitempty"`
 	Exclude      []string                                `json:"exclude,omitempty"`
+	Tokens       []string                                `json:"tokens,omitempty"`
+	JWTSecret    string                                  `json:"jwt_secret,omitempty"`
 	Authorizer   func(token string) (any, error)         `json:"-"`
 	ErrorHandler func(rw http.ResponseWriter, err error) `json:"-"`
 }
@@ -78,11 +109,13 @@ func (r WebTimeout) GetDuration() time.Duration {
 }
 
 type WebRateLimit struct {
-	Enabled  bool     `json:"enabled,omitempty"`
-	Requests int      `json:"requests,omitempty"`
-	Window   string   `json:"window,omitempty"`
-	Burst    int      `json:"burst,omitempty"`
-	Exclude  []string `json:"exclude,omitempty"`
+	Enabled        bool     `json:"enabled,omitempty"`
+	Requests       int      `json:"requests,omitempty"`
+	Window         string   `json:"window,omitempty"`
+	Burst          int      `json:"burst,omitempty"`
+	Exclude        []string `json:"exclude,omitempty"`
+	Key            string   `json:"key,omitempty"`
+	TrustedProxies []string `json:"trusted_proxies,omitempty"`
 }
 
 const defaultRateLimitWindow = time.Minute
