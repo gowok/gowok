@@ -45,9 +45,9 @@ func TestWebHandler_SSE(t *testing.T) {
 }
 
 func TestWebResource_New(t *testing.T) {
-	oldMux := Web.HttpServeMux
-	defer func() { Web.HttpServeMux = oldMux }()
-	Web.HttpServeMux = ngamux.NewHttpServeMux()
+	oldMux := Web.Ngamux
+	defer func() { Web.Ngamux = oldMux }()
+	Web.Ngamux = ngamux.New()
 
 	res := &mockResource{called: make(map[string]bool)}
 	Web.Resource.New("/test", res)
@@ -86,7 +86,7 @@ func TestWebResource_WithMiddleware(t *testing.T) {
 	opt := Web.Resource.WithMiddleware(middleware)
 	must.NotNil(t, opt)
 
-	mux := ngamux.NewHttpServeMux()
+	mux := ngamux.New()
 	opt(mux)
 
 	mux.Get("/test", func(w http.ResponseWriter, r *http.Request) {})
@@ -109,12 +109,12 @@ func TestWebRequest_New(t *testing.T) {
 }
 
 func TestWeb_Configure(t *testing.T) {
-	oldMux := Web.HttpServeMux
+	oldMux := Web.Ngamux
 	oldConfig := Config
 	oldLogger := slog.Default()
 	oldListenAndServe := webListenAndServe
 	defer func() {
-		Web.HttpServeMux = oldMux
+		Web.Ngamux = oldMux
 		Config = oldConfig
 		slog.SetDefault(oldLogger)
 		webListenAndServe = oldListenAndServe
@@ -167,7 +167,7 @@ func TestWeb_Configure(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			Web.HttpServeMux = ngamux.NewHttpServeMux()
+			Web.Ngamux = ngamux.New()
 			Config = &config.Config{Web: tt.webConfig}
 
 			var logBuf bytes.Buffer
@@ -186,16 +186,16 @@ func TestWeb_Configure(t *testing.T) {
 }
 
 func TestWeb_RateLimit(t *testing.T) {
-	oldMux := Web.HttpServeMux
+	oldMux := Web.Ngamux
 	oldConfig := Config
 	oldServer := Web.Server
 	defer func() {
-		Web.HttpServeMux = oldMux
+		Web.Ngamux = oldMux
 		Config = oldConfig
 		Web.Server = oldServer
 	}()
 
-	Web.HttpServeMux = ngamux.NewHttpServeMux()
+	Web.Ngamux = ngamux.New()
 	Config = &config.Config{Web: config.Web{
 		Host: ":8080",
 		RateLimit: some.Of(config.WebRateLimit{
@@ -242,16 +242,16 @@ func TestWeb_RateLimit(t *testing.T) {
 }
 
 func TestWeb_RequestID(t *testing.T) {
-	oldMux := Web.HttpServeMux
+	oldMux := Web.Ngamux
 	oldConfig := Config
 	oldServer := Web.Server
 	defer func() {
-		Web.HttpServeMux = oldMux
+		Web.Ngamux = oldMux
 		Config = oldConfig
 		Web.Server = oldServer
 	}()
 
-	Web.HttpServeMux = ngamux.NewHttpServeMux()
+	Web.Ngamux = ngamux.New()
 	Config = &config.Config{Web: config.Web{
 		Host:      ":8080",
 		RequestID: some.Of(config.WebRequestID{Enabled: true}),
@@ -292,16 +292,16 @@ func TestWeb_RequestID(t *testing.T) {
 }
 
 func TestWeb_RequestIDCustomHeader(t *testing.T) {
-	oldMux := Web.HttpServeMux
+	oldMux := Web.Ngamux
 	oldConfig := Config
 	oldServer := Web.Server
 	defer func() {
-		Web.HttpServeMux = oldMux
+		Web.Ngamux = oldMux
 		Config = oldConfig
 		Web.Server = oldServer
 	}()
 
-	Web.HttpServeMux = ngamux.NewHttpServeMux()
+	Web.Ngamux = ngamux.New()
 	Config = &config.Config{Web: config.Web{
 		Host:      ":8080",
 		RequestID: some.Of(config.WebRequestID{Enabled: true, Header: "X-Trace-ID"}),
@@ -324,17 +324,17 @@ func TestWeb_RequestIDCustomHeader(t *testing.T) {
 }
 
 func TestWeb_Timeout(t *testing.T) {
-	oldMux := Web.HttpServeMux
+	oldMux := Web.Ngamux
 	oldConfig := Config
 	oldServer := Web.Server
 	defer func() {
-		Web.HttpServeMux = oldMux
+		Web.Ngamux = oldMux
 		Config = oldConfig
 		Web.Server = oldServer
 	}()
 
 	t.Run("positive/request gets deadline", func(t *testing.T) {
-		Web.HttpServeMux = ngamux.NewHttpServeMux()
+		Web.Ngamux = ngamux.New()
 		Config = &config.Config{Web: config.Web{
 			Host:    ":8080",
 			Timeout: some.Of(config.WebTimeout{Enabled: true, Duration: "20ms"}),
@@ -368,7 +368,7 @@ func TestWeb_Timeout(t *testing.T) {
 	})
 
 	t.Run("negative/disabled", func(t *testing.T) {
-		Web.HttpServeMux = ngamux.NewHttpServeMux()
+		Web.Ngamux = ngamux.New()
 		Config = &config.Config{Web: config.Web{
 			Host:    ":8080",
 			Timeout: some.Of(config.WebTimeout{Enabled: false, Duration: "20ms"}),
@@ -390,17 +390,17 @@ func TestWeb_Timeout(t *testing.T) {
 }
 
 func TestWeb_Compress(t *testing.T) {
-	oldMux := Web.HttpServeMux
+	oldMux := Web.Ngamux
 	oldConfig := Config
 	oldServer := Web.Server
 	defer func() {
-		Web.HttpServeMux = oldMux
+		Web.Ngamux = oldMux
 		Config = oldConfig
 		Web.Server = oldServer
 	}()
 
 	setup := func(enabled bool) {
-		Web.HttpServeMux = ngamux.NewHttpServeMux()
+		Web.Ngamux = ngamux.New()
 		Config = &config.Config{Web: config.Web{
 			Host:     ":8080",
 			Compress: some.Of(config.WebCompress{Enabled: enabled}),
@@ -468,16 +468,16 @@ func TestWeb_Compress(t *testing.T) {
 }
 
 func TestWeb_AuthBearer(t *testing.T) {
-	oldMux := Web.HttpServeMux
+	oldMux := Web.Ngamux
 	oldConfig := Config
 	oldServer := Web.Server
 	defer func() {
-		Web.HttpServeMux = oldMux
+		Web.Ngamux = oldMux
 		Config = oldConfig
 		Web.Server = oldServer
 	}()
 
-	Web.HttpServeMux = ngamux.NewHttpServeMux()
+	Web.Ngamux = ngamux.New()
 	Config = &config.Config{
 		Web: config.Web{
 			Host: ":8080",
@@ -578,16 +578,16 @@ func TestWeb_AuthBearer(t *testing.T) {
 }
 
 func TestWeb_AuthBearerWithoutAuthorizer(t *testing.T) {
-	oldMux := Web.HttpServeMux
+	oldMux := Web.Ngamux
 	oldConfig := Config
 	oldServer := Web.Server
 	defer func() {
-		Web.HttpServeMux = oldMux
+		Web.Ngamux = oldMux
 		Config = oldConfig
 		Web.Server = oldServer
 	}()
 
-	Web.HttpServeMux = ngamux.NewHttpServeMux()
+	Web.Ngamux = ngamux.New()
 	Config = &config.Config{
 		Web: config.Web{
 			Host:       ":8080",
@@ -609,16 +609,16 @@ func TestWeb_AuthBearerWithoutAuthorizer(t *testing.T) {
 }
 
 func TestWeb_AuthBearerRealm(t *testing.T) {
-	oldMux := Web.HttpServeMux
+	oldMux := Web.Ngamux
 	oldConfig := Config
 	oldServer := Web.Server
 	defer func() {
-		Web.HttpServeMux = oldMux
+		Web.Ngamux = oldMux
 		Config = oldConfig
 		Web.Server = oldServer
 	}()
 
-	Web.HttpServeMux = ngamux.NewHttpServeMux()
+	Web.Ngamux = ngamux.New()
 	Config = &config.Config{
 		Web: config.Web{
 			Host: ":8080",
@@ -643,16 +643,16 @@ func TestWeb_AuthBearerRealm(t *testing.T) {
 }
 
 func TestWeb_AuthBearerCustomHeader(t *testing.T) {
-	oldMux := Web.HttpServeMux
+	oldMux := Web.Ngamux
 	oldConfig := Config
 	oldServer := Web.Server
 	defer func() {
-		Web.HttpServeMux = oldMux
+		Web.Ngamux = oldMux
 		Config = oldConfig
 		Web.Server = oldServer
 	}()
 
-	Web.HttpServeMux = ngamux.NewHttpServeMux()
+	Web.Ngamux = ngamux.New()
 	Config = &config.Config{
 		Web: config.Web{
 			Host: ":8080",
@@ -726,16 +726,16 @@ func TestWeb_AuthBearerConfigures(t *testing.T) {
 }
 
 func TestWeb_AuthBasic(t *testing.T) {
-	oldMux := Web.HttpServeMux
+	oldMux := Web.Ngamux
 	oldConfig := Config
 	oldServer := Web.Server
 	defer func() {
-		Web.HttpServeMux = oldMux
+		Web.Ngamux = oldMux
 		Config = oldConfig
 		Web.Server = oldServer
 	}()
 
-	Web.HttpServeMux = ngamux.NewHttpServeMux()
+	Web.Ngamux = ngamux.New()
 	Config = &config.Config{
 		Web: config.Web{
 			Host: ":8080",
@@ -806,16 +806,16 @@ func TestWeb_AuthBasic(t *testing.T) {
 }
 
 func TestWeb_AuthBasicWithoutAuthorizer(t *testing.T) {
-	oldMux := Web.HttpServeMux
+	oldMux := Web.Ngamux
 	oldConfig := Config
 	oldServer := Web.Server
 	defer func() {
-		Web.HttpServeMux = oldMux
+		Web.Ngamux = oldMux
 		Config = oldConfig
 		Web.Server = oldServer
 	}()
 
-	Web.HttpServeMux = ngamux.NewHttpServeMux()
+	Web.Ngamux = ngamux.New()
 	Config = &config.Config{
 		Web: config.Web{
 			Host:      ":8080",
@@ -837,16 +837,16 @@ func TestWeb_AuthBasicWithoutAuthorizer(t *testing.T) {
 }
 
 func TestWeb_AuthBasicRealm(t *testing.T) {
-	oldMux := Web.HttpServeMux
+	oldMux := Web.Ngamux
 	oldConfig := Config
 	oldServer := Web.Server
 	defer func() {
-		Web.HttpServeMux = oldMux
+		Web.Ngamux = oldMux
 		Config = oldConfig
 		Web.Server = oldServer
 	}()
 
-	Web.HttpServeMux = ngamux.NewHttpServeMux()
+	Web.Ngamux = ngamux.New()
 	Config = &config.Config{
 		Web: config.Web{
 			Host: ":8080",

@@ -36,7 +36,7 @@ var (
 )
 
 type _web struct {
-	*ngamux.HttpServeMux
+	*ngamux.Ngamux
 	Server   *http.Server
 	Handler  *_webHandler
 	Response *_webResponse
@@ -57,12 +57,12 @@ type _webResource struct {
 }
 
 var Web = &_web{
-	HttpServeMux: ngamux.NewHttpServeMux(),
-	Server:       &http.Server{},
-	Handler:      &_webHandler{},
-	Response:     &_webResponse{},
-	Request:      &_webRequest{},
-	Resource:     &_webResource{},
+	Ngamux:   ngamux.New(),
+	Server:   &http.Server{},
+	Handler:  &_webHandler{},
+	Response: &_webResponse{},
+	Request:  &_webRequest{},
+	Resource: &_webResource{},
 }
 
 func (w *_webHandler) Handler(handler func(ctx *web.Ctx) error) http.HandlerFunc {
@@ -76,7 +76,7 @@ func (w *_webHandler) SSE(handler func(ctx *web.CtxSse)) http.HandlerFunc {
 func (p *_web) configure() {
 	c := Config.Web
 
-	mux := Web.HttpServeMux
+	mux := Web.Ngamux
 	server := &http.Server{
 		Addr:              c.Host,
 		Handler:           mux,
@@ -418,7 +418,7 @@ func (p *_web) run() {
 	}
 }
 
-func (p *_webResource) New(path string, resource web.ResourceHandler, opts ...func(*ngamux.HttpServeMux)) {
+func (p *_webResource) New(path string, resource web.ResourceHandler, opts ...func(*ngamux.Ngamux)) {
 	g := Web.Group(path)
 	for _, opt := range opts {
 		opt(g)
@@ -430,8 +430,8 @@ func (p *_webResource) New(path string, resource web.ResourceHandler, opts ...fu
 	g.Delete("/{id}", resource.Destroy)
 }
 
-func (p _webResource) WithMiddleware(middlewares ...ngamux.MiddlewareFunc) func(*ngamux.HttpServeMux) {
-	return func(mux *ngamux.HttpServeMux) {
+func (p _webResource) WithMiddleware(middlewares ...ngamux.MiddlewareFunc) func(*ngamux.Ngamux) {
+	return func(mux *ngamux.Ngamux) {
 		mux.Use(middlewares...)
 	}
 }

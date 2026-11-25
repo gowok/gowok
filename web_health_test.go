@@ -32,9 +32,9 @@ func TestHealth_Add(t *testing.T) {
 }
 
 func TestHealth_Configure(t *testing.T) {
-	oldMux := Web.HttpServeMux
-	defer func() { Web.HttpServeMux = oldMux }()
-	Web.HttpServeMux = ngamux.NewHttpServeMux()
+	oldMux := Web.Ngamux
+	defer func() { Web.Ngamux = oldMux }()
+	Web.Ngamux = ngamux.New()
 
 	Health.healths = make(map[string]func() any)
 	Health.Add("ping", func() any { return ngamux.Map{"status": "pong"} })

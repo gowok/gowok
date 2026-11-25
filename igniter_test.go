@@ -21,12 +21,12 @@ func resetIgniter() {
 	_project(nil)
 	Config = &config.Config{}
 	Web = &_web{
-		HttpServeMux: ngamux.NewHttpServeMux(),
-		Server:       &http.Server{},
-		Handler:      &_webHandler{},
-		Response:     &_webResponse{},
-		Request:      &_webRequest{},
-		Resource:     &_webResource{},
+		Ngamux:   ngamux.New(),
+		Server:   &http.Server{},
+		Handler:  &_webHandler{},
+		Response: &_webResponse{},
+		Request:  &_webRequest{},
+		Resource: &_webResource{},
 	}
 }
 
