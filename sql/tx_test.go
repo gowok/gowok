@@ -15,8 +15,9 @@ func TestWithTx(t *testing.T) {
 	t.Run("positive/success commits", func(t *testing.T) {
 		db, mock, err := sqlmock.New()
 		must.Equal(t, nil, err)
-		defer db.Close()
-
+		defer func() {
+			_ = db.Close()
+		}()
 		mock.ExpectBegin()
 		mock.ExpectCommit()
 
@@ -34,8 +35,9 @@ func TestWithTx(t *testing.T) {
 	t.Run("negative/callback error rolls back", func(t *testing.T) {
 		db, mock, err := sqlmock.New()
 		must.Equal(t, nil, err)
-		defer db.Close()
-
+		defer func() {
+			_ = db.Close()
+		}()
 		mock.ExpectBegin()
 		mock.ExpectRollback()
 
@@ -51,8 +53,9 @@ func TestWithTx(t *testing.T) {
 	t.Run("negative/callback panic rolls back and re-panics", func(t *testing.T) {
 		db, mock, err := sqlmock.New()
 		must.Equal(t, nil, err)
-		defer db.Close()
-
+		defer func() {
+			_ = db.Close()
+		}()
 		mock.ExpectBegin()
 		mock.ExpectRollback()
 
@@ -74,8 +77,9 @@ func TestWithTx(t *testing.T) {
 	t.Run("negative/begin fails skips callback", func(t *testing.T) {
 		db, mock, err := sqlmock.New()
 		must.Equal(t, nil, err)
-		defer db.Close()
-
+		defer func() {
+			_ = db.Close()
+		}()
 		wantErr := errors.New("boom")
 		mock.ExpectBegin().WillReturnError(wantErr)
 
@@ -94,8 +98,9 @@ func TestWithTx(t *testing.T) {
 	t.Run("positive/callback runs queries on the transaction", func(t *testing.T) {
 		db, mock, err := sqlmock.New()
 		must.Equal(t, nil, err)
-		defer db.Close()
-
+		defer func() {
+			_ = db.Close()
+		}()
 		mock.ExpectBegin()
 		mock.ExpectQuery("SELECT id FROM users").
 			WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(7))
@@ -114,8 +119,9 @@ func TestWithTx(t *testing.T) {
 	t.Run("negative/commit failure wraps error", func(t *testing.T) {
 		db, mock, err := sqlmock.New()
 		must.Equal(t, nil, err)
-		defer db.Close()
-
+		defer func() {
+			_ = db.Close()
+		}()
 		wantErr := errors.New("boom")
 		mock.ExpectBegin()
 		mock.ExpectCommit().WillReturnError(wantErr)

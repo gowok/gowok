@@ -161,7 +161,7 @@ func TestWriteContext(t *testing.T) {
 		dir := t.TempDir()
 		path := filepath.Join(dir, "state.json")
 
-		must.Nil(t, WriteContext(nil, path, []byte("content")))
+		must.Nil(t, WriteContext(context.TODO(), path, []byte("content")))
 
 		data, err := os.ReadFile(path)
 		must.Nil(t, err)

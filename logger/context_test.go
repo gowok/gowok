@@ -38,6 +38,6 @@ func TestContext(t *testing.T) {
 	})
 
 	t.Run("positive/nil context falls back to default", func(t *testing.T) {
-		must.Equal(t, slog.Default(), FromContext(nil))
+		must.Equal(t, slog.Default(), FromContext(context.TODO()))
 	})
 }

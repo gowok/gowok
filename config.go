@@ -63,7 +63,9 @@ func newConfig(pathConfig string, envFile string) (*config.Config, map[string]an
 	if err != nil {
 		return nil, nil, err
 	}
-	defer fiConfig.Close()
+	defer func() {
+		_ = fiConfig.Close()
+	}()
 
 	fiContent, err := io.ReadAll(fiConfig)
 	if err != nil {
