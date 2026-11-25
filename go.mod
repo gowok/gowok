@@ -8,8 +8,8 @@ require (
 	github.com/google/uuid v1.6.0
 	github.com/gowok/fp v0.3.3
 	github.com/joho/godotenv v1.5.1
-	github.com/ngamux/middleware v0.1.6
-	github.com/ngamux/ngamux v1.7.53
+	github.com/ngamux/middleware v0.1.7
+	github.com/ngamux/ngamux v1.7.54
 	github.com/pelletier/go-toml/v2 v2.2.4
 	github.com/spf13/cobra v1.10.2
 	golang.org/x/crypto v0.47.0
