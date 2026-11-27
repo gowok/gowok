@@ -20,8 +20,8 @@ func Memory() *memory {
 	return &memory{data: make(map[string]_value)}
 }
 
-func (m *memory) Get(_ context.Context, key string, options ...GetOption) (any, error) {
-	var opts getOption
+func (m *memory) Get(_ context.Context, key string, options ...GetOptionFunc) (any, error) {
+	var opts GetOption
 	for _, option := range options {
 		if option != nil {
 			option(&opts)
@@ -33,17 +33,17 @@ func (m *memory) Get(_ context.Context, key string, options ...GetOption) (any, 
 
 	value, ok := m.data[key]
 	if !ok {
-		return opts.fallback, nil
+		return opts.Fallback, nil
 	}
 	if !value.expiresAt.IsZero() && !time.Now().Before(value.expiresAt) {
-		return opts.fallback, nil
+		return opts.Fallback, nil
 	}
 
 	return value.content, nil
 }
 
-func (m *memory) Set(_ context.Context, key string, value any, options ...SetOption) error {
-	var opts setOption
+func (m *memory) Set(_ context.Context, key string, value any, options ...SetOptionFunc) error {
+	var opts SetOption
 	for _, option := range options {
 		if option != nil {
 			option(&opts)
@@ -54,8 +54,8 @@ func (m *memory) Set(_ context.Context, key string, value any, options ...SetOpt
 	defer m.mu.Unlock()
 
 	cachedValue := _value{content: value}
-	if opts.ttl > 0 {
-		cachedValue.expiresAt = time.Now().Add(opts.ttl)
+	if opts.TTL > 0 {
+		cachedValue.expiresAt = time.Now().Add(opts.TTL)
 	}
 	m.data[key] = cachedValue
 	return nil

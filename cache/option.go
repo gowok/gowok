@@ -2,24 +2,24 @@ package cache
 
 import "time"
 
-type GetOption func(*getOption)
-type getOption struct {
-	fallback any
+type GetOptionFunc func(*GetOption)
+type GetOption struct {
+	Fallback any
 }
 
-type SetOption func(*setOption)
-type setOption struct {
-	ttl time.Duration
+type SetOptionFunc func(*SetOption)
+type SetOption struct {
+	TTL time.Duration
 }
 
-func WithFallback(fallback any) GetOption {
-	return func(o *getOption) {
-		o.fallback = fallback
+func WithFallback(fallback any) GetOptionFunc {
+	return func(o *GetOption) {
+		o.Fallback = fallback
 	}
 }
 
-func WithTTL(ttl time.Duration) SetOption {
-	return func(o *setOption) {
-		o.ttl = ttl
+func WithTTL(ttl time.Duration) SetOptionFunc {
+	return func(o *SetOption) {
+		o.TTL = ttl
 	}
 }

@@ -7,10 +7,10 @@ import (
 
 type testCache struct{}
 
-func (*testCache) Get(context.Context, string, ...GetOption) (any, error) { return nil, nil }
-func (*testCache) Set(context.Context, string, any, ...SetOption) error   { return nil }
-func (*testCache) Delete(context.Context, string) error                   { return nil }
-func (*testCache) Close() error                                           { return nil }
+func (*testCache) Get(context.Context, string, ...GetOptionFunc) (any, error) { return nil, nil }
+func (*testCache) Set(context.Context, string, any, ...SetOptionFunc) error   { return nil }
+func (*testCache) Delete(context.Context, string) error                       { return nil }
+func (*testCache) Close() error                                               { return nil }
 
 func TestClient(t *testing.T) {
 	defaultClient := &testCache{}
