@@ -20,16 +20,23 @@ func Memory() *memory {
 	return &memory{data: make(map[string]_value)}
 }
 
-func (m *memory) Get(_ context.Context, key string, _ ...GetOption) (any, error) {
+func (m *memory) Get(_ context.Context, key string, options ...GetOption) (any, error) {
+	var opts getOption
+	for _, option := range options {
+		if option != nil {
+			option(&opts)
+		}
+	}
+
 	m.mu.RLock()
 	defer m.mu.RUnlock()
 
 	value, ok := m.data[key]
 	if !ok {
-		return nil, nil
+		return opts.fallback, nil
 	}
 	if !value.expiresAt.IsZero() && !time.Now().Before(value.expiresAt) {
-		return nil, nil
+		return opts.fallback, nil
 	}
 
 	return value.content, nil

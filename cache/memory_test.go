@@ -80,6 +80,30 @@ func TestMemoryTTL(t *testing.T) {
 	}
 }
 
+func TestMemoryFallback(t *testing.T) {
+	client := Memory()
+	ctx := context.Background()
+
+	got, err := client.Get(ctx, "missing", WithFallback("fallback"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got != "fallback" {
+		t.Fatalf("missing value = %#v, want %q", got, "fallback")
+	}
+
+	if err := client.Set(ctx, "key", nil); err != nil {
+		t.Fatal(err)
+	}
+	got, err = client.Get(ctx, "key", WithFallback("fallback"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got != nil {
+		t.Fatalf("stored nil = %#v, want nil", got)
+	}
+}
+
 func TestMemoryTTLNonPositiveDoesNotExpire(t *testing.T) {
 	client := Memory()
 	ctx := context.Background()
