@@ -3,10 +3,12 @@ package cache
 import (
 	"context"
 	"sync"
+	"time"
 )
 
 type _value struct {
-	content any
+	content   any
+	expiresAt time.Time
 }
 
 type memory struct {
@@ -18,7 +20,7 @@ func Memory() *memory {
 	return &memory{data: make(map[string]_value)}
 }
 
-func (m *memory) Get(_ context.Context, key string) (any, error) {
+func (m *memory) Get(_ context.Context, key string, _ ...GetOption) (any, error) {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
 
@@ -26,15 +28,29 @@ func (m *memory) Get(_ context.Context, key string) (any, error) {
 	if !ok {
 		return nil, nil
 	}
+	if !value.expiresAt.IsZero() && !time.Now().Before(value.expiresAt) {
+		return nil, nil
+	}
 
 	return value.content, nil
 }
 
-func (m *memory) Set(_ context.Context, key string, value any) error {
+func (m *memory) Set(_ context.Context, key string, value any, options ...SetOption) error {
+	var opts setOption
+	for _, option := range options {
+		if option != nil {
+			option(&opts)
+		}
+	}
+
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
-	m.data[key] = _value{value}
+	cachedValue := _value{content: value}
+	if opts.ttl > 0 {
+		cachedValue.expiresAt = time.Now().Add(opts.ttl)
+	}
+	m.data[key] = cachedValue
 	return nil
 }
 

@@ -7,8 +7,8 @@ import (
 )
 
 type Cache interface {
-	Get(context.Context, string) (any, error)
-	Set(context.Context, string, any) error
+	Get(context.Context, string, ...GetOption) (any, error)
+	Set(context.Context, string, any, ...SetOption) error
 	Delete(context.Context, string) error
 }
 
