@@ -37,14 +37,15 @@ func TestNet(t *testing.T) {
 		go Net.run()
 
 		for i := 0; i < 100; i++ {
-			if Net.Listener != nil {
+			if Net.getListener() != nil {
 				break
 			}
 			time.Sleep(10 * time.Millisecond)
 		}
 
-		must.NotNil(t, Net.Listener)
-		addr := Net.Addr().String()
+		must.NotNil(t, Net.getListener())
+		listener := Net.getListener()
+		addr := listener.Addr().String()
 
 		conn, err := net.Dial("tcp", addr)
 		must.Nil(t, err)
@@ -58,12 +59,12 @@ func TestNet(t *testing.T) {
 
 		Net.Shutdown()
 		for i := 0; i < 100; i++ {
-			if Net.Listener == nil {
+			if Net.getListener() == nil {
 				break
 			}
 			time.Sleep(10 * time.Millisecond)
 		}
-		must.Nil(t, Net.Listener)
+		must.Nil(t, Net.getListener())
 	})
 
 	t.Run("positive/unix socket", func(t *testing.T) {
@@ -75,22 +76,22 @@ func TestNet(t *testing.T) {
 		go Net.configure()
 
 		for i := 0; i < 100; i++ {
-			if Net.Listener != nil {
+			if Net.getListener() != nil {
 				break
 			}
 			time.Sleep(10 * time.Millisecond)
 		}
 
-		must.NotNil(t, Net.Listener)
-		if Net.Listener == nil {
+		must.NotNil(t, Net.getListener())
+		if Net.getListener() == nil {
 			return
 		}
-		must.Equal(t, "unix", Net.Listener.Addr().Network())
-		must.Equal(t, socketPath, Net.Listener.Addr().String())
+		must.Equal(t, "unix", Net.getListener().Addr().Network())
+		must.Equal(t, socketPath, Net.getListener().Addr().String())
 
 		Net.Shutdown()
 		for i := 0; i < 100; i++ {
-			if Net.Listener == nil {
+			if Net.getListener() == nil {
 				break
 			}
 			time.Sleep(10 * time.Millisecond)
@@ -122,13 +123,13 @@ func TestNet(t *testing.T) {
 		go Net.configure()
 
 		for i := 0; i < 100; i++ {
-			if Net.Listener != nil {
+			if Net.getListener() != nil {
 				break
 			}
 			time.Sleep(10 * time.Millisecond)
 		}
 
-		must.NotNil(t, Net.Listener)
+		must.NotNil(t, Net.getListener())
 		time.Sleep(100 * time.Millisecond)
 		Net.Shutdown()
 	})

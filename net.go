@@ -5,11 +5,13 @@ import (
 	"log/slog"
 	"net"
 	"os"
+	"sync"
 )
 
 var netListen = net.Listen
 
 type _net struct {
+	sync.RWMutex
 	net.Listener
 	handler func(net.Conn)
 }
@@ -29,29 +31,49 @@ func (p *_net) configure() {
 		return
 	}
 
+	p.Lock()
 	p.Listener = listen
+	p.Unlock()
+}
+
+func (p *_net) getListener() net.Listener {
+	p.RLock()
+	defer p.RUnlock()
+	return p.Listener
 }
 
 func (p *_net) HandleFunc(handler func(net.Conn)) {
+	p.Lock()
 	p.handler = handler
+	p.Unlock()
 }
 
 func (p *_net) Shutdown() {
-	if p.Listener != nil {
-		_ = p.Close()
+	p.Lock()
+	l := p.Listener
+	p.Listener = nil
+	p.Unlock()
+
+	if l != nil {
+		_ = l.Close()
 	}
 }
 
 func (p *_net) run() {
 	slog.Info("starting net")
 
-	if p.Listener == nil {
+	p.RLock()
+	listener := p.Listener
+	handler := p.handler
+	p.RUnlock()
+
+	if listener == nil {
 		slog.Error("net: failed to start", "error", "bad configurations")
 		return
 	}
 
 	for {
-		conn, err := p.Accept()
+		conn, err := listener.Accept()
 		if err != nil {
 			if errors.Is(err, net.ErrClosed) {
 				break
@@ -60,7 +82,12 @@ func (p *_net) run() {
 			slog.Error("net: failed to process", "error", err)
 			continue
 		}
-		go p.handler(conn)
+		go handler(conn)
 	}
-	p.Listener = nil
+
+	p.Lock()
+	if p.Listener == listener {
+		p.Listener = nil
+	}
+	p.Unlock()
 }
