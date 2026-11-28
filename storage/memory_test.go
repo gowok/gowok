@@ -5,6 +5,7 @@ import (
 	"errors"
 	"sync"
 	"testing"
+	"time"
 )
 
 func newMem(t *testing.T) *memory {
@@ -115,5 +116,18 @@ func TestMemoryContextCanceled(t *testing.T) {
 	}
 	if err := m.Put(ctx, "k", []byte("v")); err != context.Canceled {
 		t.Fatalf("Put err = %v, want context.Canceled", err)
+	}
+}
+
+func TestMemoryContextDeadlineExceeded(t *testing.T) {
+	m := newMem(t)
+	ctx, cancel := context.WithDeadline(context.Background(), time.Now().Add(-time.Second))
+	defer cancel()
+
+	if _, err := m.Get(ctx, "k"); err != context.DeadlineExceeded {
+		t.Fatalf("Get err = %v, want context.DeadlineExceeded", err)
+	}
+	if err := m.Put(ctx, "k", []byte("v")); err != context.DeadlineExceeded {
+		t.Fatalf("Put err = %v, want context.DeadlineExceeded", err)
 	}
 }
