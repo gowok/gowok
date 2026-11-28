@@ -91,7 +91,11 @@ func (m *memory) Receive(ctx context.Context, topic string) (Delivery, error) {
 	}
 }
 
-func (m *memory) Ack(_ context.Context, receipt string) error {
+func (m *memory) Ack(ctx context.Context, receipt string) error {
+	if err := ctx.Err(); err != nil {
+		return err
+	}
+
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
@@ -103,7 +107,11 @@ func (m *memory) Ack(_ context.Context, receipt string) error {
 	return nil
 }
 
-func (m *memory) Nack(_ context.Context, receipt string) error {
+func (m *memory) Nack(ctx context.Context, receipt string) error {
+	if err := ctx.Err(); err != nil {
+		return err
+	}
+
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
