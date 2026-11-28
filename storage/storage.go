@@ -2,6 +2,7 @@ package storage
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"sync"
 )
@@ -10,6 +11,8 @@ type Storage interface {
 	Get(context.Context, string) ([]byte, error)
 	Put(context.Context, string, []byte) error
 }
+
+var ErrNotFound = errors.New("storage: not found")
 
 var pool sync.Map
 
