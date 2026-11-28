@@ -37,7 +37,7 @@ func (m *memory) Get(_ context.Context, key string, options ...GetOptionFunc) (a
 	}
 	if !value.expiresAt.IsZero() && !time.Now().Before(value.expiresAt) {
 		m.mu.Lock()
-		if cur, ok := m.data[key]; ok && cur.expiresAt == value.expiresAt {
+		if cur, ok := m.data[key]; ok && cur.expiresAt.Equal(value.expiresAt) {
 			delete(m.data, key)
 		}
 		m.mu.Unlock()
