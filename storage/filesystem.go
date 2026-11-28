@@ -119,7 +119,7 @@ func (f *filesystem) Put(ctx context.Context, key string, value []byte) error {
 	cleanup := func() { _ = os.Remove(tmpName) }
 
 	if _, err := tmp.Write(data); err != nil {
-		tmp.Close()
+		_ = tmp.Close()
 		cleanup()
 		return err
 	}
