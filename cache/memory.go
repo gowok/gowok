@@ -29,13 +29,18 @@ func (m *memory) Get(_ context.Context, key string, options ...GetOptionFunc) (a
 	}
 
 	m.mu.RLock()
-	defer m.mu.RUnlock()
-
 	value, ok := m.data[key]
+	m.mu.RUnlock()
+
 	if !ok {
 		return opts.Fallback, nil
 	}
 	if !value.expiresAt.IsZero() && !time.Now().Before(value.expiresAt) {
+		m.mu.Lock()
+		if cur, ok := m.data[key]; ok && cur.expiresAt == value.expiresAt {
+			delete(m.data, key)
+		}
+		m.mu.Unlock()
 		return opts.Fallback, nil
 	}
 
